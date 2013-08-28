@@ -1,0 +1,15 @@
+bower_components
+node_modules
+
+# compiled css
+/app/visual/css/*
+
+# node-webkit runtimes
+/nw/macos/Sputnik.app/*
+/nw/windows/*
+
+# 7zip (command line version)
+/scripts/7zip/*
+
+# data folder for testing
+/data

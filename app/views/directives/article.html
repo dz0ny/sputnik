@@ -1,0 +1,52 @@
+<div id="{{artData.id}}" class="article"
+    ng-class="{'article--read': artData.isRead}">
+    <div class="article__header">
+        <h1 class="article__title">
+            <a class="js-title" ng-href="{{artData.link}}" ng-bind-html="artData.title"></a>
+            <div class="article__feed-info">
+                <div ng-hide="artData.feed.hasFavicon" class="article__feed-icon  article__feed-icon--none"></div>
+                <img ng-show="artData.feed.hasFavicon" ng-src="{{artData.feed.favicon}}" class="article__feed-icon"/>
+                <span class="article__feed-title">{{artData.feed.title}}</span>
+            </div>
+        </h1>
+        <div class="article__actions">
+            <a class="article__action-button  button2  js-see-in-browser" ng-href="{{artData.link}}">
+                <svg class="button2__icon" width="128px" height="128px" viewBox="0 0 128 128">
+                    <path class="button2__icon-obj" d="m 23.992167,45.451661 0,37.095678 42.151284,0 0,23.184981 39.255379,-41.732079 -39.255379,-41.733563 0,23.184983 z"/>
+                </svg>
+            </a>
+            <div class="article__action-button  button2" ng-click="toggleIsRead()"
+                ng-class="{'button2--active': artData.isRead}">
+                <svg class="button2__icon"
+                    width="128px" height="128px" viewBox="0 0 128 128">
+                    <path class="button2__icon-obj" d="m 53.137425,98.563519 c -1.31855,1.31855 -3.471404,1.31855 -4.797247,0 l -1.064758,-1.066217 0,0 -1.136229,-1.13477 -4.992695,-4.999988 c -0.02188,-0.02188 -0.01459,-0.04813 -0.02917,-0.06272 L 18.227937,68.241244 c -1.325843,-1.317092 -1.325843,-3.471404 0,-4.795789 l 7.195141,-7.202433 c 1.333136,-1.324385 3.478697,-1.324385 4.810374,0 L 50.765785,76.937256 93.948299,33.756201 c 1.317092,-1.325843 3.471404,-1.325843 4.797247,0 l 7.195144,7.202433 c 1.33167,1.325843 1.33167,3.471404 0,4.803082 z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div class="article__content"
+        ng-bind-html-unsafe="articleContent"></div>
+    <!--<div class="article__additional-actions"
+        ng-show="artData.enclosures">
+        <div ng-repeat="enc in artData.enclosures">
+            <a class="article__audio-link" ng-href="{{enc.url}}">listen to the audio</a>
+        </div>
+    </div>-->
+    <div class="article__actions  article__actions--bottom">
+        <a class="article__action-button  button2" ng-href="{{artData.link}}">
+            <svg class="button2__icon" width="128px" height="128px" viewBox="0 0 128 128">
+                <path class="button2__icon-obj" d="m 23.992167,45.451661 0,37.095678 42.151284,0 0,23.184981 39.255379,-41.732079 -39.255379,-41.733563 0,23.184983 z"/>
+            </svg>
+            <span class="button2__text">see in browser</span>
+        </a>
+        <div class="article__action-button  button2" ng-click="toggleIsRead()"
+            ng-class="{'button2--active': artData.isRead}">
+            <svg class="button2__icon"
+                width="128px" height="128px" viewBox="0 0 128 128">
+                <path class="button2__icon-obj" d="m 53.137425,98.563519 c -1.31855,1.31855 -3.471404,1.31855 -4.797247,0 l -1.064758,-1.066217 0,0 -1.136229,-1.13477 -4.992695,-4.999988 c -0.02188,-0.02188 -0.01459,-0.04813 -0.02917,-0.06272 L 18.227937,68.241244 c -1.325843,-1.317092 -1.325843,-3.471404 0,-4.795789 l 7.195141,-7.202433 c 1.333136,-1.324385 3.478697,-1.324385 4.810374,0 L 50.765785,76.937256 93.948299,33.756201 c 1.317092,-1.325843 3.471404,-1.325843 4.797247,0 l 7.195144,7.202433 c 1.33167,1.325843 1.33167,3.471404 0,4.803082 z"/>
+            </svg>
+            <span ng-show="artData.isRead" class="button2__text">mark as unread</span>
+            <span ng-hide="artData.isRead" class="button2__text">mark as read</span>
+        </div>
+    </div>
+</div>

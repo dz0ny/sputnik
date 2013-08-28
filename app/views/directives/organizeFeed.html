@@ -1,0 +1,19 @@
+<div class="organize__feed">
+    <div ng-hide="item.hasFavicon" class="organize__feed-icon  organize__feed-icon--none"/>
+    <img ng-show="item.hasFavicon" src="{{feed.favicon}}" class="organize__feed-icon"/>
+    <span class="organize__feed-title">{{feed.title}}</span>
+    <a class="button2" ng-click="showChangeCategory = !showChangeCategory">
+        <span ng-hide="showChangeCategory">move to</span>
+        <span ng-show="showChangeCategory">cancel</span>
+    </a>
+    <select ng-show="showChangeCategory" ng-model="chosenCategoryName"
+        ng-change="onCategorySelected()"
+        ng-options="catName for catName in categoriesNames">
+        <option value="">(no category)</option>
+    </select>
+    <a class="button2" ng-click="showDelete = !showDelete">
+        <span ng-hide="showDelete">delete</span>
+        <span ng-show="showDelete">cancel</span>
+    </a>
+    <span ng-show="showDelete">Are you sure? <a class="button2" ng-click="onDelete()">Yes, delete.</a></span>
+</div>

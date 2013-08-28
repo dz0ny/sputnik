@@ -1,0 +1,8 @@
+{
+    "name": "sputnik-news-reader",
+    "dependencies": {
+        "jquery": "2.0.x",
+        "angular": "1.0.x",
+        "angular-sanitize": "1.0.x"
+    }
+}

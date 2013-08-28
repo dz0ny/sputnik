@@ -1,0 +1,36 @@
+<!doctype html>
+<html ng-app="sputnik" ng-controller="AppCtrl">
+<head>
+    <meta charset="utf-8">
+    <title>Sputnik</title>
+    
+    <link href="./visual/css/main.css" rel="stylesheet" type="text/css">
+    
+    <script src="./bower_components/jquery/jquery.min.js"></script>
+    <script src="./bower_components/angular/angular.min.js"></script>
+    <script src="./bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+    
+    <script src="./app.js"></script>
+    
+    <script src="./controllers/appCtrl.js"></script>
+    <script src="./controllers/addFeedCtrl.js"></script>
+    <script src="./controllers/organizeCtrl.js"></script>
+    <script src="./controllers/readCtrl.js"></script>
+    <script src="./controllers/importExportCtrl.js"></script>
+    <script src="./controllers/aboutCtrl.js"></script>
+    
+    <script src="./services/configService.js"></script>
+    <script src="./services/feedsService.js"></script>
+    <script src="./services/faviconsService.js"></script>
+    <script src="./services/updateService.js"></script>
+    
+    <script src="./directives/article.js"></script>
+    <script src="./directives/dropdown.js"></script>
+    <script src="./directives/organize.js"></script>
+</head>
+<body>
+    
+    <ng-view></ng-view>
+    
+</body>
+</html>

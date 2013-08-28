@@ -1,0 +1,28 @@
+{
+    "categories": [
+        "First Category"
+    ],
+    "feeds": [
+        {
+            "type": "feed",
+            "url": "http://a.com/feed",
+            "siteUrl": "http://a.com",
+            "title": "Site A",
+            "category": "First Category"
+        },
+        {
+            "type": "feed",
+            "url": "http://b.com/feed",
+            "siteUrl": "http://b.com/",
+            "title": "Site B",
+            "category": null
+        },
+        {
+            "type": "feed",
+            "url": "http://c.com/feed",
+            "siteUrl": "http://c.com",
+            "title": "Site C",
+            "category": null
+        }
+    ]
+}

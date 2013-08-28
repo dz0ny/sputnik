@@ -1,0 +1,53 @@
+<div class="two-columns">
+    
+    <div class="column-one">
+        <div class="toolbar-on-left__container">
+            <div class="toolbar-on-left">
+                <a class="button2" href="#/">Go back</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="column-two  column-two__content-ready">
+        
+        <h1>Add feed</h1>
+        
+        <div>
+            <p class="minor-text">Type or copy/paste link to website you want to subscribe to<br/>
+            (it could be URL to entire site, or direct link to RSS file).</p>
+            <input id="url-input" type="text" ng-model="url" ng-change="urlChange()"
+                class="textfield--important" placeholder="Put URL here"/>
+            <span class="add-feed__indicators">
+                <div class="spinner" ng-show="urlValidity == 'checking'">
+                    <span class="mask"></span>
+                </div>
+                <img src="./visual/images/caution.svg" width="32" heigth="32" ng-show="urlValidity == 'no' || urlValidity == '404'"/>
+                <img src="./visual/images/correct.svg" width="32" heigth="32" ng-show="urlValidity == 'yes'"/>
+            </span>
+            
+            <!--<p ng-show="urlValidity == 'yes'">I have found RSS feed on this address.</p>-->
+            <p ng-show="urlValidity == '404'" class="error">This address returns "not found" (404). Are you sure you typed it correctly?</p>
+            <p ng-show="urlValidity == 'no'" class="error">Sorry. I couldn't figure out any RSS feed on this address. Try to find link to RSS feed on that site by yourself and paste it here.</p>
+        </div>
+        
+        <p>
+            Add this feed to category:<br/>
+            <select ng-model="chosenCategory" ng-options="c.name for c in categories"></select>
+        </p>
+        <p ng-show="chosenCategory.value == '#addNewCategory#'">
+            Name of new category:<br/>
+            <input type="text" ng-model="newCategory"/>
+        </p>
+        
+        <div>
+            <button ng-click="add()" ng-disabled="urlValidity != 'yes' || state == 'loadingFeed'">Done</button>
+            <span class="add-feed__indicators">
+                <div class="spinner" ng-show="state == 'loadingFeed'">
+                    <span class="mask"></span>
+                </div>
+            </span>
+        </div>
+        
+    </div>
+    
+</div>

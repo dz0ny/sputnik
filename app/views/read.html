@@ -1,0 +1,188 @@
+<div class="two-columns">
+
+    <div class="column-one  column-flex">
+        
+        <div class="feeds-tree__header  column-flex__item">
+            <div class="feeds-tree__header__buttons-wrap">
+                <div>
+                    <a class="button1  button1--gap-right" href="#/add">
+                        <svg class="button1__icon" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                            width="128px" height="128px" viewBox="0 0 128 128" enable-background="new 0 0 128 128" xml:space="preserve">
+                        <path class="button1__icon-obj" d="m 62.15625,24.59375 c -3.057715,0.111918 -5.925666,0.757314 -5.90533,4 l 0,27.65717 -27.65717,0 c -3.706,0 -4,3.54208 -4,7.24908 0,3.706 0.294076,7.272767 4,7.24908 l 27.65717,0 0,27.65717 c 0,3.707 3.54308,4 7.24908,4 3.708,0 6.456344,-0.3023 6.71875,-4 l 0,-27.65717 28.1875,0 c 3.707,0 4,-3.54308 4,-7.24908 0,-3.707 -0.293,-7.24908 -4,-7.24908 l -28.1875,0 0,-27.65717 c 0,-3.706 -3.01075,-4 -6.71875,-4 -0.46325,0 -0.906934,-0.01599 -1.34375,0 z"/>
+                        </svg>
+                        add feed
+                    </a>
+                </div>
+                <div class="dropdown">
+                    <a class="button1">
+                        <svg class="button1__icon" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                            width="128px" height="128px" viewBox="0 0 128 128" enable-background="new 0 0 128 128" xml:space="preserve">
+                        <path class="button1__icon-obj" d="m 88.649,46.273727 c 1.991,-1.969 5.21,-1.393727 7.201,0.575273 1.984,1.967 1.987,5.733273 0,7.703273 l -28.75,28.174 c -1.988,1.968 -5.212,1.968 -7.201,0 l -28.747,-28.173 c -1.989,-1.971 -1.989,-5.734273 0,-7.703273 1.988,-1.969 5.21,-2.544273 7.197,-0.576273 l 25.151,23.104 z"/>
+                        </svg>
+                        more
+                    </a>
+                    <div class="dropdown__menu">
+                        <div class="dropdown__menu-wrap">
+                            <a tabindex="-1" href="#/organize">organize feeds</a>
+                            <a tabindex="-1" href="#/importExport">import/export feeds</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="toolbar-on-left">
+                <span ng-click="refresh()" class="button2  button2--special">
+                    <svg class="button2__icon" width="128px" height="128px" viewBox="0 0 128 128" enable-background="new 0 0 128 128">
+                        <path class="button2__icon-obj"
+                            d="M 35.09814,31.751952 C 52.591661,16.450332 79.069171,18.024375 94.759075,35.096307 L 108.26906,22.879318 107.78567,61.193612 69.750983,56.571163 84.855684,44.253524 C 74.21131,32.857325 56.401391,31.855662 44.61472,42.165486 c -12.031128,10.523655 -13.224988,28.8366 -2.668389,40.905395 10.5566,12.068795 28.866248,13.321985 40.896669,2.798947 4.824532,-4.220029 7.901538,-9.693646 9.180418,-15.513599 l 13.340012,1.761103 C 103.65149,81.179712 99.0138,89.749423 91.5439,96.283363 73.780449,111.82109 46.746381,109.97128 31.158404,92.150366 15.570428,74.329466 17.334693,47.28968 35.09814,31.751952"/>
+                    </svg>
+                </span>
+            </div>
+        </div>
+        
+        <div class="feeds-tree__content-wrap  column-flex__item  column-flex__item--greedy">
+            <div class="feeds-tree__content  scroll">
+                <div class="feeds-tree__category-container  feeds-tree__category-container--nested">
+                    <h1 ng-click="selectItem(all)"
+                        ng-class="{'feeds-tree__category--selected': selectedItem == all}"
+                        class="feeds-tree__category">
+                        <span class="feeds-tree__category-name">All</span>
+                        <span class="feeds-tree__count">{{all.unreadArticlesCount}}</span>
+                    </h1>
+                </div>
+                <div ng-repeat="item in feedsTree" ng-switch="item.type"
+                    class="feeds-tree__category-container">
+                    <div ng-switch-when="category"
+                        class="feeds-tree__category-container  feeds-tree__category-container--nested">
+                        <h1 ng-click="selectItem(item)"
+                            ng-class="{'feeds-tree__category--selected': selectedItem == item}"
+                            class="feeds-tree__category">
+                            <span class="feeds-tree__category-name">{{item.name}}</span>
+                            <span ng-show="item.unreadArticlesCount > 0" class="feeds-tree__count">{{item.unreadArticlesCount}}</span>
+                        </h1>
+                        <h2 ng-repeat="feed in item.feeds"
+                            ng-click="selectItem(feed)"
+                            ng-class="{'feeds-tree__category--selected': selectedItem == feed}"
+                            class="feeds-tree__category  feeds-tree__category--minor">
+                            <div ng-hide="feed.hasFavicon" class="feeds-tree__icon  feeds-tree__icon--none"/>
+                            <img ng-show="feed.hasFavicon" ng-src="{{feed.favicon}}" class="feeds-tree__icon"/>
+                            <span class="feeds-tree__category-name">{{feed.title}}</span>
+                            <span ng-show="feed.unreadArticlesCount > 0" class="feeds-tree__count">{{feed.unreadArticlesCount}}</span>
+                        </h2>
+                    </div>
+                    <!-- same as above -->
+                    <h2 ng-switch-when="feed"
+                        ng-click="selectItem(item)"
+                        ng-class="{'feeds-tree__category--selected': selectedItem == item}"
+                        class="feeds-tree__category  feeds-tree__category--minor">
+                        <div ng-hide="item.hasFavicon" class="feeds-tree__icon  feeds-tree__icon--none"/>
+                        <img ng-show="item.hasFavicon" ng-src="{{item.favicon}}" class="feeds-tree__icon"/>
+                        <span class="feeds-tree__category-name">{{item.title}}</span>
+                        <span ng-show="item.unreadArticlesCount > 0" class="feeds-tree__count">{{item.unreadArticlesCount}}</span>
+                    </h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="feeds-tree__footer  column-flex__item">
+            <a class="button1  local-anchor" href="#/about/about">
+                <svg class="button1__icon" width="128px" height="128px" viewBox="0 0 128 128" enable-background="new 0 0 128 128">
+                <g class="button1__icon-obj" transform="translate(8,4)">
+                <path d="m 77.588,26.231 c -42.327,6.499026 -49.680177,46.628582 -49.386177,51.495764 6.798,6.96 19.396203,7.419236 19.396203,7.419236 l 18.981741,35.63994 -9.397793,-36.897769 c 0,0 2.774026,-0.259171 6.181026,-1.592171 3.979,-1.558 7.870171,-3.992171 7.870171,-3.992171 L 108.382,106.067 78.108632,72.077368 c 0,0 3.214368,-4.264368 5.495368,-9.694368 2.041,-4.859 1.900513,-8.980539 1.900513,-8.980539 L 116.03406,59.969469 86.005,44.681197 c 0,0 -1.457,-12.623197 -8.417,-18.450197 z"/>
+                <path d="M 25.418472,24.11241 C 3.2599946,47.19958 22.396,71.065 24.015,73.331 23.742,52.347 46.273236,21.994236 73.840236,22.320236 c -4.494,-7.37 -28.25419,-17.8476065 -48.421764,1.792174 z"/>
+                </g>
+                </svg>
+                about
+            </a>
+            <a class="button1  button1--icon-only  local-anchor" href="#/about/controls">
+                <svg class="controls-icon" width="128" height="60" viewBox="0 0 128 60" enable-background="new 0 0 128 128">
+                <path
+                   clip-rule="evenodd"
+                   d="m 24.879978,53.460069 -8.700901,0 c -5.768011,0 -10.4414268,-4.675163 -10.4414268,-10.441429 l 0,-15.663016 10.5514108,0 0,3.481058 c 0,1.922089 1.448986,3.479312 3.37282,3.479312 l 1.738783,0 c 1.923836,0 3.481059,-1.558969 3.481059,-3.479312 l 0,-3.481058 10.549667,0 0,15.663016 c 0,5.766266 -4.785147,10.441429 -10.551412,10.441429 z m 0,-29.585503 c 0,-1.922088 -1.558969,-3.481058 -3.481057,-3.481058 l 0,0 0,-10.333191 c 0,0 -2.283464,-0.109994 3.372818,-0.109994 5.656283,0 10.659651,3.697533 10.659651,10.441428 0,3.461856 0,4.710077 0,5.111605 l -10.551412,0 z m -1.740529,0.869391 0,5.219842 c 0,1.442003 -1.167918,2.609921 -2.609922,2.609921 -1.442003,0 -2.609921,-1.167918 -2.609921,-2.609921 l 0,-5.219842 c 0,-1.442003 1.167918,-2.611666 2.609921,-2.611666 1.442004,0 2.609922,1.169663 2.609922,2.611666 z M 16.287316,9.95208 c 5.654536,0 3.479311,0.109994 3.479311,0.109994 l 0,10.333192 c -1.922088,0 -3.479311,1.558969 -3.479311,3.481058 l 0,1.63229 -10.5514127,0 c 0,-0.401526 0,-1.649748 0,-5.111603 0,-6.747388 4.8951307,-10.44492 10.5514127,-10.44492 z"
+                   style="fill:#ffffff;fill-rule:evenodd" />
+                <path
+                   clip-rule="evenodd"
+                   d="m 116.17384,53.118278 -69.084472,0 c -3.178821,0 -5.755117,-2.578606 -5.755117,-5.757427 l 0,-31.663529 c 0,-3.181128 2.576296,-5.759735 5.755117,-5.759735 1.749551,-0.0032 67.305292,0.022 69.086802,-2e-6 3.18343,0 5.75973,2.576299 5.75973,5.759735 l 0,31.661221 c -0.003,3.17882 -2.58093,5.759735 -5.76206,5.759737 z m 2.88103,-37.420956 c 0,-1.592871 -1.28816,-2.881022 -2.88103,-2.881022 l -69.084472,0 c -1.588257,0 -2.876405,1.288151 -2.876405,2.881022 l 0,31.661221 c 0,1.588254 1.288148,2.878713 2.876405,2.878713 l 69.082172,0 c 1.59287,0 2.88103,-1.290459 2.88103,-2.878713 l 0,-31.661221 z m -11.5287,14.483594 -5.66739,0 0,5.575054 -5.757424,0 0,-5.575054 -5.75743,0 0,5.575054 -5.935179,0 0,-5.575054 -5.577361,0 0,5.575054 -5.757425,0 0,-5.575054 -5.755118,0 0,5.575054 -5.759732,0 0,-5.575054 -5.845149,0 0,5.575054 -5.755117,0 0,-5.667393 5.845149,0 0,-5.757425 -5.845149,0 0,-5.665086 5.755117,0 0,5.575053 5.845149,0 0,-5.575053 5.759732,0 0,5.575053 5.755118,0 0,-5.575053 5.757425,0 0,5.575053 5.577361,0 0,-5.575053 5.935179,0 0,5.575053 5.75743,0 0,-5.575053 5.757424,0 0,5.575053 5.66739,0 0,-5.575053 5.75513,0 0,5.665086 -5.66278,0 0,5.757425 5.66278,0 0,5.667393 -5.75513,0 z m -40.207327,-5.849764 -5.847456,0 0,5.757425 5.847456,0 z m 11.422511,0 -5.759733,0 0,5.757425 5.759733,0 z m 11.512542,0 -5.752808,0 0,5.757425 5.752808,0 z m 11.512544,0 -5.75512,0 0,5.757425 5.75512,0 z m 0.2724,20.148677 -40.657484,0 0,-5.667392 40.657484,0 z"
+                   style="fill:#ffffff;fill-rule:evenodd" />
+                </svg>
+            </a>
+            <a class="button1  local-anchor" href="#/about/update" ng-show="newVersionAvailable != null">
+                <span class="new-version-indicator">New version released!</span>
+            </a>
+        </div>
+        
+    </div>
+    
+    <div class="column-two">
+        
+            <div ng-show="state == 'noFeeds'" class="center  welcome">
+                <h1>Welcome to Sputnik!</h1>
+                <p><br/>Now you can add your first feed</p>
+                <p>
+                    <a class="button2  local-anchor" href="#/add">
+                        <svg class="button2__icon" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                            width="128px" height="128px" viewBox="0 0 128 128" enable-background="new 0 0 128 128" xml:space="preserve">
+                        <path class="button2__icon-obj" d="m 62.15625,24.59375 c -3.057715,0.111918 -5.925666,0.757314 -5.90533,4 l 0,27.65717 -27.65717,0 c -3.706,0 -4,3.54208 -4,7.24908 0,3.706 0.294076,7.272767 4,7.24908 l 27.65717,0 0,27.65717 c 0,3.707 3.54308,4 7.24908,4 3.708,0 6.456344,-0.3023 6.71875,-4 l 0,-27.65717 28.1875,0 c 3.707,0 4,-3.54308 4,-7.24908 0,-3.707 -0.293,-7.24908 -4,-7.24908 l -28.1875,0 0,-27.65717 c 0,-3.706 -3.01075,-4 -6.71875,-4 -0.46325,0 -0.906934,-0.01599 -1.34375,0 z"/>
+                        </svg>
+                        add feed
+                    </a>
+                </p>
+                <p>or</p>
+                <p>
+                    <a class="button2  local-anchor" href="#/importExport">
+                        <svg class="button2__icon" width="128px" height="128px" viewBox="0 0 128 128" enable-background="new 0 0 128 128">
+                            <path class="button2__icon-obj"
+                                d="M57.625,69.902l49.624,0.292l-16.1-16.099l31.981-31.981l-16.996-16.99    L74.16,37.105L57.647,20.589L57.625,69.902z M127.277,70.021l-12.24-12.414l0.225,57.419l-102.094,0.056l0.097-101.832L70.375,13    L57.625,0.25H13C5.959,0.25,0.25,5.959,0.25,13v102c0,7.041,5.709,12.75,12.75,12.75h102c7.041,0,12.75-5.709,12.75-12.75    L127.277,70.021z"/>
+                        </svg>
+                        import feeds from file
+                    </a>
+                </p>
+            </div>
+            
+            <div ng-show="state == 'refreshing'" class="center  refreshing">
+                <div class="refreshing__label">
+                    Checking what's new...
+                </div>
+                <div class="refreshing__progress">
+                    <div class="refreshing__progress-bar"></div>
+                </div>
+            </div>
+            
+            <div ng-show="state == 'articles'" class="articles-sheet  scroll  js-external-link  js-articles-list">
+                <div class="articles-sheet__element">
+                    <h1 class="articles-sheet__category">
+                        <span ng-hide="selectedItem.type == 'feed' && selectedItem.siteUrl">
+                            {{selectedItem.name}}
+                        </span>
+                        <a ng-show="selectedItem.type == 'feed' && selectedItem.siteUrl" ng-href="{{selectedItem.siteUrl}}">
+                            {{selectedItem.name}}
+                        </a>
+                    </h1>
+                    <a class="button2"
+                       ng-click="markCategoryItemAsRead(selectedItem)"
+                       ng-class="{'button2--inactive': selectedItem.unreadArticlesCount == 0}">
+                        <svg class="button2__icon"
+                            width="128px" height="128px" viewBox="0 0 128 128">
+                            <path class="button2__icon-obj" d="m 53.137425,98.563519 c -1.31855,1.31855 -3.471404,1.31855 -4.797247,0 l -1.064758,-1.066217 0,0 -1.136229,-1.13477 -4.992695,-4.999988 c -0.02188,-0.02188 -0.01459,-0.04813 -0.02917,-0.06272 L 18.227937,68.241244 c -1.325843,-1.317092 -1.325843,-3.471404 0,-4.795789 l 7.195141,-7.202433 c 1.333136,-1.324385 3.478697,-1.324385 4.810374,0 L 50.765785,76.937256 93.948299,33.756201 c 1.317092,-1.325843 3.471404,-1.325843 4.797247,0 l 7.195144,7.202433 c 1.33167,1.325843 1.33167,3.471404 0,4.803082 z"/>
+                        </svg>
+                        mark as read everything below
+                    </a>
+                </div>
+                
+                <div ng-show="days.length == 0" class="articles-sheet__element">
+                    <br/>
+                    Nothing new to read, check again later.
+                </div>
+                
+                <div ng-repeat="day in days">
+                    <div id="{{day.id}}" class="articles-sheet__element  day-label">
+                        {{day.name}}
+                    </div>
+                    <div ng-repeat="artData in day.articles">
+                        <article></article>
+                    </div>
+                </div>
+            </div>
+        
+    </div>
+
+</div>

@@ -1,0 +1,18 @@
+{
+  "insertOutput": 0, 
+  "parseRegex": "", 
+  "doNotOpenOutputWindow": 0, 
+  "keyboard_shortcut": "F5", 
+  "name": "unit tests (F5)", 
+  "operateOnSelection": 0, 
+  "value": [
+    "jasmine-node spec"
+  ], 
+  "parseOutput": 0, 
+  "version": "1.0.11", 
+  "env": "", 
+  "showParsedOutputList": 0, 
+  "type": "command", 
+  "cwd": "%p/app", 
+  "runIn": "command-output-window"
+}

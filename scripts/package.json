@@ -1,0 +1,9 @@
+{
+  "name": "sputnik-news-reader-build-scripts",
+  "version": "1.0.0",
+  "dependencies": {
+    "less": "1.x.x",
+    "q": "*",
+    "wrench": "1.x.x"
+  }
+}
