@@ -40,8 +40,6 @@ sputnik.factory('feedsService', function (configService, faviconsService) {
         savingFired = false;
         var deferred = Q.defer();
         
-        console.log('save feeds.json')
-        
         var feedsDataJson = JSON.stringify(fc.getBaseModel(), null, 4);
         fs.writeFile(feedsDataPath, feedsDataJson, function (err) {
             deferred.resolve();

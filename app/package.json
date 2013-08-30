@@ -1,7 +1,7 @@
 {
   "name": "sputnik-news-reader",
   "main": "index.html",
-  "version": "0.7.3",
+  "version": "0.8.0",
   "webkit": {
     "plugin": false
   },

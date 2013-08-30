@@ -77,8 +77,10 @@ exports.make = function (baseModel, articlesCentral) {
             return baseModel.favicon;
         },
         set favicon(path) {
-            baseModel.favicon = path;
-            events.emit('modelChanged', 'favicon');
+            if (baseModel.favicon !== path) {
+                baseModel.favicon = path;
+                events.emit('modelChanged', 'favicon');
+            }
         },
         get hasFavicon() {
             return (typeof baseModel.favicon === 'string');
