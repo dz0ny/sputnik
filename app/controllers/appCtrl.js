@@ -100,37 +100,40 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
         }
     });
     
-    // catch all link clicks and open them in external browser
-    angular.element('body').on('click', function (ev) {
+    //-----------------------------------------------------
+    // Open link in system default browser,
+    // if has class 'js-external-link' somewhere in DOM chain.
+    //-----------------------------------------------------
+    
+    function supportExternalLinks(event) {
         
         var href;
         var isExternal = false;
         
-        function crawlEventChain(element) {
+        function crawlDom(element) {
             if (element.nodeName.toLowerCase() === 'a') {
                 href = element.getAttribute('href');
             }
-            if (angular.element(element).hasClass('js-external-link')) {
+            if (element.classList.contains('js-external-link')) {
                 isExternal = true;
             }
-            if (element.parentElement) {
-                crawlEventChain(element.parentElement);
+            
+            if (href && isExternal) {
+                gui.Shell.openExternal(href);
+                event.preventDefault();
+            } else if (element.parentElement) {
+                crawlDom(element.parentElement);
             }
         }
         
-        if (ev.originalEvent) {
-            crawlEventChain(ev.originalEvent.target);
-        }
-        
-        if (href && isExternal) {
-            gui.Shell.openExternal(href);
-            ev.preventDefault();
-        }
-    });
+        crawlDom(event.target);
+    }
     
-    //-----------------------
-    // CHECKING FOR NEW VERSION
-    //-----------------------
+    document.body.addEventListener('click', supportExternalLinks, false);
+    
+    //-----------------------------------------------------
+    // Checking for new version
+    //-----------------------------------------------------
     
     function checkNewVersion() {
         updateService.checkUpdates()
@@ -156,9 +159,9 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     displayNewVersionAvailable();
     //checkNewVersion();
     
-    //-----------------------
-    // SCHEDULE
-    //-----------------------
+    //-----------------------------------------------------
+    // Schedule
+    //-----------------------------------------------------
     
     function daysToMs(numDays) {
         return numDays * 24 * 60 * 60 * 1000;
