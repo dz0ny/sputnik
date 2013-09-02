@@ -48,21 +48,19 @@ sputnik.factory('feedsService', function (configService, faviconsService) {
         return deferred.promise;
     }
     
-    function getFeeds() {
+    function downloadFeeds(feedsList) {
         var deferred = Q.defer();
         
-        function onProgress(progress) {
+        feedsHarvester.getFeeds(feedsList)
+        .progress(function (progress) {
             deferred.notify(progress);
-        }
-        
-        feedsHarvester.getFeeds(fc.feedUrls)
-        .progress(onProgress)
-        .done(function (harvest) {
+        })
+        .then(function (harvest) {
             fc.digest(harvest);
             var articlesObsolescenceTime = Date.now() - 4 * 7 * 24 * 60 * 60 * 1000; // now - 4 weeks
-            ac.digest(harvest, articlesObsolescenceTime)
-            .then(deferred.resolve);
-        });
+            return ac.digest(harvest, articlesObsolescenceTime);
+        })
+        .then(deferred.resolve);
         
         return deferred.promise;
     }
@@ -88,7 +86,7 @@ sputnik.factory('feedsService', function (configService, faviconsService) {
         get articlesDbSize() {
             return ac.getDbSize();
         },
-        getFeeds: getFeeds,
+        downloadFeeds: downloadFeeds,
         loadParticularFeed: loadParticularFeed,
         discoverFeedUrl: feedsHarvester.discoverFeedUrl
     };

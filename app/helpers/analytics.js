@@ -2,7 +2,10 @@
 
 var request = require('request');
 var querystring = require('querystring');
+
 var url;
+var guid;
+var version;
 
 function hit(payload) {
     request.post({
@@ -12,16 +15,23 @@ function hit(payload) {
     });
 }
 
-exports.init = function (analyticsUrl) {
+exports.init = function (analyticsUrl, appGuid, appVersion) {
     url = analyticsUrl;
+    guid = appGuid;
+    version = appVersion;
 };
 
-exports.dailyHit = function (analyticsObj) {
-    analyticsObj.type = 'dailyHit';
-    hit(analyticsObj);
+exports.dailyHit = function () {
+    var a = {};
+    a.guid = guid;
+    a.version = version;
+    a.type = 'dailyHit';
+    hit(a);
 };
 
-exports.monthlyReaport = function (analyticsObj) {
-    analyticsObj.type = 'monthlyReaport';
-    hit(analyticsObj);
+exports.monthlyReaport = function (a) {
+    a.guid = guid;
+    a.version = version;
+    a.type = 'monthlyReaport';
+    hit(a);
 };

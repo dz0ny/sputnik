@@ -5,6 +5,7 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     var os = require('os');
     var analytics = require('./helpers/analytics');
     var gui = require('nw.gui');
+    
     var win = gui.Window.get();
     var scheduleInterval;
     var messageForReadCtrl = 'firstRun';
@@ -12,7 +13,11 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     $scope.config = configService;
     
     updateService.init(configService.checkUpdatesUrl, configService.version);
-    analytics.init(configService.analyticsUrl);
+    analytics.init(configService.analyticsUrl, configService.guid, configService.version);
+    
+    //-----------------------------------------------------
+    // Preserving window size
+    //-----------------------------------------------------
     
     var winState = configService.windowState;
     if (winState) {
@@ -55,20 +60,23 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
         win.maximize();
     }
     
+    //-----------------------------------------------------
+    // App about to close
+    //-----------------------------------------------------
     
-    
-    // operations to do when application is about to close
     win.on('close', function () {
         this.hide(); // pretend to be closed already
         saveWindowState();
         this.close(true);
     });
     
-    
+    //-----------------------------------------------------
+    // Misc feeds stuff
+    //-----------------------------------------------------
     
     function updateFaviconFor(feed) {
         faviconsService.updateOne(feed)
-        .done(function () {
+        .then(function () {
             $scope.$apply();
         });
     }
@@ -148,7 +156,7 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     function displayNewVersionAvailable() {
         if (configService.newAppVersion) {
             if (configService.newAppVersion.version === configService.version) {
-                // app was updated
+                // app was updated, so we can erase this info
                 configService.newAppVersion = null;
             } else {
                 $scope.newVersionAvailable = configService.newAppVersion.version;
@@ -167,13 +175,6 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
         return numDays * 24 * 60 * 60 * 1000;
     }
     
-    function getAnalyticsBaseObj() {
-        return {
-            guid: configService.guid,
-            version: configService.version
-        };
-    }
-    
     function walkThroughSchedule() {
         
         var today = new Date();
@@ -183,7 +184,7 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
         var lastAnalyticsDailyHit = configService.getSchedule('lastAnalyticsDailyHit');
         var todayDate = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
         if (todayDate !== lastAnalyticsDailyHit) {
-            analytics.dailyHit(getAnalyticsBaseObj());
+            analytics.dailyHit();
             configService.setSchedule('lastAnalyticsDailyHit', todayDate);
         }
         
@@ -193,19 +194,20 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
             // first reaport in 7 days
             configService.setSchedule('nextAnalyticsMonthlyReaport', nowTime + daysToMs(7));
         } else if (nextAnalyticsMonthlyReaport <= nowTime) {
-            var a = getAnalyticsBaseObj();
-            a.feedsCount = feedsService.central.all.length;
-            a.categoriesCount = feedsService.central.categoriesNames.length;
-            a.articlesDbSize = feedsService.articlesDbSize;
-            a.platform = configService.targetPlatform + '|' + os.platform() + '|' + os.type() + '|' + os.release();
-            a.windowSize = win.width + 'x' + win.height;
-            analytics.monthlyReaport(a);
+            analytics.monthlyReaport({
+                feedsCount: feedsService.central.all.length,
+                categoriesCount: feedsService.central.categoriesNames.length,
+                articlesDbSize: feedsService.articlesDbSize,
+                platform: configService.targetPlatform + '|' + os.platform() + '|' + os.type() + '|' + os.release(),
+                windowSize: win.width + 'x' + win.height
+            });
             configService.setSchedule('nextAnalyticsMonthlyReaport', nowTime + daysToMs(30));
         }
         
+        // check for new version every 7 days
         var nextCheckForUpdates = configService.getSchedule('nextCheckForUpdates') || 0;
         if (nextCheckForUpdates <= nowTime) {
-            configService.setSchedule('nextCheckForUpdates', nowTime + daysToMs(14));
+            configService.setSchedule('nextCheckForUpdates', nowTime + daysToMs(7));
             checkNewVersion();
         }
         
@@ -213,7 +215,7 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
         var nextFaviconUpdate = configService.getSchedule('nextFaviconUpdate') || 0;
         if (nextFaviconUpdate <= nowTime) {
             faviconsService.updateMany(feedsService.central.all);
-            configService.setSchedule('nextFaviconUpdate', nowTime + daysToMs(2));
+            configService.setSchedule('nextFaviconUpdate', nowTime + daysToMs(7));
         }
         
     }

@@ -12,19 +12,23 @@ function ReadCtrl($scope, $window, feedsService) {
             return;
         }
         
-        feedsService.getFeeds()
+        feedsService.downloadFeeds(feedsService.central.all)
         .progress(function (progress) {
             var ratio = Math.round(progress.completed / progress.total * 100);
             angular.element('.refreshing__progress-bar').css('width', ratio + '%');
         })
-        .done(loadUnreadArticles);
+        .then(loadUnreadArticles);
+        
         $scope.state = 'refreshing';
         angular.element('.refreshing__progress-bar').css('width', '0%');
     }
     
+    /**
+     * 
+     */
     function loadUnreadArticles() {
         feedsService.central.loadUnreadArticles()
-        .done(function () {
+        .then(function () {
             showArticles();
             $scope.$apply();
         });
@@ -37,15 +41,14 @@ function ReadCtrl($scope, $window, feedsService) {
         // little hack to scroll to top every time articles list was updated,
         // but articles list is display: none sometimes and then you have
         // to wait for it to appear to set the scroll
-        var articlesList = angular.element('.js-articles-list');
         var interval = setInterval(function () {
+            var articlesList = angular.element('.js-articles-list');
             if (articlesList.scrollTop() !== 0) {
                 articlesList.scrollTop(0);
-                lazyLoadImages();
             } else {
                 clearInterval(interval);
-                lazyLoadImages();
             }
+            lazyLoadImages();
         }, 1);
     }
     
@@ -89,6 +92,10 @@ function ReadCtrl($scope, $window, feedsService) {
         showArticles();
     }
     
+    //-----------------------------------------------------
+    // Lazy load images
+    //-----------------------------------------------------
+    
     function lazyLoadImages() {
         angular.element('img[data-lazy-src]').each(function (i, elem) {
             var currScroll = angular.element(".js-articles-list").scrollTop();
@@ -98,11 +105,16 @@ function ReadCtrl($scope, $window, feedsService) {
                 var jqElem = angular.element(elem);
                 var src = jqElem.attr('data-lazy-src');
                 jqElem.attr('src', src);
-                //jqElem.removeAttr('data-lazy-src');
+                jqElem.removeAttr('data-lazy-src');
             }
         });
     }
+    
     angular.element(".js-articles-list").scroll(lazyLoadImages);
+    
+    //-----------------------------------------------------
+    // Scrolling to next unread article
+    //-----------------------------------------------------
     
     function findNextUnreadArticleId(referenceArticleGuid) {
         var mode = 'searchingReference';
