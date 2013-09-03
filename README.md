@@ -4,8 +4,9 @@ Open source RSS reader built upon [node-webkit](https://github.com/rogerwang/nod
 ##Where to get it?
 To download latest version visit [Sputnik's website](http://sputnik.szwacz.com).
 
-##License
+##License (GPLv3)
 Sputnik News Reader
+
 Copyright (C) 2013 Jakub Szwacz <sputnik@szwacz.com>
 
 This program is free software: you can redistribute it and/or modify
