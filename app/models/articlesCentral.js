@@ -22,7 +22,7 @@ exports.make = function (dbPath) {
         return null;
     }
     
-    function digestFeed(feedUrl, articles, articlesObsolescenceTime) {
+    function digestFeed(feedUrl, articles) {
         var deferred = Q.defer();
         var totalOperations = 0;
         var completedOperations = 0;
@@ -58,13 +58,6 @@ exports.make = function (dbPath) {
                         pubTime = Date.now();
                     }
                     
-                    // if article is older than articlesObsolescenceTime mark
-                    // it as read to prevent unread-article-overwhelming
-                    var isRead = false;
-                    if (pubTime <= articlesObsolescenceTime) {
-                        isRead = true;
-                    }
-                    
                     // create article document and save it
                     var art = {
                         feedUrl: feedUrl,
@@ -73,7 +66,7 @@ exports.make = function (dbPath) {
                         title: article.title,
                         content: article.description,
                         pubTime: pubTime,
-                        isRead: isRead,
+                        isRead: false,
                         isAbandoned: false
                     };
                     if (article.enclosures) {
@@ -117,14 +110,14 @@ exports.make = function (dbPath) {
         return deferred.promise;
     }
     
-    function digest(harvest, articlesObsolescenceTime) {
+    function digest(harvest) {
         var digestPromise = Q.defer();
         
         function doDigest() {
             digestInProgress = digestPromise.promise;
             var feedsPromises = [];
             harvest.forEach(function (parsedFeed) {
-                feedsPromises.push(digestFeed(parsedFeed.url, parsedFeed.articles, articlesObsolescenceTime));
+                feedsPromises.push(digestFeed(parsedFeed.url, parsedFeed.articles));
             });
             Q.all(feedsPromises).then(function () {
                 digestInProgress = null;
@@ -142,21 +135,20 @@ exports.make = function (dbPath) {
         return digestPromise.promise;
     }
     
-    function getUnreadForFeed(feedUrl) {
+    function getArticles(feedUrls, from, to) {
         var deferred = Q.defer();
         
-        db.find({ feedUrl: feedUrl, isRead: false }, function (err, docs) {
-            deferred.resolve(docs);
-        });
-        
-        return deferred.promise;
-    }
-    
-    function getAllForFeed(feedUrl) {
-        var deferred = Q.defer();
-        
-        db.find({ feedUrl: feedUrl }, function (err, docs) {
-            deferred.resolve(docs);
+        db.find({ feedUrl: { $in: feedUrls } }, function (err, docs) {
+            
+            // sort chronologically
+            docs.sort(function (a, b) {
+                return b.pubTime - a.pubTime;
+            });
+            
+            deferred.resolve({
+                articles: docs.slice(from, to),
+                numAll: docs.length
+            });
         });
         
         return deferred.promise;
@@ -164,8 +156,19 @@ exports.make = function (dbPath) {
     
     function setArticleReadState(guid, readState) {
         var deferred = Q.defer();
+        
         db.update({ guid: guid }, { $set: { isRead: readState } }, function (err, numReplaced) {
             deferred.resolve();
+        });
+        
+        return deferred.promise;
+    }
+    
+    function countUnread(feedUrl) {
+        var deferred = Q.defer();
+        
+        db.count({ feedUrl: feedUrl, isRead: false }, function (err, count) {
+            deferred.resolve(count);
         });
         
         return deferred.promise;
@@ -209,9 +212,9 @@ exports.make = function (dbPath) {
     
     return {
         digest: digest,
-        getUnreadForFeed: getUnreadForFeed,
-        getAllForFeed: getAllForFeed,
+        getArticles: getArticles,
         setArticleReadState: setArticleReadState,
+        countUnread: countUnread,
         sweepArticlesOlderThan: sweepArticlesOlderThan,
         removeAllForFeed: removeAllForFeed,
         getDbSize: getDbSize

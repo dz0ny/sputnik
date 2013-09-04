@@ -92,9 +92,9 @@ sputnik.factory('faviconsService', function (configService) {
     }
     
     function deleteFaviconIfHas(feed) {
-        if (feed.hasFavicon) {
+        if (feed.favicon) {
             fs.unlink(feed.favicon, function (err) {});
-            feed.favicon = undefined;
+            feed.setFavicon(undefined);
         }
     }
     
@@ -109,7 +109,7 @@ sputnik.factory('faviconsService', function (configService) {
             var filename = crypto.createHash('md5').update(feed.url).digest('hex') + '.' + result.format;
             var filePath = storeDir + '/' + filename;
             fs.writeFile(filePath, result.faviconBytes, function (err) {
-                feed.favicon = filePath;
+                feed.setFavicon(filePath);
                 deferred.resolve();
             });
         }, function () {

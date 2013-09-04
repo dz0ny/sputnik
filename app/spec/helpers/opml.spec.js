@@ -43,7 +43,7 @@ describe('OPML importing', function () {
         opml.import(opmlContent, fc.addFeed);
         
         expect(fc.tree.length).toBe(5);
-        expect(fc.all.length).toBe(8);
+        expect(fc.feeds.length).toBe(8);
         
         expect(fc.tree[0].type).toBe('category');
         expect(fc.tree[0].name).toBe('Category A');
@@ -69,7 +69,7 @@ describe('OPML importing', function () {
         var fc = feedsCentral.make();
         opml.import('<data><item>Hello!</item></data>', fc, 0);
         expect(fc.tree.length).toBe(0);
-        expect(fc.all.length).toBe(0);
+        expect(fc.feeds.length).toBe(0);
     });
 });
 

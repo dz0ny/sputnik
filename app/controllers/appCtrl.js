@@ -74,27 +74,19 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     // Misc feeds stuff
     //-----------------------------------------------------
     
-    function updateFaviconFor(feed) {
-        faviconsService.updateOne(feed)
-        .then(function () {
-            $scope.$apply();
-        });
-    }
-    
-    feedsService.central.events.on('feedAdded', function (feed) {
+    $scope.$on('feedAdded', function (evt, feed) {
         // if new feed added, try to load favicon for it
         if (feed.siteUrl) {
-            updateFaviconFor(feed);
-        } else {
-            // if no siteUrl specified new feed will be updating its model
-            // and finally we should get the site url
-            feed.events.on('modelChanged', function (whatChanged) {
-                if (whatChanged === 'siteUrl') {
-                    updateFaviconFor(feed);
-                }
+            faviconsService.updateOne(feed)
+            .then(function () {
+                $scope.$apply();
             });
         }
         messageForReadCtrl = 'feedAdded';
+    });
+    
+    feedsService.central.events.on('feedRemoved', function (feed) {
+        faviconsService.deleteFaviconIfHas(feed);
     });
     
     $scope.$on('importFeedsSuccess', function (evt) {
@@ -195,7 +187,7 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
             configService.setSchedule('nextAnalyticsMonthlyReaport', nowTime + daysToMs(7));
         } else if (nextAnalyticsMonthlyReaport <= nowTime) {
             analytics.monthlyReaport({
-                feedsCount: feedsService.central.all.length,
+                feedsCount: feedsService.central.feeds.length,
                 categoriesCount: feedsService.central.categoriesNames.length,
                 articlesDbSize: feedsService.articlesDbSize,
                 platform: configService.targetPlatform + '|' + os.platform() + '|' + os.type() + '|' + os.release(),
@@ -214,7 +206,7 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
         // update all feeds' favicons every 7 days
         var nextFaviconUpdate = configService.getSchedule('nextFaviconUpdate') || 0;
         if (nextFaviconUpdate <= nowTime) {
-            faviconsService.updateMany(feedsService.central.all);
+            faviconsService.updateMany(feedsService.central.feeds);
             configService.setSchedule('nextFaviconUpdate', nowTime + daysToMs(7));
         }
         

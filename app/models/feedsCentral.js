@@ -1,15 +1,19 @@
 'use strict';
 
 var Q = require('q');
-var feedModel = require('./feed');
 var EventEmitter = require('events').EventEmitter;
 
-exports.make = function (initialData, articlesCentral) {
+exports.make = function (initialData) {
+    
     var categories = [];
     var feeds = [];
     var tree = [];
     var treeObsolete = false;
     var events = new EventEmitter();
+    
+    //-----------------------------------------------------
+    // Init
+    //-----------------------------------------------------
     
     if (initialData) {
         categories = initialData.categories;
@@ -17,6 +21,10 @@ exports.make = function (initialData, articlesCentral) {
             constructFeedObject(feedBaseModel);
         });
     }
+    
+    //-----------------------------------------------------
+    // Helper functions
+    //-----------------------------------------------------
     
     function localeSort(a, b) {
         return a.localeCompare(b);
@@ -29,11 +37,9 @@ exports.make = function (initialData, articlesCentral) {
         if (a.type === 'feed' && b.type === 'category') {
             return 1;
         }
-        if (a.type === 'category' && b.type === 'category') {
+        if ((a.type === 'category' && b.type === 'category') ||
+            (a.type === 'feed' && b.type === 'feed')) {
             return a.name.localeCompare(b.name);
-        }
-        if (a.type === 'feed' && b.type === 'feed') {
-            return a.title.localeCompare(b.title);
         }
         return 0;
     }
@@ -47,9 +53,6 @@ exports.make = function (initialData, articlesCentral) {
                 type: "category",
                 name: categoryName,
                 feeds: categoryFeeds,
-                get articles() {
-                    return getArticlesOf(this.feeds);
-                },
                 get unreadArticlesCount() {
                     return countUnreadArticlesIn(this.feeds);
                 }
@@ -83,15 +86,46 @@ exports.make = function (initialData, articlesCentral) {
         return f;
     }
     
-    function constructFeedObject(baseModel) {
-        var feed = feedModel.make(baseModel, articlesCentral);
-        feed.events.on('modelChanged', function () {
-            events.emit('modelChanged');
+    function constructFeedObject(feedModel) {
+        feedModel.type = 'feed';
+        
+        // contains array with itself
+        feedModel.feeds = [feedModel];
+        
+        feedModel.__defineGetter__('name', function () {
+            return this.title || '...';
         });
-        feeds.push(feed);
+        
+        feedModel.setFavicon = function (path) {
+            if (this.favicon !== path) {
+                this.favicon = path;
+                events.emit('modelChanged');
+            }
+        };
+        
+        feedModel.setName = function (name) {
+            if (this.title !== name) {
+                this.title = name;
+                events.emit('modelChanged');
+            }
+        };
+        
+        feedModel.setSiteUrl = function (siteUrl) {
+            if (this.siteUrl !== siteUrl) {
+                this.siteUrl = siteUrl;
+                events.emit('modelChanged');
+            }
+        };
+        
+        feeds.push(feedModel);
         treeObsolete = true;
-        return feed;
+        
+        return feedModel;
     }
+    
+    //-----------------------------------------------------
+    // API methods
+    //-----------------------------------------------------
     
     function addFeed(baseModel) {
         var feed = getFeedByUrl(baseModel.url);
@@ -115,7 +149,6 @@ exports.make = function (initialData, articlesCentral) {
         for (var i = 0; i < feeds.length; i += 1) {
             if (feeds[i].url === url) {
                 var feed = feeds.splice(i, 1)[0];
-                feed.events.removeAllListeners('modelChanged');
                 treeObsolete = true;
                 
                 events.emit('feedRemoved', feed);
@@ -184,37 +217,23 @@ exports.make = function (initialData, articlesCentral) {
             "feeds": []
         };
         feeds.forEach(function (feed) {
-            model.feeds.push(feed.baseModel);
+            model.feeds.push({
+                "url": feed.url,
+                "siteUrl": feed.siteUrl,
+                "title": feed.name,
+                "category": feed.category,
+                "favicon": feed.favicon
+            });
         });
         return model;
     }
     
     function digest(harvest) {
-        var someFeedsMetaChanged = false;
         harvest.forEach(function (parsedFeed) {
             var feed = getFeedByUrl(parsedFeed.url);
-            if (feed.digestMeta(parsedFeed.meta)) {
-                someFeedsMetaChanged = true;
-            }
+            feed.setName(parsedFeed.meta.title);
+            feed.setSiteUrl(parsedFeed.meta.link);
         });
-        if (someFeedsMetaChanged) {
-            events.emit('modelChanged');
-        }
-    }
-    
-    function loadUnreadArticles() {
-        var deferred = Q.defer();
-        
-        var promises = [];
-        feeds.forEach(function (feed) {
-            promises.push(feed.loadUnreadArticles());
-        });
-        
-        Q.all(promises).done(function () {
-            deferred.resolve();
-        });
-        
-        return deferred.promise;
     }
     
     function getArticlesOf(feedsList) {
@@ -226,15 +245,9 @@ exports.make = function (initialData, articlesCentral) {
     }
     
     function countUnreadArticlesIn(feedsList) {
-        var count = 0;
-        for (var i = 0; i < feedsList.length; i += 1) {
-            for (var j = 0; j < feedsList[i].articles.length; j += 1) {
-                if (!feedsList[i].articles[j].isRead) {
-                    count += 1;
-                }
-            }
-        }
-        return count;
+        return feedsList.reduce(function (prev, curr) {
+            return prev + curr.unreadArticlesCount;
+        }, 0);
     }
     
     return {
@@ -244,7 +257,7 @@ exports.make = function (initialData, articlesCentral) {
             }
             return tree;
         },
-        get all() {
+        get feeds() {
             return feeds.concat();
         },
         get name() {
@@ -253,18 +266,10 @@ exports.make = function (initialData, articlesCentral) {
         get categoriesNames() {
             return categories.concat();
         },
-        get feedUrls() {
-            return feeds.map(function (feed) {
-                return feed.url;
-            });
-        },
-        get articles() {
-            return getArticlesOf(feeds);
-        },
         get unreadArticlesCount() {
-            return countUnreadArticlesIn(feeds);
+            return countUnreadArticlesIn(feeds) || '?';
         },
-        loadUnreadArticles: loadUnreadArticles,
+        getFeedByUrl: getFeedByUrl,
         addFeed: addFeed,
         changeFeedCategory: changeFeedCategory,
         removeFeed: removeFeed,

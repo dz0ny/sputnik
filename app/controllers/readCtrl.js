@@ -4,38 +4,53 @@ function ReadCtrl($scope, $window, feedsService) {
     
     var organizer = require('./helpers/articlesOrganizer');
     
+    var pageIndex = 0;
+    var articlesPerPage = 50;
+    
     $scope.state = 'notInitiated';
     
-    function refreshFeeds() {
+    function downloadFeeds() {
         
         if ($scope.state === 'noFeeds' || $scope.state === 'refreshing') {
             return;
         }
         
-        feedsService.downloadFeeds(feedsService.central.all)
+        feedsService.downloadFeeds()
         .progress(function (progress) {
             var ratio = Math.round(progress.completed / progress.total * 100);
             angular.element('.refreshing__progress-bar').css('width', ratio + '%');
         })
-        .then(loadUnreadArticles);
+        .then(showArticles);
         
         $scope.state = 'refreshing';
         angular.element('.refreshing__progress-bar').css('width', '0%');
     }
     
-    /**
-     * 
-     */
-    function loadUnreadArticles() {
-        feedsService.central.loadUnreadArticles()
-        .then(function () {
-            showArticles();
+    function showArticles() {
+        var from = pageIndex * articlesPerPage;
+        var to = from + articlesPerPage;
+        
+        console.log("pagination from: " + from + " to: " + to);
+        
+        var feedUrls = $scope.selectedItem.feeds.map(function (feed) {
+            return feed.url;
+        });
+        
+        feedsService.getArticles(feedUrls, from, to)
+        .then(function (result) {
+            
+            $scope.isPrevPage = (from > 0);
+            $scope.isNextPage = (to <= result.numAll);
+            
+            console.log("result.numAll: " + result.numAll);
+            
+            renderArticles(result.articles);
             $scope.$apply();
         });
     }
     
-    function showArticles() {
-        $scope.days = organizer.organizeByDays($scope.selectedItem.articles);
+    function renderArticles(articles) {
+        $scope.days = organizer.organizeByDays(articles);
         $scope.state = 'articles';
         
         // little hack to scroll to top every time articles list was updated,
@@ -56,12 +71,27 @@ function ReadCtrl($scope, $window, feedsService) {
     $scope.all = feedsService.central;
     $scope.days = [];
     
-    $scope.refresh = refreshFeeds;
+    $scope.refresh = downloadFeeds;
     
     $scope.selectedItem = $scope.all;
     $scope.selectItem = function (item) {
         $scope.selectedItem = item;
+        pageIndex = 0;
         if ($scope.state !== 'noFeeds' && $scope.state !== 'refreshing') {
+            showArticles();
+        }
+    };
+    
+    $scope.prevPage = function () {
+        if ($scope.isPrevPage) {
+            pageIndex -= 1;
+            showArticles();
+        }
+    };
+    
+    $scope.nextPage = function () {
+        if ($scope.isNextPage) {
+            pageIndex += 1;
             showArticles();
         }
     };
@@ -72,18 +102,16 @@ function ReadCtrl($scope, $window, feedsService) {
         });
     };
     
-    if (feedsService.central.all.length === 0) {
+    if (feedsService.central.feeds.length === 0) {
         $scope.state = 'noFeeds';
     }
     
     $scope.$emit('readCtrlInstantiated', function (message) {
         switch (message) {
         case 'feedAdded':
-            loadUnreadArticles();
-            break;
         case 'feedsImported':
         case 'firstRun':
-            refreshFeeds();
+            downloadFeeds();
             break;
         }
     });

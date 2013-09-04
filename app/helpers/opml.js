@@ -53,8 +53,8 @@ exports.export = function (tree) {
     var builder = require('xmlbuilder');
     
     function feedAttributes(xmlElement, feed) {
-        xmlElement.att('text', feed.title);
-        xmlElement.att('title', feed.title);
+        xmlElement.att('text', feed.name);
+        xmlElement.att('title', feed.name);
         xmlElement.att('type', 'rss');
         xmlElement.att('xmlUrl', feed.url);
         xmlElement.att('htmlUrl', feed.siteUrl);

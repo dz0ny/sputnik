@@ -40,7 +40,33 @@ describe('feedsCentral', function () {
     it('should init without data', function () {
         var fc = feedsCentral.make(null);
         expect(fc.tree.length).toBe(0);
-        expect(fc.all.length).toBe(0);
+        expect(fc.feeds.length).toBe(0);
+    });
+    
+    it('| feed object spec', function () {
+        var fc = feedsCentral.make(null);
+        var f = fc.addFeed({
+            "url": "http://a.com/feed/",
+            "siteUrl": "http://a.com",
+            "title": "Site A",
+            "category": "Category 1",
+            "favicon": "./path/to/favicon.png"
+        });
+        
+        expect(f.type).toBe('feed');
+        expect(f.url).toBe('http://a.com/feed/');
+        expect(f.siteUrl).toBe('http://a.com');
+        expect(f.name).toBe('Site A');
+        expect(f.favicon).toBe('./path/to/favicon.png');
+        
+        f.setName('ABC');
+        expect(f.name).toBe('ABC');
+        
+        f.setSiteUrl('something.com');
+        expect(f.siteUrl).toBe('something.com');
+        
+        f.setFavicon('favicon.gif');
+        expect(f.favicon).toBe('favicon.gif');
     });
     
     it('should add new feed and set defaults', function () {
@@ -52,10 +78,10 @@ describe('feedsCentral', function () {
         expect(fc.tree[0].type).toBe('feed');
         expect(fc.tree[0].url).toBe('http://a.com/feed/');
         expect(fc.tree[0].siteUrl).toBe(undefined);
-        expect(fc.tree[0].title).toBe('...');
+        expect(fc.tree[0].name).toBe('...');
         expect(fc.tree[0].favicon).toBe(undefined);
-        expect(fc.all.length).toBe(1);
-        expect(fc.all[0] === fc.tree[0]).toBe(true); // it should be the same instance in two different places
+        expect(fc.feeds.length).toBe(1);
+        expect(fc.feeds[0] === fc.tree[0]).toBe(true); // it should be the same instance in two different places
     });
     
     it('should add new feed with proper data', function () {
@@ -71,7 +97,7 @@ describe('feedsCentral', function () {
         expect(fc.tree[0].type).toBe('feed');
         expect(fc.tree[0].url).toBe('http://a.com/feed/');
         expect(fc.tree[0].siteUrl).toBe('http://a.com');
-        expect(fc.tree[0].title).toBe('Site A');
+        expect(fc.tree[0].name).toBe('Site A');
         expect(fc.tree[0].favicon).toBe('./path/to/favicon.png');
     });
     
@@ -82,7 +108,7 @@ describe('feedsCentral', function () {
         expect(fc.tree[0].type).toBe('category');
         expect(fc.tree[0].name).toBe('Cool Category');
         expect(fc.tree[0].feeds.length).toBe(0);
-        expect(fc.all.length).toBe(0);
+        expect(fc.feeds.length).toBe(0);
     });
     
     it('should have list of categories names ordered alphabetically', function () {
@@ -152,12 +178,12 @@ describe('feedsCentral', function () {
         expect(fc.tree[0].name).toBe('CategoryA');
         expect(fc.tree[1].name).toBe('CategoryB');
         expect(fc.tree[2].name).toBe('CategoryC');
-        expect(fc.tree[3].title).toBe('Site ą');
-        expect(fc.tree[4].title).toBe('Site ć');
-        expect(fc.tree[5].title).toBe('Site ż');
-        expect(fc.tree[0].feeds[0].title).toBe('Site4');
-        expect(fc.tree[0].feeds[1].title).toBe('Site5');
-        expect(fc.tree[0].feeds[2].title).toBe('Site6');
+        expect(fc.tree[3].name).toBe('Site ą');
+        expect(fc.tree[4].name).toBe('Site ć');
+        expect(fc.tree[5].name).toBe('Site ż');
+        expect(fc.tree[0].feeds[0].name).toBe('Site4');
+        expect(fc.tree[0].feeds[1].name).toBe('Site5');
+        expect(fc.tree[0].feeds[2].name).toBe('Site6');
     });
     
     it('should init with given data', function () {
@@ -167,14 +193,14 @@ describe('feedsCentral', function () {
         expect(fc.tree[0].feeds[0].url).toBe('http://a.com/feed');
         expect(fc.tree[1].type).toBe('feed');
         expect(fc.tree[1].url).toBe('http://b.com/feed');
-        expect(fc.all.length).toBe(3);
+        expect(fc.feeds.length).toBe(3);
     });
     
     it('should delete not-empty category', function () {
         var fc = feedsCentral.make(feedsData);
         fc.removeCategory('First Category');
         expect(fc.tree.length).toBe(2);
-        expect(fc.all.length).toBe(2);
+        expect(fc.feeds.length).toBe(2);
     });
     
     it('should return previous instance if same feed added many times', function () {
@@ -182,7 +208,7 @@ describe('feedsCentral', function () {
         var feed1 = fc.addFeed({ url: "http://a.com/feed" });
         var feed2 = fc.addFeed({ url: "http://a.com/feed" });
         expect(fc.tree.length).toBe(3);
-        expect(fc.all.length).toBe(3);
+        expect(fc.feeds.length).toBe(3);
         expect(feed1 === feed2).toBe(true);
     });
     
@@ -336,25 +362,29 @@ describe('feedsCentral', function () {
     
     it('should re-emit events when some of feeds model change', function () {
         var fc = feedsCentral.make(feedsData);
-        var feed = fc.all[0];
+        var feed = fc.feeds[0];
         
-        var meta = false;
+        var name = false;
+        var siteUrl = false;
         var favicon = false;
         
         fc.events.on('modelChanged', function () {
-            meta = true;
+            name = true;
         });
-        feed.digestMeta({
-            title: 'newTitle',
-            link: 'newlink'
+        feed.setName('newTitle');
+        
+        fc.events.on('modelChanged', function () {
+            siteUrl = true;
         });
+        feed.setSiteUrl('newlink');
         
         fc.events.on('modelChanged', function () {
             favicon = true;
         });
-        feed.favicon = 'new/favicon.png';
+        feed.setFavicon('new/favicon.png');
         
-        expect(meta).toBe(true);
+        expect(name).toBe(true);
+        expect(siteUrl).toBe(true);
         expect(favicon).toBe(true);
     });
     

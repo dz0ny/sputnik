@@ -63,9 +63,9 @@
                             ng-click="selectItem(feed)"
                             ng-class="{'feeds-tree__category--selected': selectedItem == feed}"
                             class="feeds-tree__category  feeds-tree__category--minor">
-                            <div ng-hide="feed.hasFavicon" class="feeds-tree__icon  feeds-tree__icon--none"/>
-                            <img ng-show="feed.hasFavicon" ng-src="{{feed.favicon}}" class="feeds-tree__icon"/>
-                            <span class="feeds-tree__category-name">{{feed.title}}</span>
+                            <div ng-hide="feed.favicon != undefined" class="feeds-tree__icon  feeds-tree__icon--none"/>
+                            <img ng-show="feed.favicon != undefined" ng-src="{{feed.favicon}}" class="feeds-tree__icon"/>
+                            <span class="feeds-tree__category-name">{{feed.name}}</span>
                             <span ng-show="feed.unreadArticlesCount > 0" class="feeds-tree__count">{{feed.unreadArticlesCount}}</span>
                         </h2>
                     </div>
@@ -74,9 +74,9 @@
                         ng-click="selectItem(item)"
                         ng-class="{'feeds-tree__category--selected': selectedItem == item}"
                         class="feeds-tree__category  feeds-tree__category--minor">
-                        <div ng-hide="item.hasFavicon" class="feeds-tree__icon  feeds-tree__icon--none"/>
-                        <img ng-show="item.hasFavicon" ng-src="{{item.favicon}}" class="feeds-tree__icon"/>
-                        <span class="feeds-tree__category-name">{{item.title}}</span>
+                        <div ng-hide="item.favicon != undefined" class="feeds-tree__icon  feeds-tree__icon--none"/>
+                        <img ng-show="item.favicon != undefined" ng-src="{{item.favicon}}" class="feeds-tree__icon"/>
+                        <span class="feeds-tree__category-name">{{item.name}}</span>
                         <span ng-show="item.unreadArticlesCount > 0" class="feeds-tree__count">{{item.unreadArticlesCount}}</span>
                     </h2>
                 </div>
@@ -173,6 +173,10 @@
                     Nothing new to read, check again later.
                 </div>
                 
+                <div ng-show="isPrevPage" class="articles-sheet__element  articles-sheet__controls">
+                    <button ng-click="prevPage()">Previous page</button>
+                </div>
+                
                 <div ng-repeat="day in days">
                     <div id="{{day.id}}" class="articles-sheet__element  day-label">
                         {{day.name}}
@@ -181,6 +185,11 @@
                         <article></article>
                     </div>
                 </div>
+                
+                <div ng-show="isNextPage" class="articles-sheet__element  articles-sheet__controls">
+                    <button ng-click="nextPage()">Next page</button>
+                </div>
+                
             </div>
         
     </div>

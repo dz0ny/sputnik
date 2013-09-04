@@ -1,79 +1,147 @@
 'use strict';
 
-sputnik.factory('feedsService', function (configService, faviconsService) {
+sputnik.factory('feedsService', function (configService) {
+    
     var Q = require('q');
     var fs = require('fs');
     var feedsCentral = require('./models/feedsCentral');
     var articlesCentral = require('./models/articlesCentral');
     var feedsHarvester = require('./helpers/feedsHarvester');
     
-    var feedsDataPath = configService.dataHomeFolder + '/feeds.json';
     var ac;
     var fc;
-    var savingFired = false;
+    var feedsDataSaving = false;
+    var feedsDataPath = configService.dataHomeFolder + '/feeds.json';
     
-    var feedsData = null;
-    if (fs.existsSync(feedsDataPath)) {
-        var dataJson = fs.readFileSync(feedsDataPath);
-        feedsData = JSON.parse(dataJson);
+    //-----------------------------------------------------
+    // Init
+    //-----------------------------------------------------
+    
+    function init() {
+        var feedsData = null;
+        if (fs.existsSync(feedsDataPath)) {
+            feedsData = JSON.parse(fs.readFileSync(feedsDataPath));
+        }
+        fc = feedsCentral.make(feedsData);
+        
+        ac = articlesCentral.make(configService.dataHomeFolder + '/articles.nedb');
     }
     
-    ac = articlesCentral.make(configService.dataHomeFolder + '/articles.nedb');
-    fc = feedsCentral.make(feedsData, ac);
+    init();
     
-    fc.events.on('modelChanged', function () {
-        // this event is fired if any single one property of feeds model has changed,
-        // so we can save actual state to disc
-        if (!savingFired) {
-            process.nextTick(save);
-            savingFired = true;
+    //-----------------------------------------------------
+    // Listening to events on model
+    //-----------------------------------------------------
+    
+    function saveFeedsData() {
+        
+        if (feedsDataSaving) {
+            return;
         }
-    });
+        
+        feedsDataSaving = true;
+        
+        // save on next tick, to write once many changes
+        // to model which could happen at this turn
+        process.nextTick(function () {
+            
+            feedsDataSaving = false;
+            
+            var feedsDataJson = JSON.stringify(fc.getBaseModel(), null, 4);
+            fs.writeFile(feedsDataPath, feedsDataJson, function (err) {
+                // saved
+            });
+        });
+    }
+    
+    // this event is fired if any single one property of any feed model has changed
+    fc.events.on('modelChanged', saveFeedsData);
     
     fc.events.on('feedRemoved', function (feed) {
-        // if feed was removed, delete also its data
-        faviconsService.deleteFaviconIfHas(feed);
+        // remove all articles for this feed
         ac.removeAllForFeed(feed.url);
     });
     
-    function save() {
-        savingFired = false;
+    function countUnreadArticlesForFeed(feed) {
         var deferred = Q.defer();
         
-        var feedsDataJson = JSON.stringify(fc.getBaseModel(), null, 4);
-        fs.writeFile(feedsDataPath, feedsDataJson, function (err) {
+        ac.countUnread(feed.url)
+        .then(function (count) {
+            feed.unreadArticlesCount = count;
             deferred.resolve();
         });
         
         return deferred.promise;
     }
     
-    function downloadFeeds(feedsList) {
+    function downloadListedFeeds(feedUrls) {
         var deferred = Q.defer();
         
-        feedsHarvester.getFeeds(feedsList)
+        feedsHarvester.getFeeds(feedUrls)
         .progress(function (progress) {
             deferred.notify(progress);
         })
         .then(function (harvest) {
             fc.digest(harvest);
-            var articlesObsolescenceTime = Date.now() - 4 * 7 * 24 * 60 * 60 * 1000; // now - 4 weeks
-            return ac.digest(harvest, articlesObsolescenceTime);
+            return ac.digest(harvest);
+        })
+        .then(function () {
+            return Q.all(fc.feeds.map(countUnreadArticlesForFeed));
         })
         .then(deferred.resolve);
         
         return deferred.promise;
     }
     
-    function loadParticularFeed(feedUrl) {
+    //-----------------------------------------------------
+    // API methods
+    //-----------------------------------------------------
+    
+    function addFeed(feedBaseModel) {
         var deferred = Q.defer();
         
-        feedsHarvester.getFeeds([feedUrl])
-        .done(function (harvest) {
-            fc.digest(harvest);
-            var articlesObsolescenceTime = Date.now() - 4 * 7 * 24 * 60 * 60 * 1000; // now - 4 weeks
-            ac.digest(harvest, articlesObsolescenceTime)
-            .then(deferred.resolve);
+        var feed = fc.addFeed(feedBaseModel);
+        
+        downloadListedFeeds([feed.url])
+        .then(function () {
+            deferred.resolve(feed);
+        });
+        
+        return deferred.promise;
+    }
+    
+    function downloadFeeds() {
+        var feedUrls = fc.feeds.map(function (feed) {
+            return feed.url;
+        });
+        
+        return downloadListedFeeds(feedUrls);
+    }
+    
+    function getArticles(feedUrls, from, to) {
+        var deferred = Q.defer();
+        
+        ac.getArticles(feedUrls, from, to)
+        .then(function (result) {
+            
+            // add to every article's base data extra stuff
+            result.articles.forEach(function (art) {
+                art.id = 'article-' + art._id;
+                art.content = art.content || '';
+                art.pubDate = new Date(art.pubTime);
+                
+                art.setIsRead = function (newIsRead) {
+                    this.isRead = newIsRead;
+                    return ac.setArticleReadState(this.guid, newIsRead)
+                    .then(function () {
+                        return countUnreadArticlesForFeed(this.feed);
+                    });
+                };
+                
+                art.feed = fc.getFeedByUrl(art.feedUrl);
+            });
+            
+            deferred.resolve(result);
         });
         
         return deferred.promise;
@@ -86,8 +154,9 @@ sputnik.factory('feedsService', function (configService, faviconsService) {
         get articlesDbSize() {
             return ac.getDbSize();
         },
+        discoverFeedUrl: feedsHarvester.discoverFeedUrl,
+        addFeed: addFeed,
         downloadFeeds: downloadFeeds,
-        loadParticularFeed: loadParticularFeed,
-        discoverFeedUrl: feedsHarvester.discoverFeedUrl
+        getArticles: getArticles
     };
 });

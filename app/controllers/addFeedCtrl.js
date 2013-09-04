@@ -87,12 +87,11 @@ function AddFeedCtrl($scope, $location, feedsService) {
             feedBaseModel.category = $scope.chosenCategory.value;
         }
         
-        feedsService.central.addFeed(feedBaseModel);
-        
         $scope.state = 'loadingFeed';
         
-        feedsService.loadParticularFeed(determinedFeedUrl)
-        .then(function () {
+        feedsService.addFeed(feedBaseModel)
+        .then(function (feed) {
+            $scope.$emit('feedAdded', feed);
             $location.path('/');
         });
     };
