@@ -132,7 +132,7 @@ function build(platform) {
         runtimeSource = './nw/macos/Sputnik.app';
         runtimeDestination = deployPath + '/Sputnik.app';
         appDestination = deployPath + '/Sputnik.app/Contents/Resources/app.nw';
-        dataHomeFolder = '../../../../data';
+        dataHomeFolder = '../../../data';
         
         wrench.copyDirSyncRecursive(runtimeSource, runtimeDestination);
         wrench.copyDirSyncRecursive(appSource, appDestination, {
