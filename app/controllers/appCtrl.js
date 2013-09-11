@@ -97,6 +97,7 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     
     $scope.$on('importFeedsSuccess', function (evt) {
         messageForReadCtrl = 'feedsImported';
+        faviconsService.updateMany(feedsService.central.feeds);
     });
     
     $scope.$on('readCtrlInstantiated', function (evt, messageFunc) {
