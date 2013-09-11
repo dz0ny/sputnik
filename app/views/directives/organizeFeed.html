@@ -1,6 +1,6 @@
 <div class="organize__feed">
-    <div ng-hide="item.favicon != undefined" class="organize__feed-icon  organize__feed-icon--none"/>
-    <img ng-show="item.favicon != undefined" src="{{feed.favicon}}" class="organize__feed-icon"/>
+    <div ng-hide="feed.favicon != undefined" class="organize__feed-icon  organize__feed-icon--none"/>
+    <img ng-show="feed.favicon != undefined" src="{{feed.favicon}}" class="organize__feed-icon"/>
     <span class="organize__feed-title">{{feed.title}}</span>
     <a class="button2" ng-click="showChangeCategory = !showChangeCategory">
         <span ng-hide="showChangeCategory">move to</span>
