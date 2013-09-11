@@ -158,8 +158,8 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     
     function displayNewVersionAvailable() {
         if (configService.newAppVersion) {
-            if (configService.newAppVersion.version === configService.version) {
-                // app was updated, so we can erase this info
+            if (!updateService.isNewerVersion(configService.newAppVersion.version)) {
+                // app was updated to latest version, so we can erase this info
                 configService.newAppVersion = null;
             } else {
                 $scope.newVersionAvailable = configService.newAppVersion.version;

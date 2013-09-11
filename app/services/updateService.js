@@ -13,11 +13,24 @@ sputnik.factory('updateService', function () {
         appVersion = passedAppVersion;
     }
     
+    /**
+     * Compares given version with application version,
+     * and returns true if given version is greater.
+     * Only format MAJOR.MINOR.PATCH is supported.
+     */
     function isNewerVersion(version) {
         var appV = appVersion.split('.');
         var v = version.split('.');
-        if (v[0] > appV[0] || v[1] > appV[1] || v[2] > appV[2]) {
+        if (v[0] > appV[0]) {
             return true;
+        } else if (v[0] === appV[0]) {
+            if (v[1] > appV[1]) {
+                return true;
+            } else if (v[1] === appV[1]) {
+                if (v[2] > appV[2]) {
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -42,6 +55,7 @@ sputnik.factory('updateService', function () {
     return  {
         init: init,
         checkUpdates: checkUpdates,
+        isNewerVersion: isNewerVersion
     };
     
 });
