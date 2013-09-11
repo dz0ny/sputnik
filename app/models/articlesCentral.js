@@ -39,8 +39,8 @@ exports.make = function (dbPath) {
             }
         }
         
-        // get from database all articles for this feed
-        db.find({ feedUrl: feedUrl }, function (err, storedArticles) {
+        // get from database all not abandoned articles for this feed
+        db.find({ feedUrl: feedUrl, isAbandoned: false }, function (err, storedArticles) {
             
             // now iterate through new articles and add only new ones
             articles.forEach(function (article) {
@@ -48,7 +48,12 @@ exports.make = function (dbPath) {
                 var index = indexOfArticle(storedArticles, article);
                 if (typeof index === 'number') {
                     // this article already exists in database
-                    storedArticles.splice(index, 1);
+                    var storedArt = storedArticles.splice(index, 1)[0];
+                    // update article content and title if changed
+                    if (storedArt.title !== article.title || storedArt.content !== article.description) {
+                        totalOperations += 1;
+                        db.update({ guid: storedArt.guid }, { $set: { title: article.title, content: article.description } }, {}, operationTick);
+                    }
                 } else {
                     
                     // this is new article, not yet in database
