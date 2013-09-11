@@ -17,7 +17,7 @@ sputnik.factory('feedsService', function (configService) {
     // Init
     //-----------------------------------------------------
     
-    function init() {
+    function internalInit() {
         var feedsData = null;
         if (fs.existsSync(feedsDataPath)) {
             feedsData = JSON.parse(fs.readFileSync(feedsDataPath));
@@ -27,7 +27,11 @@ sputnik.factory('feedsService', function (configService) {
         ac = articlesCentral.make(configService.dataHomeFolder + '/articles.nedb');
     }
     
-    init();
+    internalInit();
+    
+    function init() {
+        return ac.init();
+    }
     
     //-----------------------------------------------------
     // Listening to events on model
@@ -93,6 +97,29 @@ sputnik.factory('feedsService', function (configService) {
         return deferred.promise;
     }
     
+    function mapTagIds(tagsIds) {
+        if (!tagsIds) {
+            return [];
+        }
+        return tagsIds.map(function (tagId) {
+            for (var i = 0; i < ac.tags.length; i += 1) {
+                if (ac.tags[i]._id === tagId) {
+                    return ac.tags[i];
+                }
+            }
+            return null;
+        });
+    }
+    
+    function hasTag(art, tagId) {
+        for (var i = 0; i < art.tags.length; i += 1) {
+            if (art.tags[i]._id === tagId) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     //-----------------------------------------------------
     // API methods
     //-----------------------------------------------------
@@ -118,10 +145,10 @@ sputnik.factory('feedsService', function (configService) {
         return downloadListedFeeds(feedUrls);
     }
     
-    function getArticles(feedUrls, from, to) {
+    function getArticles(feedUrls, from, to, options) {
         var deferred = Q.defer();
         
-        ac.getArticles(feedUrls, from, to)
+        ac.getArticles(feedUrls, from, to, options)
         .then(function (result) {
             
             // add to every article's base data extra stuff
@@ -130,6 +157,8 @@ sputnik.factory('feedsService', function (configService) {
                 art.content = art.content || '';
                 art.pubDate = new Date(art.pubTime);
                 
+                art.tags = mapTagIds(art.tags);
+                
                 art.setIsRead = function (newIsRead) {
                     this.isRead = newIsRead;
                     return ac.setArticleReadState(this.guid, newIsRead)
@@ -137,6 +166,38 @@ sputnik.factory('feedsService', function (configService) {
                         return countUnreadArticlesForFeed(this.feed);
                     });
                 };
+                
+                art.toggleTag = function (tagId) {
+                    var deferred = Q.defer();
+                    
+                    var promise;
+                    if (hasTag(art, tagId)) {
+                        promise = ac.untagArticle(art.guid, tagId);
+                    } else {
+                        promise = ac.tagArticle(art.guid, tagId);
+                    }
+                    promise.then(function (article) {
+                        art.tags = mapTagIds(article.tags);
+                        deferred.resolve();
+                    });
+                    
+                    return deferred.promise;
+                };
+                
+                art.addNewTag = function (tagName) {
+                    var deferred = Q.defer();
+                    
+                    ac.addTag(tagName)
+                    .then(function (addedTag) {
+                        return ac.tagArticle(art.guid, addedTag._id)
+                        .then(function (article) {
+                            art.tags = mapTagIds(article.tags);
+                            deferred.resolve();
+                        });
+                    });
+                    
+                    return deferred.promise;
+                }
                 
                 art.feed = fc.getFeedByUrl(art.feedUrl);
             });
@@ -154,9 +215,15 @@ sputnik.factory('feedsService', function (configService) {
         get articlesDbSize() {
             return ac.getDbSize();
         },
+        get allTags() {
+            return ac.tags;
+        },
         discoverFeedUrl: feedsHarvester.discoverFeedUrl,
+        init: init,
         addFeed: addFeed,
         downloadFeeds: downloadFeeds,
-        getArticles: getArticles
+        getArticles: getArticles,
+        changeTagName: ac.changeTagName,
+        removeTag: ac.removeTag
     };
 });

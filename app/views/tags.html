@@ -1,0 +1,47 @@
+<div class="two-columns">
+    
+    <div class="column-one">
+        <div class="toolbar-on-left__container">
+            <div class="toolbar-on-left">
+                <a class="button2" href="#/">Go back</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="column-two">
+        
+        <div class="organize  scroll">
+        
+            <h1>Tags</h1>
+            
+            <p ng-show="allTags.length == 0">
+                You didn't specify any tags so far.
+            </p>
+            
+            <div ng-repeat="tag in allTags">
+                
+                <h2 class="organize__category-name">
+                    <span ng-hide="showRename">{{tag.name}}</span>
+                    <span ng-show="showRename">
+                        <input type="text" ng-model="newName"
+                            ng-init="newName = tag.name"/>
+                        <button ng-click="changeTagName(tag._id, newName); showRename = !showRename;">save</button>
+                    </span>
+                </h2>
+                <a class="button2" ng-click="showRename = !showRename">
+                    <span ng-hide="showRename">rename</span>
+                    <span ng-show="showRename">cancel</span>
+                </a>
+                <a class="button2" ng-click="showDelete = !showDelete">
+                    <span ng-hide="showDelete">delete</span>
+                    <span ng-show="showDelete">cancel</span>
+                </a>
+                <span ng-show="showDelete">Are you sure? <a class="button2" ng-click="removeTag(tag._id);  showRename = !showRename;">Yes, delete.</a></span>
+                
+            </div>
+        
+        </div>
+        
+    </div>
+    
+</div>

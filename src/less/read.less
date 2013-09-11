@@ -125,6 +125,16 @@
 .articles-sheet__category {
     margin-bottom: 0.3rem;
 }
+.articles-sheet__actions {
+    float: left;
+}
+.articles-sheet__tag-filter {
+    float: right;
+    font-size: 0.8rem;
+    select {
+        font-size: 0.8rem;
+    }
+}
 
 .articles-sheet__controls {
     margin-top: 1rem;
@@ -213,6 +223,7 @@
 }
 .article__actions--bottom {
     -webkit-justify-content: center;
+    position: relative;
     padding-top: 0.3rem;
     border-top: solid 1px #aaaaaa;
 }
@@ -287,6 +298,48 @@
         height: 6rem;
     }
 }
+
+.article__tags {
+    text-align: center;
+}
+.article__tag-item {
+    padding: 0.3rem 0.5rem;
+    margin-right: 0.2rem;
+    font-size: 0.8rem;
+    color: white;
+    background: #bebebe;
+}
+
+.article__pick-tag {
+    position: absolute;
+    bottom: 2rem;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 5px fade(#000000, 30%);
+}
+.article__pick-tag__add-new {
+    padding: 0.5rem;
+}
+.article__pick-tag__list {
+    max-height: 8rem !important;
+    padding: 0.5rem;
+}
+.article__pick-tag__item {
+    display: block;
+    padding: 0.2rem 0.5rem;
+    cursor: default;
+    &:hover {
+        background: #f4f4f4;
+    }
+}
+.article__pick-tag__item--selected {
+    color: white;
+    background: #bebebe;
+    &:hover {
+        background: #aeaeae;
+    }
+}
+
 /*.article__additional-actions {
     text-align: center;
 }

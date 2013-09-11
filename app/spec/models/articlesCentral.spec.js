@@ -353,4 +353,255 @@ describe('articlesCentral', function () {
         waitsFor(function () { return done; }, "timeout", 500);
     });
     
+    
+    
+    describe('articles tagging', function () {
+        
+        it('should init', function () {
+            var done = false;
+            var ac = articlesCentral.make();
+            expect(ac.tags.length).toBe(0);
+            ac.init()
+            .then(function () {
+                expect(ac.tags.length).toBe(0);
+                done = true;
+            });
+            waitsFor(function () { return done; }, "timeout", 500);
+        });
+        
+        it('should add tags', function () {
+            var done = false;
+            var ac = articlesCentral.make();
+            ac.init()
+            .then(function () {
+                return ac.addTag('tag1');
+            })
+            .then(function (addedTag) {
+                expect(ac.tags.length).toBe(1);
+                expect(ac.tags[0].name).toBe('tag1');
+                return ac.addTag('tag2');
+            })
+            .then(function (addedTag) {
+                expect(ac.tags.length).toBe(2);
+                expect(ac.tags[1].name).toBe('tag2');
+                done = true;
+            });
+            waitsFor(function () { return done; }, "timeout", 500);
+        });
+        
+        it('should not add 2 tags with the same name', function () {
+            var done = false;
+            var ac = articlesCentral.make();
+            var tag1;
+            ac.init()
+            .then(function () {
+                return ac.addTag('tag1');
+            })
+            .then(function (addedTag) {
+                tag1 = addedTag;
+                return ac.addTag('tag1');
+            })
+            .then(function (addedTag) {
+                expect(tag1._id).toBe(addedTag._id);
+                expect(ac.tags.length).toBe(1);
+                expect(ac.tags[0].name).toBe('tag1');
+                done = true;
+            });
+            waitsFor(function () { return done; }, "timeout", 500);
+        });
+        
+        it('should tag and untag articles', function () {
+            var done = false;
+            var ac = articlesCentral.make();
+            var tag1;
+            var tag2;
+            ac.init()
+            .then(function () {
+                return ac.digest(harvest1);
+            })
+            .then(function () {
+                return ac.addTag('tag1');
+            })
+            .then(function (addedTag) {
+                tag1 = addedTag;
+                return ac.addTag('tag2');
+            })
+            .then(function (addedTag) {
+                tag2 = addedTag;
+                return ac.tagArticle('link3', tag1._id);
+            })
+            .then(function (taggedArticle) {
+                return ac.untagArticle('link3', tag1._id);
+            })
+            .then(function (untaggedArticle) {
+                expect(untaggedArticle.guid).toBe('link3');
+                expect(untaggedArticle.tags).toBe(undefined);
+                return ac.tagArticle('link3', tag1._id);
+            })
+            .then(function (taggedArticle) {
+                return ac.getArticles(['http://a.com/feed'], 0, 100);
+            })
+            .then(function (result) {
+                var art = getArt(result.articles, 'link3');
+                expect(art.tags.length).toBe(1);
+                return ac.tagArticle('link3', tag2._id);
+            })
+            .then(function (taggedArticle) {
+                return ac.getArticles(['http://a.com/feed'], 0, 100);
+            })
+            .then(function (result) {
+                var art = getArt(result.articles, 'link3');
+                expect(art.tags.length).toBe(2);
+                return ac.untagArticle('link3', tag1._id);
+            })
+            .then(function (untaggedArticle) {
+                expect(untaggedArticle.guid).toBe('link3');
+                expect(untaggedArticle.tags.length).toBe(1);
+                expect(untaggedArticle.tags[0]).toBe(tag2._id);
+                return ac.getArticles(['http://a.com/feed'], 0, 100);
+            })
+            .then(function (result) {
+                var art = getArt(result.articles, 'link3');
+                expect(art.tags.length).toBe(1);
+                expect(art.tags[0]).toBe(tag2._id);
+                done = true;
+            });
+            waitsFor(function () { return done; }, "timeout", 500);
+        });
+        
+        it('should not tag article twice with same tag', function () {
+            var done = false;
+            var ac = articlesCentral.make();
+            var tag1;
+            ac.init()
+            .then(function () {
+                return ac.digest(harvest1);
+            })
+            .then(function () {
+                return ac.addTag('tag1');
+            })
+            .then(function (addedTag) {
+                tag1 = addedTag;
+                return ac.tagArticle('link3', tag1._id);
+            })
+            .then(function (taggedArticle) {
+                return ac.tagArticle('link3', tag1._id);
+            })
+            .then(function (taggedArticle) {
+                expect(taggedArticle.tags.length).toBe(1);
+                done = true;
+            });
+            waitsFor(function () { return done; }, "timeout", 500);
+        });
+        
+        it('should list all articles with given tag', function () {
+            var done = false;
+            var ac = articlesCentral.make();
+            var tag1;
+            ac.init()
+            .then(function () {
+                return ac.digest(harvest1);
+            })
+            .then(function () {
+                return ac.addTag('tag1');
+            })
+            .then(function (addedTag) {
+                tag1 = addedTag;
+                return ac.tagArticle('link3', tag1._id);
+            })
+            .then(function (taggedArticle) {
+                return ac.tagArticle('link1', tag1._id);
+            })
+            .then(function (taggedArticle) {
+                return ac.getArticles(['http://a.com/feed'], 0, 100, {
+                    tag: tag1._id
+                });
+            })
+            .then(function (result) {
+                expect(result.articles.length).toBe(2);
+                expect(result.articles[0].guid).toBe('link3');
+                expect(result.articles[1].guid).toBe('link1');
+                done = true;
+            });
+            waitsFor(function () { return done; }, "timeout", 500);
+        });
+        
+        it('should remove tag', function () {
+            var done = false;
+            var ac = articlesCentral.make();
+            var tag1;
+            ac.init()
+            .then(function () {
+                return ac.digest(harvest1);
+            })
+            .then(function () {
+                return ac.addTag('tag1');
+            })
+            .then(function (addedTag) {
+                tag1 = addedTag;
+                return ac.removeTag(tag1._id);
+            })
+            .then(function () {
+                expect(ac.tags.length).toBe(0);
+                done = true;
+            });
+            waitsFor(function () { return done; }, "timeout", 500);
+        });
+        
+        it('should remove tag, and its reference from articles', function () {
+            var done = false;
+            var ac = articlesCentral.make();
+            var tag1;
+            ac.init()
+            .then(function () {
+                return ac.digest(harvest1);
+            })
+            .then(function () {
+                return ac.addTag('tag1');
+            })
+            .then(function (addedTag) {
+                tag1 = addedTag;
+                return ac.tagArticle('link3', tag1._id);
+            })
+            .then(function (taggedArticle) {
+                return ac.tagArticle('link1', tag1._id);
+            })
+            .then(function (taggedArticle) {
+                return ac.removeTag(tag1._id);
+            })
+            .then(function () {
+                expect(ac.tags.length).toBe(0);
+                return ac.getArticles(['http://a.com/feed'], 0, 100, {
+                    tag: tag1._id
+                });
+            })
+            .then(function (result) {
+                expect(result.articles.length).toBe(0);
+                done = true;
+            });
+            waitsFor(function () { return done; }, "timeout", 500);
+        });
+        
+        it('should change tag name', function () {
+            var done = false;
+            var ac = articlesCentral.make();
+            var tag1;
+            ac.init()
+            .then(function () {
+                return ac.addTag('tag1');
+            })
+            .then(function (addedTag) {
+                tag1 = addedTag;
+                return ac.changeTagName(tag1._id, 'new name');
+            })
+            .then(function () {
+                expect(ac.tags.length).toBe(1);
+                expect(ac.tags[0].name).toBe('new name');
+                done = true;
+            });
+            waitsFor(function () { return done; }, "timeout", 500);
+        });
+        
+    });
+    
 });

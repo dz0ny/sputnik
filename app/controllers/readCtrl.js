@@ -36,7 +36,12 @@ function ReadCtrl($scope, $window, feedsService) {
             return feed.url;
         });
         
-        feedsService.getArticles(feedUrls, from, to)
+        var options = {};
+        if ($scope.selectedTag) {
+            options.tag = $scope.selectedTag._id;
+        }
+        
+        feedsService.getArticles(feedUrls, from, to, options)
         .then(function (result) {
             
             $scope.isPrevPage = (from > 0);
@@ -80,6 +85,10 @@ function ReadCtrl($scope, $window, feedsService) {
         if ($scope.state !== 'noFeeds' && $scope.state !== 'refreshing') {
             showArticles();
         }
+    };
+    
+    $scope.onTagSelected = function () {
+        showArticles();
     };
     
     $scope.prevPage = function () {

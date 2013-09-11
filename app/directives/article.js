@@ -77,6 +77,8 @@ sputnik.directive('article', function ($sanitize) {
             articleContent = lazyLoadImages(articleContent);
             $scope.articleContent = articleContent;
             
+            $scope.showPickTagMenu = false;
+            
             // when rollover title hilight 'see in browser' button
             element.find('.js-title').hover(function (evt) {
                 element.find('.js-see-in-browser').addClass('hovered');
@@ -86,6 +88,36 @@ sputnik.directive('article', function ($sanitize) {
             
             $scope.toggleIsRead = function () {
                 $scope.artData.setIsRead(!$scope.artData.isRead);
+            };
+            
+            $scope.toggleTag = function (tagId) {
+                $scope.artData.toggleTag(tagId)
+                .then(function () {
+                    $scope.showPickTagMenu = false;
+                    $scope.$apply();
+                });
+            };
+            
+            $scope.addNewTag = function () {
+                if (!$scope.newTagName || $scope.newTagName === '') {
+                    return;
+                }
+                $scope.artData.addNewTag($scope.newTagName)
+                .then(function () {
+                    $scope.newTagName = '';
+                    $scope.showPickTagMenu = false;
+                    $scope.$emit('tagsChanged');
+                    $scope.$apply();
+                });
+            };
+            
+            $scope.articleHasTag = function (tag) {
+                for (var i = 0; i < $scope.artData.tags.length; i += 1) {
+                    if ($scope.artData.tags[i]._id === tag._id) {
+                        return true;
+                    }
+                }
+                return false;
             };
             
             // right click anywhere on an article makes it read

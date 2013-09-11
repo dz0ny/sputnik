@@ -11,6 +11,12 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     var messageForReadCtrl = 'firstRun';
     
     $scope.config = configService;
+    $scope.allTags = [];
+    
+    feedsService.init()
+    .then(function () {
+        $scope.allTags = feedsService.allTags;
+    });
     
     updateService.init(configService.checkUpdatesUrl, configService.version);
     analytics.init(configService.analyticsUrl, configService.guid, configService.version);
@@ -98,6 +104,11 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
             messageFunc(messageForReadCtrl);
             messageForReadCtrl = undefined;
         }
+    });
+    
+    $scope.$on('tagsChanged', function (evt) {
+        $scope.allTags = feedsService.allTags;
+        $scope.$apply();
     });
     
     //-----------------------------------------------------

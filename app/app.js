@@ -15,6 +15,9 @@ sputnik.config(function ($routeProvider) {
     }).when('/organize', {
         controller: 'OrganizeCtrl',
         templateUrl: 'views/organize.html'
+    }).when('/tags', {
+        controller: 'TagsCtrl',
+        templateUrl: 'views/tags.html'
     }).when('/about/:subview', {
         controller: 'AboutCtrl',
         templateUrl: 'views/about/main.html'

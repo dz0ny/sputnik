@@ -11,6 +11,11 @@ exports.make = function (dbPath) {
     });
     
     var digestInProgress;
+    var tags = [];
+    
+    function init() {
+        return reloadTags();
+    }
     
     function indexOfArticle(list, article) {
         var guid = article.guid || article.link;
@@ -135,10 +140,16 @@ exports.make = function (dbPath) {
         return digestPromise.promise;
     }
     
-    function getArticles(feedUrls, from, to) {
+    function getArticles(feedUrls, from, to, options) {
         var deferred = Q.defer();
         
-        db.find({ feedUrl: { $in: feedUrls } }, function (err, docs) {
+        var query = { feedUrl: { $in: feedUrls } };
+        
+        if (options && options.tag) {
+            query.tags = options.tag;
+        }
+        
+        db.find(query, function (err, docs) {
             
             // sort chronologically
             docs.sort(function (a, b) {
@@ -210,13 +221,134 @@ exports.make = function (dbPath) {
         return fs.statSync(dbPath).size;
     }
     
+    //-----------------------------------------------------
+    // Tags
+    //-----------------------------------------------------
+    
+    function reloadTags() {
+        var deferred = Q.defer();
+        
+        db.find({ type: 'tag' }, function (err, docs) {
+            
+            docs.sort(function (a, b) {
+                return a.name.localeCompare(b.name);
+            });
+            
+            tags = docs;
+            
+            deferred.resolve();
+        });
+        
+        return deferred.promise;
+    }
+    
+    function addTag(tagName) {
+        var deferred = Q.defer();
+        
+        db.findOne({ type: 'tag', name: tagName }, function (err, doc) {
+            if (doc) {
+                deferred.resolve(doc);
+            } else {
+                db.insert({
+                    type: 'tag',
+                    name: tagName
+                }, function (err, newDoc) {
+                    reloadTags()
+                    .then(function () {
+                        deferred.resolve(newDoc);
+                    });
+                });
+            }
+        });
+        
+        return deferred.promise;
+    }
+    
+    function changeTagName(tagId, name) {
+        var deferred = Q.defer();
+        
+        db.update({ _id: tagId }, { $set: { name: name } }, {}, function () {
+            reloadTags()
+            .then(function () {
+                deferred.resolve();
+            });
+        });
+        
+        return deferred.promise;
+    }
+    
+    function tagArticle(artGuid, tagId) {
+        var deferred = Q.defer();
+        
+        db.update({ guid: artGuid }, { $addToSet: { tags: tagId } }, {}, function (err, numReplaced) {
+            db.findOne({ guid: artGuid }, function (err, doc) {
+                deferred.resolve(doc);
+            });
+        });
+        
+        return deferred.promise;
+    }
+    
+    function untagArticle(artGuid, tagId) {
+        var deferred = Q.defer();
+        
+        db.findOne({ guid: artGuid }, function (err, doc) {
+            var replacement = { $set: { tags: doc.tags } };
+            if (doc.tags) {
+                var index = doc.tags.indexOf(tagId);
+                doc.tags.splice(index, 1);
+                if (doc.tags.length === 0) {
+                    replacement = { $unset: { tags: true } };
+                    doc.tags = undefined;
+                }
+            }
+            db.update({ guid: artGuid }, replacement, {}, function (err) {
+                deferred.resolve(doc);
+            });
+        });
+        
+        return deferred.promise;
+    }
+    
+    function removeTag(tagId) {
+        var deferred = Q.defer();
+        
+        db.find({ tags: tagId }, function (err, docs) {
+            
+            var promises = docs.map(function (art) {
+                return untagArticle(art.guid, tagId);
+            });
+            
+            Q.all(promises)
+            .then(function () {
+                db.remove({ _id: tagId }, {}, function (err, numRemoved) {
+                    reloadTags()
+                    .then(deferred.resolve);
+                });
+            });
+        });
+        
+        return deferred.promise;
+    }
+    
     return {
+        init: init,
+        
         digest: digest,
         getArticles: getArticles,
         setArticleReadState: setArticleReadState,
         countUnread: countUnread,
         sweepArticlesOlderThan: sweepArticlesOlderThan,
         removeAllForFeed: removeAllForFeed,
-        getDbSize: getDbSize
+        getDbSize: getDbSize,
+        
+        get tags() {
+            return tags.concat();
+        },
+        addTag: addTag,
+        changeTagName: changeTagName,
+        tagArticle: tagArticle,
+        untagArticle: untagArticle,
+        removeTag: removeTag
     };
 }
