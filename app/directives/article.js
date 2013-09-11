@@ -1,6 +1,6 @@
 'use strict';
 
-sputnik.directive('article', function ($sanitize) {
+sputnik.directive('article', function ($sanitize, $sce) {
     
     var cheerio = require('cheerio');
     var urlUtil = require('url');
@@ -73,9 +73,17 @@ sputnik.directive('article', function ($sanitize) {
             
             var articleContent = $scope.artData.content;
             articleContent = processHtml(articleContent, $scope.artData.link);
-            articleContent = $sanitize(articleContent);
+            //console.log(articleContent)
+            try {
+                articleContent = $sanitize(articleContent);
+            } catch (err) {
+                // if not sanitized, kill it as insecure
+                articleContent = "Oops. Sorry, this article can't be displayed. See it in browser.";
+            }
+            
             articleContent = lazyLoadImages(articleContent);
-            $scope.articleContent = articleContent;
+            
+            $scope.articleContent = $sce.trustAsHtml(articleContent);
             
             $scope.showPickTagMenu = false;
             
