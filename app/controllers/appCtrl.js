@@ -25,46 +25,101 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     // Preserving window size
     //-----------------------------------------------------
     
-    var winState = configService.windowState;
-    if (winState) {
-        win.x = winState.x;
-        win.y = winState.y;
-        win.width = winState.width;
-        win.height = winState.height;
-    } else {
-        winState = {
-            mode: 'normal',
-            x: win.x,
-            y: win.y,
-            width: win.width,
-            height: win.height
-        };
+    var winState;
+    var currWinMode;
+    var resizeTimeout;
+    var isMaximizationEvent = false;
+    
+    function initWindowState() {
+        winState = configService.windowState || null;
+        
+        if (winState) {
+            currWinMode = winState.mode;
+            if (currWinMode === 'maximized') {
+                win.maximize();
+            } else {
+                restoreWindowState();
+            }
+        } else {
+            currWinMode = 'normal';
+            dumpWindowState();
+        }
+        
+        win.show();
     }
     
-    function saveWindowState() {
-        if (winState.mode === 'normal') {
+    function dumpWindowState() {
+        if (!winState) {
+            winState = {};
+        }
+        
+        // we don't want to save minimized state, only maximized or normal
+        if (currWinMode === 'maximized') {
+            winState.mode = 'maximized';
+        } else {
+            winState.mode = 'normal';
+        }
+        
+        // when window is maximized you want to preserve normal
+        // window dimensions to restore them later (even between sessions)
+        if (currWinMode === 'normal') {
             winState.x = win.x;
             winState.y = win.y;
             winState.width = win.width;
             winState.height = win.height;
         }
+    }
+    
+    function restoreWindowState() {
+        win.resizeTo(winState.width, winState.height);
+        win.moveTo(winState.x, winState.y);
+    }
+    
+    function saveWindowState() {
+        dumpWindowState();
         configService.windowState = winState;
     }
     
+    initWindowState();
+    
     win.on('maximize', function () {
-        winState.mode = 'maximized';
+        isMaximizationEvent = true;
+        currWinMode = 'maximized';
     });
+    
     win.on('unmaximize', function () {
-        winState.mode = 'normal';
-        win.resizeTo(winState.width, winState.height);
-        win.moveTo(winState.x, winState.y);
+        currWinMode = 'normal';
+        restoreWindowState();
     });
     
-    win.show();
+    win.on('minimize', function () {
+        currWinMode = 'minimized';
+    });
     
-    if (winState.mode === 'maximized') {
-        win.maximize();
-    }
+    win.on('restore', function () {
+        currWinMode = 'normal';
+    });
+    
+    win.window.addEventListener('resize', function () {
+        // resize event is fired many times on one resize action,
+        // this hack with setTiemout forces it to fire only once
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function () {
+            
+            // on MacOS you can resize maximized window, so it's no longer maximized
+            if (isMaximizationEvent) {
+                // first resize after maximization event should be ignored
+                isMaximizationEvent = false;
+            } else {
+                if (currWinMode === 'maximized') {
+                    currWinMode = 'normal';
+                }
+            }
+            
+            dumpWindowState();
+            
+        }, 500);
+    }, false);
     
     //-----------------------------------------------------
     // App about to close
