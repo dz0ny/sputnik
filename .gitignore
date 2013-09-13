@@ -1,6 +1,9 @@
 bower_components
 node_modules
 
+.komodotools
+*.komodoproject
+
 # compiled css
 /app/visual/css/*
 
