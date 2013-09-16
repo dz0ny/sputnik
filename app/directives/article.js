@@ -95,7 +95,10 @@ sputnik.directive('article', function ($sanitize, $sce) {
             });
             
             $scope.toggleIsRead = function () {
-                $scope.artData.setIsRead(!$scope.artData.isRead);
+                $scope.artData.setIsRead(!$scope.artData.isRead)
+                .then(function () {
+                    $scope.$emit('articleReadStateChange');
+                });
             };
             
             $scope.toggleTag = function (tagId) {
@@ -133,7 +136,12 @@ sputnik.directive('article', function ($sanitize, $sce) {
             element.bind('contextmenu', function(evt) {
                 $scope.$apply(function() {
                     evt.preventDefault();
-                    $scope.artData.setIsRead(true);
+                    
+                    $scope.artData.setIsRead(true)
+                    .then(function () {
+                        $scope.$emit('articleReadStateChange');
+                    });
+                    
                     $scope.$emit('articleReadDone', $scope.artData.guid);
                 });
             });

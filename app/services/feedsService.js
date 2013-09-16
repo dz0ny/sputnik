@@ -161,9 +161,10 @@ sputnik.factory('feedsService', function (configService) {
                 
                 art.setIsRead = function (newIsRead) {
                     this.isRead = newIsRead;
+                    var that = this;
                     return ac.setArticleReadState(this.guid, newIsRead)
                     .then(function () {
-                        return countUnreadArticlesForFeed(this.feed);
+                        return countUnreadArticlesForFeed(that.feed);
                     });
                 };
                 

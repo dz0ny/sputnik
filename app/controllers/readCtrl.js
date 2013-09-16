@@ -2,6 +2,7 @@
 
 function ReadCtrl($scope, $window, feedsService) {
     
+    var Q = require('q');
     var organizer = require('./helpers/articlesOrganizer');
     
     var pageIndex = 0;
@@ -105,15 +106,28 @@ function ReadCtrl($scope, $window, feedsService) {
         }
     };
     
-    $scope.markCategoryItemAsRead = function (categoryItem) {
-        categoryItem.articles.forEach(function (article) {
-            article.setIsRead(true);
+    $scope.markCategoryAsRead = function () {
+        var promises = [];
+        $scope.days.forEach(function (day) {
+            day.articles.forEach(function (art) {
+                if (!art.isRead) {
+                    promises.push(art.setIsRead(true));
+                }
+            }); 
+        });
+        Q.all(promises)
+        .then(function () {
+            $scope.$apply();
         });
     };
     
     if (feedsService.central.feeds.length === 0) {
         $scope.state = 'noFeeds';
     }
+    
+    $scope.$on('articleReadStateChange', function () {
+        $scope.$apply();
+    });
     
     $scope.$emit('readCtrlInstantiated', function (message) {
         switch (message) {
