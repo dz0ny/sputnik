@@ -205,26 +205,27 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     function checkForUpdates() {
         updateService.checkUpdates()
         .then(function (newVersion) {
-            configService.newAppVersion = {
+            localStorage.newAppVersion = JSON.stringify({
                 version: newVersion
-            };
+            });
             displayNewVersionAvailable();
         });
     }
     
     function displayNewVersionAvailable() {
-        if (configService.newAppVersion) {
-            if (!updateService.isNewerVersion(configService.newAppVersion.version)) {
+        var newAppVersion = JSON.parse(localStorage.newAppVersion || 'null');
+        if (newAppVersion) {
+            if (!updateService.isNewerVersion(newAppVersion.version)) {
                 // app was updated to latest version, so we can erase this info
-                configService.newAppVersion = null;
+                localStorage.removeItem('newAppVersion');
             } else {
-                $scope.newVersionAvailable = configService.newAppVersion.version;
+                $scope.newVersionAvailable = newAppVersion.version;
             }
         }
     }
     
     displayNewVersionAvailable();
-    //checkNewVersion();
+    checkForUpdates();
     
     //-----------------------------------------------------
     // Schedule

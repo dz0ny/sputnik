@@ -1,8 +1,10 @@
 'use strict';
 
 sputnik.factory('configService', function () {
+    
     var fs = require('fs');
     var gui = require('nw.gui');
+    
     var appConf = JSON.parse(fs.readFileSync('./appConfig.json'));
     var guid;
     
@@ -13,14 +15,6 @@ sputnik.factory('configService', function () {
         dataHomeFolder = '../data';
     }
     
-    var dataPath = dataHomeFolder + '/config.json';
-    var config = {};
-    
-    // in this directory all data are stored
-    if (!fs.existsSync(dataHomeFolder)) {
-        fs.mkdirSync(dataHomeFolder);
-    }
-    
     function generateGuid() {
         var crypto = require('crypto');
         var rand = crypto.randomBytes(8).toString('hex');
@@ -28,21 +22,16 @@ sputnik.factory('configService', function () {
         return crypto.createHash('md5').update(rand + now).digest('hex');
     }
     
-    function save() {
-        fs.writeFileSync(dataPath, JSON.stringify(config, null, 4));
-    }
-    
-    if (fs.existsSync(dataPath)) {
-        config = JSON.parse(fs.readFileSync(dataPath));
-    }
-    
     guid = localStorage.guid;
     if (!guid) {
         // legacy from v0.7.0
         // guid was stored in config.json
-        var config = JSON.parse(fs.readFileSync(dataPath));
-        guid = config.guid;
-        localStorage.guid = guid;
+        var filepath = dataHomeFolder + '/config.json';
+        if (fs.existsSync(filepath)) {
+            var config = JSON.parse(fs.readFileSync(filepath));
+            guid = config.guid;
+            localStorage.guid = guid;
+        }
     }
     if (!guid) {
         localStorage.guid = generateGuid();
@@ -50,7 +39,6 @@ sputnik.factory('configService', function () {
     }
     
     return  {
-        
         get version() {
             return gui.App.manifest.version;
         },
@@ -74,14 +62,6 @@ sputnik.factory('configService', function () {
         },
         get checkUpdatesUrl() {
             return appConf.checkUpdatesUrl;
-        },
-        
-        get newAppVersion() {
-            return config.newAppVersion;
-        },
-        set newAppVersion(value) {
-            config.newAppVersion = value;
-            save();
         }
     };
 });
