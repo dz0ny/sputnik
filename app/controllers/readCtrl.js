@@ -145,7 +145,8 @@ function ReadCtrl($scope, $window, feedsService) {
         angular.element('img[data-lazy-src]').each(function (i, elem) {
             var currScroll = angular.element(".js-articles-list").scrollTop();
             var range = $window.outerHeight * 5;
-            if (elem.offsetTop < currScroll + range) {
+            if (elem.offsetTop >= currScroll &&
+                elem.offsetTop < currScroll + range) {
                 var jqElem = angular.element(elem);
                 var src = jqElem.attr('data-lazy-src');
                 jqElem.attr('src', src);
