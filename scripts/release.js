@@ -46,7 +46,6 @@ var version = JSON.parse(fs.readFileSync('app/package.json')).version;
 
 // folder where built files will end up
 var workingPath = '../release';
-var deployPath = workingPath + '/Sputnik';
 
 // if working path folder exists clear it
 if (fs.existsSync(workingPath)) {
@@ -59,13 +58,13 @@ fs.mkdirSync(workingPath);
 // App
 //-----------------------------------------------
 
-function zip(destFile) {
+function zip(sourceFile, destFile) {
     var deferred = Q.defer();
     
     process.stdout.write('Packing to ' + destFile);
     
     childProcess.execFile(__dirname + "/7zip/7za.exe",
-        ["a", destFile, "Sputnik" ],
+        ["a", destFile, sourceFile ],
         { cwd: workingPath },
     function (error, stdout, stderr) {
         if (error) {
@@ -80,22 +79,26 @@ function zip(destFile) {
 }
 
 function build(platform) {
+    var deployPath;
     var runtimeSource;
-    var runtimeDestination = deployPath + '/app';
+    var runtimeDestination;
     var appSource = './app';
-    var appDestination = runtimeDestination;
-    var dataHomeFolder = '../data';
+    var appDestination;
+    var folderName;
     var zipName = 'sputnik-' + version + '-' + platform + '.zip';
     var deferred = Q.defer();
     
     process.stdout.write('Building app for: ' + platform);
     
-    fs.mkdirSync(deployPath);
-    
     
     switch (platform) {
     case 'windows':
+        deployPath = workingPath + '/Sputnik';
         runtimeSource = './nw/windows';
+        runtimeDestination = deployPath + '/app';
+        appDestination = runtimeDestination;
+        
+        fs.mkdirSync(deployPath);
         
         wrench.copyDirSyncRecursive(appSource, appDestination, {
             filter: /^spec$/, //exclude spec folder
@@ -107,54 +110,40 @@ function build(platform) {
         
         copyFile('src/release/windows/sputnik.exe', deployPath + '/sputnik.exe');
         
+        folderName = 'Sputnik';
         filenameWindows = zipName;
         
         break;
     
-    case 'linux64':
-        runtimeSource = './nw/linux64';
-        runtimeDestination = deployPath + '/app';
-        appDestination = runtimeDestination;
-        dataHomeFolder = '../data';
-        
-        wrench.copyDirSyncRecursive(appSource, appDestination, {
-            filter: /^spec$/, //exclude spec folder
-        });
-        
-        copyFile(runtimeSource + '/nw', runtimeDestination + '/sputnik');
-        copyFile(runtimeSource + '/nw.pak', runtimeDestination + '/nw.pak');
-        
-        copyFile('src/release/linux/sputnik', deployPath + '/sputnik');
-        
-        break;
-    
     case 'macos':
-        runtimeSource = './nw/macos/Sputnik.app';
-        runtimeDestination = deployPath + '/Sputnik.app';
-        appDestination = deployPath + '/Sputnik.app/Contents/Resources/app.nw';
-        dataHomeFolder = '../../../data';
+        deployPath = workingPath + '/Sputnik.app';
+        runtimeSource = './nw/macos/node-webkit.app';
+        runtimeDestination = deployPath;
+        appDestination = deployPath + '/Contents/Resources/app.nw';
         
         wrench.copyDirSyncRecursive(runtimeSource, runtimeDestination);
         wrench.copyDirSyncRecursive(appSource, appDestination, {
             filter: /^spec$/, //exclude spec folder
         });
         
-        copyFile('src/release/macos/Info.plist', runtimeDestination + '/Contents/Info.plist');
+        var infoFile = fs.readFileSync('src/release/macos/Info.plist', 'utf8');
+        infoFile = infoFile.replace('{{sputnikVersion}}', version);
+        fs.writeFileSync(runtimeDestination + '/Contents/Info.plist', infoFile, 'utf8');
+        
         copyFile('src/release/macos/icon.icns', runtimeDestination + '/Contents/Resources/icon.icns');
         
         // delete nw icon
         fs.unlinkSync(runtimeDestination + '/Contents/Resources/nw.icns');
         
+        folderName = 'Sputnik.app';
         filenameMacos = zipName;
         
         break;
     }
     
     
-    //copyFile('license.txt', deployPath + '/license.txt');
-    
-    
     overwriteJsonProperties(appDestination + '/package.json', {
+        name: 'Sputnik',
         window: {
             toolbar: false
         }
@@ -162,7 +151,6 @@ function build(platform) {
 
     overwriteJsonProperties(appDestination + '/appConfig.json', {
         targetPlatform: platform,
-        dataHomeFolder: dataHomeFolder,
         websiteUrl: 'http://sputnik.szwacz.com',
         websiteUrlUpdate: 'http://sputnik.szwacz.com/update',
         analyticsUrl: 'http://sputnik.szwacz.com/analytics/hit.php',
@@ -171,7 +159,7 @@ function build(platform) {
     
     console.log(' - DONE');
     
-    zip(zipName)
+    zip(folderName, zipName)
     .then(function (filename) {
         wrench.rmdirSyncRecursive(deployPath);
         deferred.resolve(filename);

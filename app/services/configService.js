@@ -4,12 +4,20 @@ sputnik.factory('configService', function () {
     var fs = require('fs');
     var gui = require('nw.gui');
     var appConf = JSON.parse(fs.readFileSync('./appConfig.json'));
-    var dataPath = appConf.dataHomeFolder + '/config.json';
+    
+    var dataHomeFolder = appConf.dataHomeFolder;
+    if (appConf.targetPlatform === 'macos') {
+        dataHomeFolder = gui.App.dataPath[0];
+    } else {
+        dataHomeFolder = '../data';
+    }
+    
+    var dataPath = dataHomeFolder + '/config.json';
     var config = {};
     
     // in this directory all data are stored
-    if (!fs.existsSync(appConf.dataHomeFolder)) {
-        fs.mkdirSync(appConf.dataHomeFolder);
+    if (!fs.existsSync(dataHomeFolder)) {
+        fs.mkdirSync(dataHomeFolder);
     }
     
     function generateGuid() {
@@ -44,7 +52,7 @@ sputnik.factory('configService', function () {
             return appConf.targetPlatform;
         },
         get dataHomeFolder() {
-            return appConf.dataHomeFolder;
+            return dataHomeFolder;
         },
         
         get websiteUrl() {

@@ -1,6 +1,6 @@
 0.9.0 (in progress)
 -------------------
-* BREAKING CHANGE - MAC OS: Path to data folder has changed to inside Sputnik.app
+* BREAKING CHANGE ON MAC OS: Data are now stored in ~/Library/Application Support/Sputnik
 * Always show unread articles, even after refresh
 * Articles pagination
 * Tagging of articles
