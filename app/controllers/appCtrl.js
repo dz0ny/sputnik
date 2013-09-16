@@ -202,7 +202,7 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     // Checking for new version
     //-----------------------------------------------------
     
-    function checkNewVersion() {
+    function checkForUpdates() {
         updateService.checkUpdates()
         .then(function (newVersion) {
             configService.newAppVersion = {
@@ -236,23 +236,23 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     
     function walkThroughSchedule() {
         
+        var schedule = JSON.parse(localStorage.schedule || '{}');
+        
         var today = new Date();
         var nowTime = Date.now();
         
         // once every day send analytics daily hit
-        var lastAnalyticsDailyHit = configService.getSchedule('lastAnalyticsDailyHit');
         var todayDate = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-        if (todayDate !== lastAnalyticsDailyHit) {
+        if (todayDate !== schedule.lastAnalyticsDailyHit) {
             analytics.dailyHit();
-            configService.setSchedule('lastAnalyticsDailyHit', todayDate);
+            schedule.lastAnalyticsDailyHit = todayDate;
         }
         
         // once every month send reaport about basic usage informations
-        var nextAnalyticsMonthlyReaport = configService.getSchedule('nextAnalyticsMonthlyReaport') || 0;
-        if (nextAnalyticsMonthlyReaport === 0) {
+        if (!schedule.nextAnalyticsMonthlyReaport) {
             // first reaport in 7 days
-            configService.setSchedule('nextAnalyticsMonthlyReaport', nowTime + daysToMs(7));
-        } else if (nextAnalyticsMonthlyReaport <= nowTime) {
+            schedule.nextAnalyticsMonthlyReaport = nowTime + daysToMs(7);
+        } else if (schedule.nextAnalyticsMonthlyReaport <= nowTime) {
             analytics.monthlyReaport({
                 feedsCount: feedsService.central.feeds.length,
                 categoriesCount: feedsService.central.categoriesNames.length,
@@ -260,23 +260,23 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
                 platform: configService.targetPlatform + '|' + os.platform() + '|' + os.type() + '|' + os.release(),
                 windowSize: win.width + 'x' + win.height
             });
-            configService.setSchedule('nextAnalyticsMonthlyReaport', nowTime + daysToMs(30));
+            schedule.nextAnalyticsMonthlyReaport = nowTime + daysToMs(30);
         }
         
         // check for new version every 7 days
-        var nextCheckForUpdates = configService.getSchedule('nextCheckForUpdates') || 0;
-        if (nextCheckForUpdates <= nowTime) {
-            configService.setSchedule('nextCheckForUpdates', nowTime + daysToMs(7));
-            checkNewVersion();
+        if (!schedule.nextCheckForUpdates || schedule.nextCheckForUpdates <= nowTime) {
+            schedule.nextCheckForUpdates = nowTime + daysToMs(7);
+            checkForUpdates();
         }
         
         // update all feeds' favicons every 7 days
-        var nextFaviconUpdate = configService.getSchedule('nextFaviconUpdate') || 0;
-        if (nextFaviconUpdate <= nowTime) {
+        if (!schedule.nextFaviconUpdate || schedule.nextFaviconUpdate <= nowTime) {
             faviconsService.updateMany(feedsService.central.feeds);
-            configService.setSchedule('nextFaviconUpdate', nowTime + daysToMs(7));
+            schedule.nextFaviconUpdate = nowTime + daysToMs(7);
         }
         
+        // save changed schedule after every run
+        localStorage.schedule = JSON.stringify(schedule);
     }
     
     // every 30min walk through schedule

@@ -39,9 +39,6 @@ sputnik.factory('configService', function () {
         config.guid = generateGuid();
         save();
     }
-    if (!config.schedules) {
-        config.schedules = {};
-    }
     
     return  {
         
@@ -54,7 +51,6 @@ sputnik.factory('configService', function () {
         get dataHomeFolder() {
             return dataHomeFolder;
         },
-        
         get websiteUrl() {
             return appConf.websiteUrl;
         },
@@ -77,14 +73,6 @@ sputnik.factory('configService', function () {
         },
         set newAppVersion(value) {
             config.newAppVersion = value;
-            save();
-        },
-        
-        getSchedule: function (key) {
-            return config.schedules[key];
-        },
-        setSchedule: function (key, value) {
-            config.schedules[key] = value;
             save();
         }
     };
