@@ -267,7 +267,7 @@ exports.make = function (initialData) {
             return categories.concat();
         },
         get unreadArticlesCount() {
-            return countUnreadArticlesIn(feeds) || '?';
+            return countUnreadArticlesIn(feeds) || 0;
         },
         getFeedByUrl: getFeedByUrl,
         addFeed: addFeed,
