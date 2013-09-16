@@ -216,18 +216,24 @@ function ReadCtrl($scope, $window, feedsService) {
     }
     
     function afterScrollToNextArticle() {
-        console.log();
         scrollingToNextArticle = false;
         angular.element(".js-articles-list").scroll();
     }
     
     $scope.$on('articleReadDone', function (evt, articleGuid) {
         var nextId = findNextUnreadArticleId(articleGuid);
+        var scrollPlace;
         if (nextId) {
+            scrollPlace = angular.element('#' + nextId)[0].offsetTop - 20;
+        } else if ($scope.isNextPage) {
+            // in all articles on this page are read scroll to the bottom
+            // of the page if there is next page
+            scrollPlace = angular.element(".js-articles-list")[0].scrollHeight;
+        }
+        if (scrollPlace) {
             scrollingToNextArticle = true;
-            var scroll = angular.element('#' + nextId)[0].offsetTop - 20;
             angular.element(".js-articles-list").animate({
-                scrollTop: scroll
+                scrollTop: scrollPlace
             }, 1000, afterScrollToNextArticle);
         }
     });
