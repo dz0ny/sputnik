@@ -127,7 +127,9 @@ exports.make = function (dbPath) {
             digestInProgress = digestPromise.promise;
             var feedsPromises = [];
             harvest.forEach(function (parsedFeed) {
-                feedsPromises.push(digestFeed(parsedFeed.url, parsedFeed.articles));
+                if (Array.isArray(parsedFeed.articles) && parsedFeed.articles.length > 0) {
+                    feedsPromises.push(digestFeed(parsedFeed.url, parsedFeed.articles));
+                }
             });
             Q.all(feedsPromises).then(function () {
                 digestInProgress = null;
