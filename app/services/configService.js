@@ -4,6 +4,7 @@ sputnik.factory('configService', function () {
     var fs = require('fs');
     var gui = require('nw.gui');
     var appConf = JSON.parse(fs.readFileSync('./appConfig.json'));
+    var guid;
     
     var dataHomeFolder = appConf.dataHomeFolder;
     if (appConf.targetPlatform === 'macos') {
@@ -35,9 +36,17 @@ sputnik.factory('configService', function () {
         config = JSON.parse(fs.readFileSync(dataPath));
     }
     
-    if (!config.guid) {
-        config.guid = generateGuid();
-        save();
+    guid = localStorage.guid;
+    if (!guid) {
+        // legacy from v0.7.0
+        // guid was stored in config.json
+        var config = JSON.parse(fs.readFileSync(dataPath));
+        guid = config.guid;
+        localStorage.guid = guid;
+    }
+    if (!guid) {
+        localStorage.guid = generateGuid();
+        guid = localStorage.guid;
     }
     
     return  {
@@ -51,6 +60,9 @@ sputnik.factory('configService', function () {
         get dataHomeFolder() {
             return dataHomeFolder;
         },
+        get guid() {
+            return guid;
+        },
         get websiteUrl() {
             return appConf.websiteUrl;
         },
@@ -62,10 +74,6 @@ sputnik.factory('configService', function () {
         },
         get checkUpdatesUrl() {
             return appConf.checkUpdatesUrl;
-        },
-        
-        get guid() {
-            return config.guid;
         },
         
         get newAppVersion() {
