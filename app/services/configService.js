@@ -72,14 +72,6 @@ sputnik.factory('configService', function () {
             return config.guid;
         },
         
-        get windowState() {
-            return config.windowState;
-        },
-        set windowState(value) {
-            config.windowState = value;
-            save();
-        },
-        
         get newAppVersion() {
             return config.newAppVersion;
         },

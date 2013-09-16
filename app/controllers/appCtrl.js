@@ -31,7 +31,7 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     var isMaximizationEvent = false;
     
     function initWindowState() {
-        winState = configService.windowState || null;
+        winState = JSON.parse(localStorage.windowState || 'null');
         
         if (winState) {
             currWinMode = winState.mode;
@@ -77,7 +77,7 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     
     function saveWindowState() {
         dumpWindowState();
-        configService.windowState = winState;
+        localStorage.windowState = JSON.stringify(winState);
     }
     
     initWindowState();
