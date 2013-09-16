@@ -173,7 +173,7 @@ exports.make = function (dbPath) {
     function setArticleReadState(guid, readState) {
         var deferred = Q.defer();
         
-        db.update({ guid: guid }, { $set: { isRead: readState } }, function (err, numReplaced) {
+        db.update({ guid: guid }, { $set: { isRead: readState } }, { multi: true }, function (err, numReplaced) {
             deferred.resolve();
         });
         
