@@ -133,12 +133,19 @@ function ReadCtrl($scope, $window, feedsService) {
     // Lazy load images
     //-----------------------------------------------------
     
+    var scrollingToNextArticle = false;
+    
     function lazyLoadImages() {
+        if (scrollingToNextArticle) {
+            // we don't want to load images while scrolling,
+            // because height of loaded image can raise from 0 to X pixels
+            // and it messes with point in page we are scrolling to
+            return;
+        }
         angular.element('img[data-lazy-src]').each(function (i, elem) {
             var currScroll = angular.element(".js-articles-list").scrollTop();
-            var range = $window.outerHeight * 4;
-            if (elem.offsetTop > currScroll - range &&
-                elem.offsetTop < currScroll + range) {
+            var range = $window.outerHeight * 5;
+            if (elem.offsetTop < currScroll + range) {
                 var jqElem = angular.element(elem);
                 var src = jqElem.attr('data-lazy-src');
                 jqElem.attr('src', src);
@@ -208,13 +215,20 @@ function ReadCtrl($scope, $window, feedsService) {
         return findNext();
     }
     
+    function afterScrollToNextArticle() {
+        console.log();
+        scrollingToNextArticle = false;
+        angular.element(".js-articles-list").scroll();
+    }
+    
     $scope.$on('articleReadDone', function (evt, articleGuid) {
         var nextId = findNextUnreadArticleId(articleGuid);
         if (nextId) {
+            scrollingToNextArticle = true;
             var scroll = angular.element('#' + nextId)[0].offsetTop - 20;
             angular.element(".js-articles-list").animate({
                 scrollTop: scroll
-            }, 1000);
+            }, 1000, afterScrollToNextArticle);
         }
     });
 }
