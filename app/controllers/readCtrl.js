@@ -117,6 +117,11 @@ function ReadCtrl($scope, $window, feedsService) {
         });
         Q.all(promises)
         .then(function () {
+            // above code changes to read only articles on this side
+            // this code marks as read everything on other pages of this list
+            return feedsService.markAllArticlesAsRead($scope.selectedItem.feeds);
+        })
+        .then(function () {
             $scope.$apply();
         });
     };

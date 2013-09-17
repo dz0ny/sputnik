@@ -209,6 +209,19 @@ sputnik.factory('feedsService', function (configService) {
         return deferred.promise;
     }
     
+    function markAllArticlesAsRead(feeds) {
+        var feedUrls = feeds.map(function (feed) {
+            return feed.url;
+        });
+        
+        return ac.markAllAsRead(feedUrls)
+        .then(function () {
+            return Q.all(feeds.map(function (feed) {
+                return countUnreadArticlesForFeed(feed);
+            }));
+        });
+    }
+    
     return  {
         get central() {
             return fc;
@@ -224,6 +237,7 @@ sputnik.factory('feedsService', function (configService) {
         addFeed: addFeed,
         downloadFeeds: downloadFeeds,
         getArticles: getArticles,
+        markAllArticlesAsRead: markAllArticlesAsRead,
         changeTagName: ac.changeTagName,
         removeTag: ac.removeTag
     };

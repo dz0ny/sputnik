@@ -182,6 +182,16 @@ exports.make = function (dbPath) {
         return deferred.promise;
     }
     
+    function markAllAsRead(feedUrls) {
+        var deferred = Q.defer();
+        
+        db.update({ feedUrl: { $in: feedUrls} }, { $set: { isRead: true } }, { multi: true }, function (err, numReplaced) {
+            deferred.resolve();
+        });
+        
+        return deferred.promise;
+    }
+    
     function countUnread(feedUrl) {
         var deferred = Q.defer();
         
@@ -344,6 +354,7 @@ exports.make = function (dbPath) {
         digest: digest,
         getArticles: getArticles,
         setArticleReadState: setArticleReadState,
+        markAllAsRead: markAllAsRead,
         countUnread: countUnread,
         sweepArticlesOlderThan: sweepArticlesOlderThan,
         removeAllForFeed: removeAllForFeed,
