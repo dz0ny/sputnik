@@ -140,9 +140,8 @@ sputnik.directive('article', function ($sanitize, $sce) {
                     $scope.artData.setIsRead(true)
                     .then(function () {
                         $scope.$emit('articleReadStateChange');
+                        $scope.$emit('articleReadDone', $scope.artData.guid);
                     });
-                    
-                    $scope.$emit('articleReadDone', $scope.artData.guid);
                 });
             });
             

@@ -126,6 +126,9 @@ function ReadCtrl($scope, $window, feedsService) {
     }
     
     $scope.$on('articleReadStateChange', function () {
+        if ($scope.selectedItem.unreadArticlesCount === 0) {
+            showEverythingReadInfo();
+        }
         $scope.$apply();
     });
     
@@ -141,6 +144,16 @@ function ReadCtrl($scope, $window, feedsService) {
     
     if ($scope.state === 'notInitiated') {
         showArticles();
+    }
+    
+    var showEverythingReadInfoAnimationInterval;
+    function showEverythingReadInfo() {
+        var ele = angular.element(".popup");
+        ele.addClass('popup--visible');
+        clearInterval(showEverythingReadInfoAnimationInterval);
+        showEverythingReadInfoAnimationInterval = setInterval(function () {
+            ele.removeClass('popup--visible');
+        }, 4000);
     }
     
     //-----------------------------------------------------
@@ -236,15 +249,25 @@ function ReadCtrl($scope, $window, feedsService) {
     }
     
     $scope.$on('articleReadDone', function (evt, articleGuid) {
+        if ($scope.selectedItem.unreadArticlesCount === 0) {
+            // all articles are read, show info about that
+            showEverythingReadInfo();
+            return;
+        }
+        
         var nextId = findNextUnreadArticleId(articleGuid);
         var scrollPlace;
+        
         if (nextId) {
+            // we have unread article on current list,
+            // we will scroll to it
             scrollPlace = angular.element('#' + nextId)[0].offsetTop - 20;
         } else if ($scope.isNextPage) {
             // in all articles on this page are read scroll to the bottom
             // of the page if there is next page
             scrollPlace = angular.element(".js-articles-list")[0].scrollHeight;
         }
+        
         if (scrollPlace) {
             scrollingToNextArticle = true;
             angular.element(".js-articles-list").animate({
