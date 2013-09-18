@@ -225,7 +225,6 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     }
     
     displayNewVersionAvailable();
-    checkForUpdates();
     
     //-----------------------------------------------------
     // Schedule
