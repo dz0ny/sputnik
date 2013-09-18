@@ -100,9 +100,7 @@ function build(platform) {
         
         fs.mkdirSync(deployPath);
         
-        wrench.copyDirSyncRecursive(appSource, appDestination, {
-            filter: /^spec$/, //exclude spec folder
-        });
+        wrench.copyDirSyncRecursive(appSource, appDestination);
         
         copyFile(runtimeSource + '/nw.exe', runtimeDestination + '/sputnik.exe');
         copyFile(runtimeSource + '/nw.pak', runtimeDestination + '/nw.pak');
@@ -122,9 +120,7 @@ function build(platform) {
         appDestination = deployPath + '/Contents/Resources/app.nw';
         
         wrench.copyDirSyncRecursive(runtimeSource, runtimeDestination);
-        wrench.copyDirSyncRecursive(appSource, appDestination, {
-            filter: /^spec$/, //exclude spec folder
-        });
+        wrench.copyDirSyncRecursive(appSource, appDestination);
         
         var infoFile = fs.readFileSync('src/release/macos/Info.plist', 'utf8');
         infoFile = infoFile.replace('{{sputnikVersion}}', version);

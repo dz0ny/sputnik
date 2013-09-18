@@ -2,7 +2,7 @@
 
 describe('feedsCentral', function () {
     
-    var feedsCentral = require('../../models/feedsCentral');
+    var feedsCentral = require('../app/models/feedsCentral');
     var feedsData;
     
     beforeEach(function () {

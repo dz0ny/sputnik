@@ -2,7 +2,7 @@
 
 describe('articlesCentral', function () {
     
-    var articlesCentral = require('../../models/articlesCentral');
+    var articlesCentral = require('../app/models/articlesCentral');
     
     // things in format returned by FeedParser/feedsHarvester
     var meta = {
@@ -355,7 +355,7 @@ describe('articlesCentral', function () {
     
     
     
-    describe('articles tagging', function () {
+    describe('tagging', function () {
         
         it('should init', function () {
             var done = false;

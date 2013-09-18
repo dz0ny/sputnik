@@ -1,0 +1,6 @@
+{
+    "name": "Sputnik-Spec",
+    "dependencies": {
+        "jasmine": "1.3.1"
+    }
+}
