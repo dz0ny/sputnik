@@ -1,10 +1,10 @@
 'use strict';
 
-var opml = require('../app/helpers/opml');
-var xmldoc = require('xmldoc');
-var feedsCentral = require('../app/models/feedsCentral');
-
 describe('opml', function () {
+    
+    var opml = require('../app/helpers/opml');
+    var xmldoc = require('xmldoc');
+    var feedsCentral = require('../app/models/feedsCentral');
     
     describe('importing', function () {
         

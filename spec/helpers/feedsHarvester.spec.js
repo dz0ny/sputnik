@@ -1,37 +1,37 @@
 'use strict';
 
-var mockNet = require('./mocks/net');
-var fs = require('fs');
-var fh = require('../app/helpers/feedsHarvester');
-
-var atomXml = fs.readFileSync('./data/atom.xml');
-var rss2Xml = fs.readFileSync('./data/rss2.xml');
-var isoEncoded = fs.readFileSync('./data/iso-encoded.xml');
-var htmlLinkAtom = '<html><head><link href="http://atom-xml" title="The Site" type="application/atom+xml"></head></html>';
-var htmlLinkRss = '<html><head><link href="http://rss2-xml" title="The Site" type="application/rss+xml"></head></html>';
-// sometimes relative links are given
-var htmlLinkRelativeRss = '<html><head><link href="/rss2-xml" title="The Site" type="application/rss+xml"></head></html>';
-// HTML has link to RSS, but this link returns 404
-var htmlLink404 = '<html><head><link href="http://404" title="The Site" type="application/rss+xml"></head></html>';
-// HTML has link to RSS, but this link returns invalid RSS
-var htmlLinkHtml = '<html><head><link href="http://html-link-rss" title="The Site" type="application/rss+xml"></head></html>';
-var htmlNoLink = '<html><head></head></html>';
-
-mockNet.injectUrlMap({
-    "http://404": null,
-    "http://atom-xml": atomXml,
-    "http://rss2-xml": rss2Xml,
-    "http://iso-encoded": isoEncoded,
-    "http://html-link-atom": htmlLinkAtom,
-    "http://html-link-rss": htmlLinkRss,
-    "http://html-link-relative-rss": htmlLinkRelativeRss,
-    "http://html-link-relative-rss/rss2-xml": rss2Xml,
-    "http://html-no-link": htmlNoLink,
-    "http://html-link-404": htmlLink404,
-    "http://html-link-html": htmlLinkHtml,
-});
-
 describe('feedsHarvester', function () {
+    
+    var mockNet = require('./mocks/net');
+    var fs = require('fs');
+    var fh = require('../app/helpers/feedsHarvester');
+    
+    var atomXml = fs.readFileSync('./data/atom.xml');
+    var rss2Xml = fs.readFileSync('./data/rss2.xml');
+    var isoEncoded = fs.readFileSync('./data/iso-encoded.xml');
+    var htmlLinkAtom = '<html><head><link href="http://atom-xml" title="The Site" type="application/atom+xml"></head></html>';
+    var htmlLinkRss = '<html><head><link href="http://rss2-xml" title="The Site" type="application/rss+xml"></head></html>';
+    // sometimes relative links are given
+    var htmlLinkRelativeRss = '<html><head><link href="/rss2-xml" title="The Site" type="application/rss+xml"></head></html>';
+    // HTML has link to RSS, but this link returns 404
+    var htmlLink404 = '<html><head><link href="http://404" title="The Site" type="application/rss+xml"></head></html>';
+    // HTML has link to RSS, but this link returns invalid RSS
+    var htmlLinkHtml = '<html><head><link href="http://html-link-rss" title="The Site" type="application/rss+xml"></head></html>';
+    var htmlNoLink = '<html><head></head></html>';
+    
+    mockNet.injectUrlMap({
+        "http://404": null,
+        "http://atom-xml": atomXml,
+        "http://rss2-xml": rss2Xml,
+        "http://iso-encoded": isoEncoded,
+        "http://html-link-atom": htmlLinkAtom,
+        "http://html-link-rss": htmlLinkRss,
+        "http://html-link-relative-rss": htmlLinkRelativeRss,
+        "http://html-link-relative-rss/rss2-xml": rss2Xml,
+        "http://html-no-link": htmlNoLink,
+        "http://html-link-404": htmlLink404,
+        "http://html-link-html": htmlLinkHtml,
+    });
 
     describe('feed url discovery', function () {
         
