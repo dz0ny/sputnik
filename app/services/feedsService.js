@@ -1,244 +1,226 @@
 'use strict';
 
-sputnik.factory('feedsService', function (configService) {
+sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
     
     var Q = require('q');
-    var fs = require('fs');
-    var feedsCentral = require('./models/feedsCentral');
-    var articlesCentral = require('./models/articlesCentral');
-    var feedsHarvester = require('./helpers/feedsHarvester');
     
-    var ac;
-    var fc;
-    var feedsDataSaving = false;
-    var feedsDataPath = configService.dataHomeFolder + '/feeds.json';
+    var feeds;
+    var tree;
+    var treeObsolete = true;
+    var totalUnreadCount = 0;
+    
+    //-----------------------------------------------------
+    // Helper functions
+    //-----------------------------------------------------
+    
+    function localeSort(a, b) {
+        return a.localeCompare(b);
+    }
+    
+    function treeSort(a, b) {
+        if (a.type === 'category' && b.type === 'feed') {
+            return -1;
+        }
+        if (a.type === 'feed' && b.type === 'category') {
+            return 1;
+        }
+        if ((a.type === 'category' && b.type === 'category') ||
+            (a.type === 'feed' && b.type === 'feed')) {
+            return a.title.localeCompare(b.title);
+        }
+        return 0;
+    }
+    
+    function rebuildTree() {
+        tree = [];
+        feedsStorage.categories.forEach(function (categoryName) {
+            tree.push(constructCategory(categoryName));
+        });
+        feeds.forEach(function (feed) {
+            if (!feed.category) {
+                tree.push(feed);
+            }
+        });
+        tree.sort(treeSort);
+        treeObsolete = false;
+    }
+    
+    function getFeedsForCategory(categoryName) {
+        var catFeeds = [];
+        feeds.forEach(function (feed) {
+            if (feed.category === categoryName) {
+                catFeeds.push(feed);
+            }
+        });
+        return catFeeds;
+    }
+    
+    function constructFeed(feedModel) {
+        return {
+            type: 'feed',
+            unreadArticlesCount: 0,
+            get url() {
+                return feedModel.url;
+            },
+            get title() {
+                return feedModel.title || '...';
+            },
+            get siteUrl() {
+                return feedModel.siteUrl;
+            },
+            get category() {
+                return feedModel.category;
+            },
+            setCategory: function (newCategory) {
+                feedsStorage.setFeedValue(feedModel.url, 'category', newCategory);
+                treeObsolete = true;
+            },
+            setTitle: function (title) {
+                if (feedModel.title !== title) {
+                    feedsStorage.setFeedValue(feedModel.url, 'title', title);
+                }
+            },
+            setSiteUrl: function (siteUrl) {
+                if (feedModel.siteUrl !== siteUrl) {
+                    feedsStorage.setFeedValue(feedModel.url, 'siteUrl', siteUrl);
+                }
+            },
+            setFavicon: function (path) {
+                throw new Error('TODO');
+            },
+            remove: function () {
+                feedsStorage.removeFeed(feedModel.url);
+                constructFeedsList();
+                
+                $rootScope.$broadcast('feedRemoved', this);
+            },
+        };
+    }
+    
+    function constructCategory(categoryName) {
+        var categoryFeeds = getFeedsForCategory(categoryName);
+        categoryFeeds.sort(treeSort);
+        return {
+            type: 'category',
+            title: categoryName,
+            feeds: categoryFeeds,
+            unreadArticlesCount: 0,
+            setTitle : function (newName) {
+                feedsStorage.changeCategoryName(categoryName, newName);
+                treeObsolete = true;
+            },
+            remove: function () {
+                feedsStorage.removeCategory(categoryName);
+                constructFeedsList();
+            },
+        };
+    }
+    
+    function constructFeedsList() {
+        feeds = [];
+        feedsStorage.feeds.forEach(function (feedModel) {
+            feeds.push(constructFeed(feedModel));
+        });
+        treeObsolete = true;
+    }
     
     //-----------------------------------------------------
     // Init
     //-----------------------------------------------------
     
-    function internalInit() {
-        var feedsData = null;
-        if (fs.existsSync(feedsDataPath)) {
-            feedsData = JSON.parse(fs.readFileSync(feedsDataPath));
-        }
-        fc = feedsCentral.make(feedsData);
-        
-        ac = articlesCentral.make(configService.dataHomeFolder + '/articles.nedb');
-    }
+    constructFeedsList();
+    rebuildTree();
     
-    internalInit();
-    
-    function init() {
-        return ac.init();
-    }
-    
-    //-----------------------------------------------------
-    // Listening to events on model
-    //-----------------------------------------------------
-    
-    function saveFeedsData() {
-        
-        if (feedsDataSaving) {
-            return;
-        }
-        
-        feedsDataSaving = true;
-        
-        // save on next tick, to write once many changes
-        // to model which could happen at this turn
-        process.nextTick(function () {
-            
-            feedsDataSaving = false;
-            
-            var feedsDataJson = JSON.stringify(fc.getBaseModel(), null, 4);
-            fs.writeFile(feedsDataPath, feedsDataJson, function (err) {
-                // saved
-            });
+    $rootScope.$on('unreadArticlesCountChanged', function (evt, feedUrl, count) {
+        var feed = getFeedByUrl(feedUrl);
+        feed.unreadArticlesCount = count;
+        totalUnreadCount = 0;
+        tree.forEach(function (treeItem) {
+            if (treeItem.type === 'category') {
+                var catCount = 0;
+                treeItem.feeds.forEach(function (feed) {
+                    catCount += feed.unreadArticlesCount;
+                });
+                treeItem.unreadArticlesCount = catCount;
+                totalUnreadCount += catCount;
+            } else {
+                totalUnreadCount += treeItem.unreadArticlesCount;
+            }
         });
-    }
-    
-    // this event is fired if any single one property of any feed model has changed
-    fc.events.on('modelChanged', saveFeedsData);
-    
-    fc.events.on('feedRemoved', function (feed) {
-        // remove all articles for this feed
-        ac.removeAllForFeed(feed.url);
     });
-    
-    function countUnreadArticlesForFeed(feed) {
-        var deferred = Q.defer();
-        
-        ac.countUnread(feed.url)
-        .then(function (count) {
-            feed.unreadArticlesCount = count;
-            deferred.resolve();
-        });
-        
-        return deferred.promise;
-    }
-    
-    function downloadListedFeeds(feedUrls) {
-        var deferred = Q.defer();
-        
-        feedsHarvester.getFeeds(feedUrls)
-        .progress(function (progress) {
-            deferred.notify(progress);
-        })
-        .then(function (harvest) {
-            fc.digest(harvest);
-            return ac.digest(harvest);
-        })
-        .then(function () {
-            return Q.all(fc.feeds.map(countUnreadArticlesForFeed));
-        })
-        .then(deferred.resolve);
-        
-        return deferred.promise;
-    }
-    
-    function mapTagIds(tagsIds) {
-        if (!tagsIds) {
-            return [];
-        }
-        return tagsIds.map(function (tagId) {
-            for (var i = 0; i < ac.tags.length; i += 1) {
-                if (ac.tags[i]._id === tagId) {
-                    return ac.tags[i];
-                }
-            }
-            return null;
-        });
-    }
-    
-    function hasTag(art, tagId) {
-        for (var i = 0; i < art.tags.length; i += 1) {
-            if (art.tags[i]._id === tagId) {
-                return true;
-            }
-        }
-        return false;
-    }
     
     //-----------------------------------------------------
     // API methods
     //-----------------------------------------------------
     
-    function addFeed(feedBaseModel) {
-        var deferred = Q.defer();
+    function importOpml(fileContent) {
+        opml.import(fileContent, feedsStorage);
         
-        var feed = fc.addFeed(feedBaseModel);
-        
-        downloadListedFeeds([feed.url])
-        .then(function () {
-            deferred.resolve(feed);
-        });
-        
-        return deferred.promise;
+        $rootScope.$broadcast('feedsImported');
     }
     
-    function downloadFeeds() {
-        var feedUrls = fc.feeds.map(function (feed) {
-            return feed.url;
-        });
-        
-        return downloadListedFeeds(feedUrls);
+    function exportOpml() {
+        return opml.export(feedsStorage);
     }
     
-    function getArticles(feedUrls, from, to, options) {
-        var deferred = Q.defer();
-        
-        ac.getArticles(feedUrls, from, to, options)
-        .then(function (result) {
-            
-            // add to every article's base data extra stuff
-            result.articles.forEach(function (art) {
-                art.id = 'article-' + art._id;
-                art.content = art.content || '';
-                art.pubDate = new Date(art.pubTime);
-                
-                art.tags = mapTagIds(art.tags);
-                
-                art.setIsRead = function (newIsRead) {
-                    this.isRead = newIsRead;
-                    var that = this;
-                    return ac.setArticleReadState(this.guid, newIsRead)
-                    .then(function () {
-                        return countUnreadArticlesForFeed(that.feed);
-                    });
-                };
-                
-                art.toggleTag = function (tagId) {
-                    var deferred = Q.defer();
-                    
-                    var promise;
-                    if (hasTag(art, tagId)) {
-                        promise = ac.untagArticle(art.guid, tagId);
-                    } else {
-                        promise = ac.tagArticle(art.guid, tagId);
-                    }
-                    promise.then(function (article) {
-                        art.tags = mapTagIds(article.tags);
-                        deferred.resolve();
-                    });
-                    
-                    return deferred.promise;
-                };
-                
-                art.addNewTag = function (tagName) {
-                    var deferred = Q.defer();
-                    
-                    ac.addTag(tagName)
-                    .then(function (addedTag) {
-                        return ac.tagArticle(art.guid, addedTag._id)
-                        .then(function (article) {
-                            art.tags = mapTagIds(article.tags);
-                            deferred.resolve();
-                        });
-                    });
-                    
-                    return deferred.promise;
-                }
-                
-                art.feed = fc.getFeedByUrl(art.feedUrl);
-            });
-            
-            deferred.resolve(result);
-        });
-        
-        return deferred.promise;
+    function getFeedByUrl(url) {
+        for (var i = 0; i < feeds.length; i += 1) {
+            if (feeds[i].url === url) {
+                return feeds[i];
+            }
+        }
+        return null;
     }
     
-    function markAllArticlesAsRead(feeds) {
-        var feedUrls = feeds.map(function (feed) {
-            return feed.url;
-        });
+    function addFeed(feedModel) {
+        var storedFeed = feedsStorage.addFeed(feedModel);
+        constructFeedsList();
         
-        return ac.markAllAsRead(feedUrls)
-        .then(function () {
-            return Q.all(feeds.map(function (feed) {
-                return countUnreadArticlesForFeed(feed);
-            }));
-        });
+        $rootScope.$broadcast('feedAdded', getFeedByUrl(feedModel.url));
+    }
+    
+    function addCategory(categoryName) {
+        feedsStorage.addCategory(categoryName);
+        treeObsolete = true;
+    }
+    
+    function digestFeedMeta(feedUrl, meta) {
+        var feed = getFeedByUrl(feedUrl);
+        feed.setTitle(meta.title);
+        feed.setSiteUrl(meta.link);
     }
     
     return  {
-        get central() {
-            return fc;
-        },
-        get articlesDbSize() {
-            return ac.getDbSize();
-        },
-        get allTags() {
-            return ac.tags;
-        },
-        discoverFeedUrl: feedsHarvester.discoverFeedUrl,
-        init: init,
+        importOpml: importOpml,
+        exportOpml: exportOpml,
+        
         addFeed: addFeed,
-        downloadFeeds: downloadFeeds,
-        getArticles: getArticles,
-        markAllArticlesAsRead: markAllArticlesAsRead,
-        changeTagName: ac.changeTagName,
-        removeTag: ac.removeTag
+        getFeedByUrl: getFeedByUrl,
+        addCategory: addCategory,
+        
+        digestFeedMeta: digestFeedMeta,
+        
+        get tree() {
+            if (treeObsolete) {
+                rebuildTree();
+            }
+            return tree;
+        },
+        
+        get categoriesNames() {
+            var cats = feedsStorage.categories.concat();
+            cats.sort(localeSort);
+            return cats;
+        },
+        
+        get feeds() {
+            return feeds;
+        },
+        get title() {
+            return 'All';
+        },
+        get unreadArticlesCount() {
+            return totalUnreadCount;
+        },
     };
 });

@@ -4,29 +4,41 @@
     <meta charset="utf-8">
     <title>Sputnik Unit Tests</title>
     
-    <!-- jasmine -->
     <link rel="stylesheet" type="text/css" href="./bower_components/jasmine/lib/jasmine-core/jasmine.css">
     <script src="./bower_components/jasmine/lib/jasmine-core/jasmine.js"></script>
     <script src="./bower_components/jasmine/lib/jasmine-core/jasmine-html.js"></script>
+    <script src="../app/bower_components/jquery/jquery.min.js"></script>
+    <script src="../app/bower_components/angular/angular.js"></script>
+    <script src="./bower_components/angular-mocks/angular-mocks.js"></script>
     
     
-    <!-- libs -->
-    
-    
-    <!-- source files -->
-    
-    
-    <!-- spec files for browser modules -->
-    
-    
-    <!-- spec files for node modules -->
+    <!-- spec files of libs independent of angular -->
+    <script src="./models/feedsStorage.spec.js"></script>
+    <script src="./models/articlesStorage.spec.js"></script>
     <script src="./helpers/feedsHarvester.spec.js"></script>
     <script src="./helpers/opml.spec.js"></script>
-    <script src="./models/feedsCentral.spec.js"></script>
-    <script src="./models/articlesCentral.spec.js"></script>
     
     
-    <script type="text/javascript">
+    <!-- angular-dependent stuff -->
+    
+    <script>
+        // instantiating main app module
+        var sputnik = angular.module('sputnik', []);
+    </script>
+    
+    <script src="../app/services/feedsService.js"></script>
+    <script src="./services/feedsService.spec.js"></script>
+    
+    <script src="../app/services/articlesService.js"></script>
+    <script src="./services/articlesService.spec.js"></script>
+    
+    <!-- integration tests -->
+    <script src="./integration/feedsAndArticles.spec.js"></script>
+    
+    <script>
+        
+        // jasmine runner
+        
         (function() {
             var jasmineEnv = jasmine.getEnv();
             jasmineEnv.updateInterval = 1000;

@@ -11,11 +11,6 @@ exports.make = function (dbPath) {
     });
     
     var digestInProgress;
-    var tags = [];
-    
-    function init() {
-        return reloadTags();
-    }
     
     function indexOfArticle(list, article) {
         var guid = article.guid || article.link;
@@ -120,24 +115,24 @@ exports.make = function (dbPath) {
         return deferred.promise;
     }
     
-    function digest(harvest) {
+    function digest(feedUrl, harvestedArticles) {
         var digestPromise = Q.defer();
+        
+        if (!harvestedArticles || harvestedArticles.length === 0) {
+            digestPromise.reject();
+            return digestPromise.promise;
+        }
         
         function doDigest() {
             digestInProgress = digestPromise.promise;
-            var feedsPromises = [];
-            harvest.forEach(function (parsedFeed) {
-                if (Array.isArray(parsedFeed.articles) && parsedFeed.articles.length > 0) {
-                    feedsPromises.push(digestFeed(parsedFeed.url, parsedFeed.articles));
-                }
-            });
-            Q.all(feedsPromises).then(function () {
+            digestFeed(feedUrl, harvestedArticles)
+            .then(function () {
                 digestInProgress = null;
                 digestPromise.resolve();
             });
         }
         
-        // for database synchronization only one digest can run at a time
+        // for database cohesion only one digest can run at a time
         if (digestInProgress) {
             digestInProgress.then(doDigest);
         } else {
@@ -150,10 +145,14 @@ exports.make = function (dbPath) {
     function getArticles(feedUrls, from, to, options) {
         var deferred = Q.defer();
         
+        if (!Array.isArray(feedUrls)) {
+            feedUrls = [feedUrls];
+        }
+        
         var query = { feedUrl: { $in: feedUrls } };
         
-        if (options && options.tag) {
-            query.tags = options.tag;
+        if (options && options.tagId) {
+            query.tags = options.tagId;
         }
         
         db.find(query, function (err, docs) {
@@ -202,20 +201,6 @@ exports.make = function (dbPath) {
         return deferred.promise;
     }
     
-    function sweepArticlesOlderThan(time) {
-        var deferred = Q.defer();
-        
-        db.remove({
-            isRead: true,
-            isAbandoned: true,
-            pubTime: { $lt: time }
-        }, function (err, numRemoved) {
-            deferred.resolve();
-        });
-        
-        return deferred.promise;
-    }
-    
     function removeAllForFeed(feedUrl) {
         var deferred = Q.defer();
         
@@ -232,7 +217,7 @@ exports.make = function (dbPath) {
     
     function getDbSize() {
         var fs = require('fs');
-        if (!fs.existsSync(dbPath)) {
+        if (!dbPath || !fs.existsSync(dbPath)) {
             return 0;
         }
         return fs.statSync(dbPath).size;
@@ -242,7 +227,7 @@ exports.make = function (dbPath) {
     // Tags
     //-----------------------------------------------------
     
-    function reloadTags() {
+    function getTags() {
         var deferred = Q.defer();
         
         db.find({ type: 'tag' }, function (err, docs) {
@@ -251,9 +236,7 @@ exports.make = function (dbPath) {
                 return a.name.localeCompare(b.name);
             });
             
-            tags = docs;
-            
-            deferred.resolve();
+            deferred.resolve(docs);
         });
         
         return deferred.promise;
@@ -270,10 +253,7 @@ exports.make = function (dbPath) {
                     type: 'tag',
                     name: tagName
                 }, function (err, newDoc) {
-                    reloadTags()
-                    .then(function () {
-                        deferred.resolve(newDoc);
-                    });
+                    deferred.resolve(newDoc);
                 });
             }
         });
@@ -285,10 +265,7 @@ exports.make = function (dbPath) {
         var deferred = Q.defer();
         
         db.update({ _id: tagId }, { $set: { name: name } }, {}, function () {
-            reloadTags()
-            .then(function () {
-                deferred.resolve();
-            });
+            deferred.resolve();
         });
         
         return deferred.promise;
@@ -330,43 +307,30 @@ exports.make = function (dbPath) {
     function removeTag(tagId) {
         var deferred = Q.defer();
         
-        db.find({ tags: tagId }, function (err, docs) {
-            
-            var promises = docs.map(function (art) {
-                return untagArticle(art.guid, tagId);
-            });
-            
-            Q.all(promises)
-            .then(function () {
-                db.remove({ _id: tagId }, {}, function (err, numRemoved) {
-                    reloadTags()
-                    .then(deferred.resolve);
-                });
-            });
+        db.update({ tags: tagId }, { $pull: { tags: tagId } }, { multi: true }, function (err, numReplaced) {
+            db.remove({ _id: tagId }, {}, function (err, numRemoved) {
+                deferred.resolve();
+            }); 
         });
         
         return deferred.promise;
     }
     
     return {
-        init: init,
-        
+        getDbSize: getDbSize,
         digest: digest,
+        
         getArticles: getArticles,
         setArticleReadState: setArticleReadState,
         markAllAsRead: markAllAsRead,
         countUnread: countUnread,
-        sweepArticlesOlderThan: sweepArticlesOlderThan,
         removeAllForFeed: removeAllForFeed,
-        getDbSize: getDbSize,
         
-        get tags() {
-            return tags.concat();
-        },
+        getTags: getTags,
         addTag: addTag,
         changeTagName: changeTagName,
         tagArticle: tagArticle,
         untagArticle: untagArticle,
-        removeTag: removeTag
+        removeTag: removeTag,
     };
 }

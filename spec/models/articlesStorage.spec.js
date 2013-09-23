@@ -1,91 +1,75 @@
 'use strict';
 
-describe('articlesCentral', function () {
+describe('articlesStorage', function () {
     
-    var articlesCentral = require('../app/models/articlesCentral');
+    var articlesStorage = require('../app/models/articlesStorage');
     
-    // things in format returned by FeedParser/feedsHarvester
-    var meta = {
-        title: "Feed for site A",
-        link: "http://a.com/new"
-    };
-    var harvest1 = [{
-        url: 'http://a.com/feed',
-        meta: meta,
-        articles: [
-            {
-                "title": "art3",
-                "description": "description3",
-                "link": "link3",
-                "pubDate": new Date(3),
-            },
-            {
-                "title": "art2",
-                "description": "description2",
-                "link": "link2",
-                "guid": "guid2",
-                "pubDate": new Date(2),
-            },
-            {
-                "title": "art1",
-                "description": "description1",
-                "link": "link1",
-                "pubDate": new Date(1),
-                "enclosures": [
-                    {
-                        "url": "audioUrl/1",
-                        "type": "audio/mpeg",
-                        "length": "123"
-                    },
-                    {
-                        "url": "audioUrl/2",
-                        "type": "something",
-                        "length": "456"
-                    },
-                    {
-                        "type": "lackOfUrl",
-                        "length": "456"
-                    }
-                ]
-            }
-        ]
-    }];
-    var harvest2 = [{
-        url: 'http://a.com/feed',
-        meta: meta,
-        articles: [
-            {
-                "title": "art4",
-                "description": "description4",
-                "link": "link4",
-                "pubDate": new Date(4),
-            },
-            {
-                "title": "art3",
-                "description": "description3",
-                "link": "link3",
-                "pubDate": new Date(3),
-            },
-            {
-                "title": "art2",
-                "description": "description2",
-                "link": "link2",
-                "guid": "guid2",
-                "pubDate": new Date(2),
-            },
-        ]
-    }];
-    var harvestNoPubDate = [{
-        url: 'http://a.com/feed',
-        meta: meta,
-        articles: [
-            {
-                "title": "art4",
-                "description": "description4",
-                "link": "link4"
-            }
-        ]
-    }];
+    // things in format returned by feedsHarvester
+    var harvest1 = [
+        {
+            "title": "art3",
+            "description": "description3",
+            "link": "link3",
+            "pubDate": new Date(3),
+        },
+        {
+            "title": "art2",
+            "description": "description2",
+            "link": "link2",
+            "guid": "guid2",
+            "pubDate": new Date(2),
+        },
+        {
+            "title": "art1",
+            "description": "description1",
+            "link": "link1",
+            "pubDate": new Date(1),
+            "enclosures": [
+                {
+                    "url": "audioUrl/1",
+                    "type": "audio/mpeg",
+                    "length": "123"
+                },
+                {
+                    "url": "audioUrl/2",
+                    "type": "something",
+                    "length": "456"
+                },
+                {
+                    "type": "lackOfUrl",
+                    "length": "456"
+                }
+            ]
+        }
+    ];
+    var harvest2 = [
+        {
+            "title": "art4",
+            "description": "description4",
+            "link": "link4",
+            "pubDate": new Date(4),
+        },
+        {
+            "title": "art3",
+            "description": "description3",
+            "link": "link3",
+            "pubDate": new Date(3),
+        },
+        {
+            "title": "art2",
+            "description": "description2",
+            "link": "link2",
+            "guid": "guid2",
+            "pubDate": new Date(2),
+        }
+    ];
+    var harvestNoPubDate = [
+        {
+            "title": "art4",
+            "description": "description4",
+            "link": "link4"
+        }
+    ];
     
     var getArt = function (list, guid) {
         for (var i = 0; i < list.length; i += 1) {
@@ -98,10 +82,10 @@ describe('articlesCentral', function () {
     
     it('should digest data from feedsHarvester and store them', function () {
         var done = false;
-        var ac = articlesCentral.make();
-        ac.digest(harvest1)
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', harvest1)
         .then(function () {
-            return ac.getArticles(['http://a.com/feed'], 0, 100);
+            return as.getArticles(['a.com/feed'], 0, 100);
         })
         .then(function (result) {
             var articles = result.articles;
@@ -133,10 +117,10 @@ describe('articlesCentral', function () {
     
     it('should paginate results, sorted: 0-newest, last-oldest', function () {
         var done = false;
-        var ac = articlesCentral.make();
-        ac.digest(harvest1)
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', harvest1)
         .then(function () {
-            return ac.getArticles(['http://a.com/feed'], 0, 3);
+            return as.getArticles('a.com/feed', 0, 3);
         })
         .then(function (result) {
             expect(result.articles.length).toBe(3);
@@ -145,14 +129,14 @@ describe('articlesCentral', function () {
             expect(result.articles[1].guid).toBe('guid2');
             expect(result.articles[2].guid).toBe('link1');
             
-            return ac.getArticles(['http://a.com/feed'], 1, 3);
+            return as.getArticles('a.com/feed', 1, 3);
         })
         .then(function (result) {
             expect(result.articles.length).toBe(2);
             expect(result.articles[0].guid).toBe('guid2');
             expect(result.articles[1].guid).toBe('link1');
             
-            return ac.getArticles(['http://a.com/feed'], 1, 2);
+            return as.getArticles('a.com/feed', 1, 2);
         })
         .then(function (result) {
             expect(result.articles.length).toBe(1);
@@ -165,13 +149,13 @@ describe('articlesCentral', function () {
     
     it('should not duplicate same articles when digested many times', function () {
         var done = false;
-        var ac = articlesCentral.make();
-        ac.digest(harvest1)
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', harvest1)
         .then(function () {
-            return ac.digest(harvest2);
+            return as.digest('a.com/feed', harvest2);
         })
         .then(function () {
-            return ac.getArticles(['http://a.com/feed'], 0, 100);
+            return as.getArticles(['a.com/feed'], 0, 100);
         })
         .then(function (result) {
             var articles = result.articles;
@@ -188,11 +172,11 @@ describe('articlesCentral', function () {
     
     it('should do fine when 2 identical jobs executed simultaneously', function () {
         var doneTasks = 0;
-        var ac = articlesCentral.make();
+        var as = articlesStorage.make();
         
-        ac.digest(harvest1)
+        as.digest('a.com/feed', harvest1)
         .then(function () {
-            return ac.getArticles(['http://a.com/feed'], 0, 100);
+            return as.getArticles(['a.com/feed'], 0, 100);
         })
         .then(function (result) {
             expect(result.articles.length).toBe(3);
@@ -200,9 +184,9 @@ describe('articlesCentral', function () {
             doneTasks += 1;
         });
         
-        ac.digest(harvest1)
+        as.digest('a.com/feed', harvest1)
         .then(function () {
-            return ac.getArticles(['http://a.com/feed'], 0, 100);
+            return as.getArticles(['a.com/feed'], 0, 100);
         })
         .then(function (result) {
             expect(result.articles.length).toBe(3);
@@ -213,15 +197,15 @@ describe('articlesCentral', function () {
         waitsFor(function () { return doneTasks === 2; }, "timeout", 500);
     });
     
-    it('should mark articles which not appear in feeds xml any more as abandoned', function () {
+    it('should mark articles which not appear in feeds xml anymore as abandoned', function () {
         var done = false;
-        var ac = articlesCentral.make();
-        ac.digest(harvest1)
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', harvest1)
         .then(function () {
-            return ac.digest(harvest2);
+            return as.digest('a.com/feed', harvest2);
         })
         .then(function () {
-            return ac.getArticles(['http://a.com/feed'], 0, 100);
+            return as.getArticles(['a.com/feed'], 0, 100);
         })
         .then(function (result) {
             var articles = result.articles;
@@ -237,13 +221,13 @@ describe('articlesCentral', function () {
     
     it('should mark article as read', function () {
         var done = false;
-        var ac = articlesCentral.make();
-        ac.digest(harvest1)
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', harvest1)
         .then(function () {
-            return ac.setArticleReadState('guid2', true);
+            return as.setArticleReadState('guid2', true);
         })
         .then(function () {
-            return ac.getArticles(['http://a.com/feed'], 0, 100);
+            return as.getArticles(['a.com/feed'], 0, 100);
         })
         .then(function (result) {
             var articles = result.articles;
@@ -258,17 +242,17 @@ describe('articlesCentral', function () {
     
     it('should count unread articles for given feed', function () {
         var done = false;
-        var ac = articlesCentral.make();
-        ac.digest(harvest1)
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', harvest1)
         .then(function () {
-            return ac.countUnread('http://a.com/feed');
+            return as.countUnread('a.com/feed');
         })
         .then(function (count) {
             expect(count).toBe(3);
-            return ac.setArticleReadState('guid2', true);
+            return as.setArticleReadState('guid2', true);
         })
         .then(function () {
-            return ac.countUnread('http://a.com/feed');
+            return as.countUnread('a.com/feed');
         })
         .then(function (count) {
             expect(count).toBe(2);
@@ -277,45 +261,12 @@ describe('articlesCentral', function () {
         waitsFor(function () { return done; }, "timeout", 500);
     });
     
-    it('should sweep from database read, abandoned articles older than X', function () {
-        var done = false;
-        var ac = articlesCentral.make();
-        ac.digest(harvest1)
-        .then(function () {
-            return ac.digest(harvest2);
-        })
-        .then(function () {
-            return ac.setArticleReadState('link1', true);
-        })
-        .then(function () {
-            // is not abandoned, so should not be removed even though isRead == true
-            return ac.setArticleReadState('guid2', true);
-        })
-        .then(function () {
-            return ac.sweepArticlesOlderThan(3);
-        })
-        .then(function () {
-            return ac.getArticles(['http://a.com/feed'], 0, 100);
-        })
-        .then(function (result) {
-            var articles = result.articles;
-            expect(articles.length).toBe(3);
-            expect(getArt(articles, 'link4')).not.toBeNull();
-            expect(getArt(articles, 'link3')).not.toBeNull();
-            expect(getArt(articles, 'guid2')).not.toBeNull();
-            expect(getArt(articles, 'link1')).toBeNull();
-            
-            done = true;
-        });
-        waitsFor(function () { return done; }, "timeout", 500);
-    });
-    
     it('should set "now" date for article if pubDate was not provided in feed xml', function () {
         var done = false;
-        var ac = articlesCentral.make();
-        ac.digest(harvestNoPubDate)
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', harvestNoPubDate)
         .then(function () {
-            return ac.getArticles(['http://a.com/feed'], 0, 100);
+            return as.getArticles(['a.com/feed'], 0, 100);
         })
         .then(function (result) {
             var articles = result.articles;
@@ -331,10 +282,10 @@ describe('articlesCentral', function () {
     
     it('should parse audio enclosures', function () {
         var done = false;
-        var ac = articlesCentral.make();
-        ac.digest(harvest1)
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', harvest1)
         .then(function () {
-            return ac.getArticles(['http://a.com/feed'], 0, 100);
+            return as.getArticles(['a.com/feed'], 0, 100);
         })
         .then(function (result) {
             var articles = result.articles;
@@ -353,37 +304,54 @@ describe('articlesCentral', function () {
         waitsFor(function () { return done; }, "timeout", 500);
     });
     
+    it('should remove all articles of given feed', function () {
+        var done = false;
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', harvest1)
+        .then(function () {
+            return as.removeAllForFeed('a.com/feed');
+        })
+        .then(function () {
+            return as.getArticles(['a.com/feed'], 0, 100);
+        })
+        .then(function (result) {
+            expect(result.articles.length).toBe(0);
+            expect(result.numAll).toBe(0);
+            
+            done = true;
+        });
+        waitsFor(function () { return done; }, "timeout", 500);
+    });
     
+    it('should give unread articles for feed', function () {
+        var done = false;
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', harvest1)
+        .then(function () {
+            return as.countUnread('a.com/feed');
+        })
+        .then(function (count) {
+            expect(count).toBe(3);
+            done = true;
+        });
+        waitsFor(function () { return done; }, "timeout", 500);
+    });
     
     describe('tagging', function () {
         
-        it('should init', function () {
+        it('should add tag', function () {
             var done = false;
-            var ac = articlesCentral.make();
-            expect(ac.tags.length).toBe(0);
-            ac.init()
-            .then(function () {
-                expect(ac.tags.length).toBe(0);
-                done = true;
-            });
-            waitsFor(function () { return done; }, "timeout", 500);
-        });
-        
-        it('should add tags', function () {
-            var done = false;
-            var ac = articlesCentral.make();
-            ac.init()
-            .then(function () {
-                return ac.addTag('tag1');
-            })
+            var as = articlesStorage.make();
+            as.addTag('tag1')
             .then(function (addedTag) {
-                expect(ac.tags.length).toBe(1);
-                expect(ac.tags[0].name).toBe('tag1');
-                return ac.addTag('tag2');
+                expect(addedTag._id).toBeDefined();
+                expect(addedTag.name).toBe('tag1');
+                return as.getTags();
             })
-            .then(function (addedTag) {
-                expect(ac.tags.length).toBe(2);
-                expect(ac.tags[1].name).toBe('tag2');
+            .then(function (tags) {
+                expect(tags.length).toBe(1);
+                expect(tags[0]._id).toBeDefined();
+                expect(tags[0].name).toBe('tag1');
                 done = true;
             });
             waitsFor(function () { return done; }, "timeout", 500);
@@ -391,20 +359,21 @@ describe('articlesCentral', function () {
         
         it('should not add 2 tags with the same name', function () {
             var done = false;
-            var ac = articlesCentral.make();
+            var as = articlesStorage.make();
             var tag1;
-            ac.init()
-            .then(function () {
-                return ac.addTag('tag1');
-            })
+            as.addTag('tag1')
             .then(function (addedTag) {
                 tag1 = addedTag;
-                return ac.addTag('tag1');
+                return as.addTag('tag1');
             })
             .then(function (addedTag) {
+                // should return already existing tag object
                 expect(tag1._id).toBe(addedTag._id);
-                expect(ac.tags.length).toBe(1);
-                expect(ac.tags[0].name).toBe('tag1');
+                return as.getTags();
+            })
+            .then(function (tags) {
+                expect(tags.length).toBe(1);
+                expect(tags[0]._id).toBe(tag1._id);
                 done = true;
             });
             waitsFor(function () { return done; }, "timeout", 500);
@@ -412,53 +381,50 @@ describe('articlesCentral', function () {
         
         it('should tag and untag articles', function () {
             var done = false;
-            var ac = articlesCentral.make();
+            var as = articlesStorage.make();
             var tag1;
             var tag2;
-            ac.init()
+            as.digest('a.com/feed', harvest1)
             .then(function () {
-                return ac.digest(harvest1);
-            })
-            .then(function () {
-                return ac.addTag('tag1');
+                return as.addTag('tag1');
             })
             .then(function (addedTag) {
                 tag1 = addedTag;
-                return ac.addTag('tag2');
+                return as.addTag('tag2');
             })
             .then(function (addedTag) {
                 tag2 = addedTag;
-                return ac.tagArticle('link3', tag1._id);
+                return as.tagArticle('link3', tag1._id);
             })
             .then(function (taggedArticle) {
-                return ac.untagArticle('link3', tag1._id);
+                return as.untagArticle('link3', tag1._id);
             })
             .then(function (untaggedArticle) {
                 expect(untaggedArticle.guid).toBe('link3');
                 expect(untaggedArticle.tags).toBe(undefined);
-                return ac.tagArticle('link3', tag1._id);
+                return as.tagArticle('link3', tag1._id);
             })
             .then(function (taggedArticle) {
-                return ac.getArticles(['http://a.com/feed'], 0, 100);
+                return as.getArticles(['a.com/feed'], 0, 100);
             })
             .then(function (result) {
                 var art = getArt(result.articles, 'link3');
                 expect(art.tags.length).toBe(1);
-                return ac.tagArticle('link3', tag2._id);
+                return as.tagArticle('link3', tag2._id);
             })
             .then(function (taggedArticle) {
-                return ac.getArticles(['http://a.com/feed'], 0, 100);
+                return as.getArticles(['a.com/feed'], 0, 100);
             })
             .then(function (result) {
                 var art = getArt(result.articles, 'link3');
                 expect(art.tags.length).toBe(2);
-                return ac.untagArticle('link3', tag1._id);
+                return as.untagArticle('link3', tag1._id);
             })
             .then(function (untaggedArticle) {
                 expect(untaggedArticle.guid).toBe('link3');
                 expect(untaggedArticle.tags.length).toBe(1);
                 expect(untaggedArticle.tags[0]).toBe(tag2._id);
-                return ac.getArticles(['http://a.com/feed'], 0, 100);
+                return as.getArticles(['a.com/feed'], 0, 100);
             })
             .then(function (result) {
                 var art = getArt(result.articles, 'link3');
@@ -471,21 +437,18 @@ describe('articlesCentral', function () {
         
         it('should not tag article twice with same tag', function () {
             var done = false;
-            var ac = articlesCentral.make();
+            var as = articlesStorage.make();
             var tag1;
-            ac.init()
+            as.digest('a.com/feed', harvest1)
             .then(function () {
-                return ac.digest(harvest1);
-            })
-            .then(function () {
-                return ac.addTag('tag1');
+                return as.addTag('tag1');
             })
             .then(function (addedTag) {
                 tag1 = addedTag;
-                return ac.tagArticle('link3', tag1._id);
+                return as.tagArticle('link3', tag1._id);
             })
             .then(function (taggedArticle) {
-                return ac.tagArticle('link3', tag1._id);
+                return as.tagArticle('link3', tag1._id);
             })
             .then(function (taggedArticle) {
                 expect(taggedArticle.tags.length).toBe(1);
@@ -496,25 +459,22 @@ describe('articlesCentral', function () {
         
         it('should list all articles with given tag', function () {
             var done = false;
-            var ac = articlesCentral.make();
+            var as = articlesStorage.make();
             var tag1;
-            ac.init()
+            as.digest('a.com/feed', harvest1)
             .then(function () {
-                return ac.digest(harvest1);
-            })
-            .then(function () {
-                return ac.addTag('tag1');
+                return as.addTag('tag1');
             })
             .then(function (addedTag) {
                 tag1 = addedTag;
-                return ac.tagArticle('link3', tag1._id);
+                return as.tagArticle('link3', tag1._id);
             })
             .then(function (taggedArticle) {
-                return ac.tagArticle('link1', tag1._id);
+                return as.tagArticle('link1', tag1._id);
             })
             .then(function (taggedArticle) {
-                return ac.getArticles(['http://a.com/feed'], 0, 100, {
-                    tag: tag1._id
+                return as.getArticles(['a.com/feed'], 0, 100, {
+                    tagId: tag1._id
                 });
             })
             .then(function (result) {
@@ -528,21 +488,21 @@ describe('articlesCentral', function () {
         
         it('should remove tag', function () {
             var done = false;
-            var ac = articlesCentral.make();
+            var as = articlesStorage.make();
             var tag1;
-            ac.init()
+            as.digest('a.com/feed', harvest1)
             .then(function () {
-                return ac.digest(harvest1);
-            })
-            .then(function () {
-                return ac.addTag('tag1');
+                return as.addTag('tag1');
             })
             .then(function (addedTag) {
                 tag1 = addedTag;
-                return ac.removeTag(tag1._id);
+                return as.removeTag(tag1._id);
             })
             .then(function () {
-                expect(ac.tags.length).toBe(0);
+                return as.getTags();
+            })
+            .then(function (tags) {
+                expect(tags.length).toBe(0);
                 done = true;
             });
             waitsFor(function () { return done; }, "timeout", 500);
@@ -550,29 +510,29 @@ describe('articlesCentral', function () {
         
         it('should remove tag, and its reference from articles', function () {
             var done = false;
-            var ac = articlesCentral.make();
+            var as = articlesStorage.make();
             var tag1;
-            ac.init()
+            as.digest('a.com/feed', harvest1)
             .then(function () {
-                return ac.digest(harvest1);
-            })
-            .then(function () {
-                return ac.addTag('tag1');
+                return as.addTag('tag1');
             })
             .then(function (addedTag) {
                 tag1 = addedTag;
-                return ac.tagArticle('link3', tag1._id);
+                return as.tagArticle('link3', tag1._id);
             })
             .then(function (taggedArticle) {
-                return ac.tagArticle('link1', tag1._id);
+                return as.tagArticle('link1', tag1._id);
             })
             .then(function (taggedArticle) {
-                return ac.removeTag(tag1._id);
+                return as.removeTag(tag1._id);
             })
             .then(function () {
-                expect(ac.tags.length).toBe(0);
-                return ac.getArticles(['http://a.com/feed'], 0, 100, {
-                    tag: tag1._id
+                return as.getTags();
+            })
+            .then(function (tags) {
+                expect(tags.length).toBe(0);
+                return as.getArticles(['a.com/feed'], 0, 100, {
+                    tagId: tag1._id
                 });
             })
             .then(function (result) {
@@ -584,19 +544,19 @@ describe('articlesCentral', function () {
         
         it('should change tag name', function () {
             var done = false;
-            var ac = articlesCentral.make();
+            var as = articlesStorage.make();
             var tag1;
-            ac.init()
-            .then(function () {
-                return ac.addTag('tag1');
-            })
+            as.addTag('tag1')
             .then(function (addedTag) {
                 tag1 = addedTag;
-                return ac.changeTagName(tag1._id, 'new name');
+                return as.changeTagName(tag1._id, 'new name');
             })
             .then(function () {
-                expect(ac.tags.length).toBe(1);
-                expect(ac.tags[0].name).toBe('new name');
+                return as.getTags();
+            })
+            .then(function (tags) {
+                expect(tags.length).toBe(1);
+                expect(tags[0].name).toBe('new name');
                 done = true;
             });
             waitsFor(function () { return done; }, "timeout", 500);

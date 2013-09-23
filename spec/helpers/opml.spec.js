@@ -3,8 +3,8 @@
 describe('opml', function () {
     
     var opml = require('../app/helpers/opml');
+    var feedsStorage = require('../app/models/feedsStorage');
     var xmldoc = require('xmldoc');
-    var feedsCentral = require('../app/models/feedsCentral');
     
     describe('importing', function () {
         
@@ -35,56 +35,43 @@ describe('opml', function () {
             '</opml>';
         
         it('should say if it is OPML format or not', function () {
-            expect(opml.isOpml(opmlContent)).toBe(true);
-            expect(opml.isOpml('<data><item>Hello!</item></data>')).toBe(false);
-            expect(opml.isOpml('Something, something.')).toBe(false);
+            expect(opml.isOpml(opmlContent)).toBeTruthy();
+            expect(opml.isOpml('<data><item>Hello!</item></data>')).toBeFalsy();
+            expect(opml.isOpml('Something, something.')).toBeFalsy();
         });
         
-        it('should add categories and feeds to tree', function () {
-            var fc = feedsCentral.make();
-            opml.import(opmlContent, fc.addFeed);
+        it('should add categories and feeds to storage', function () {
+            var fst = feedsStorage.make();
+            opml.import(opmlContent, fst);
             
-            expect(fc.tree.length).toBe(5);
-            expect(fc.feeds.length).toBe(8);
+            expect(fst.categories.length).toBe(2);
+            expect(fst.feeds.length).toBe(8);
             
-            expect(fc.tree[0].type).toBe('category');
-            expect(fc.tree[0].name).toBe('Category A');
-            expect(fc.tree[0].feeds.length).toBe(3);
-            expect(fc.tree[0].feeds[0].url).toBe('http://a.com/feed');
-            expect(fc.tree[0].feeds[1].url).toBe('http://b.com/feed');
-            expect(fc.tree[0].feeds[2].url).toBe('http://c.com/feed');
+            // nested categories not supported in sputnik
+            expect(fst.categories).not.toContain('Category C');
             
-            expect(fc.tree[1].type).toBe('category');
-            expect(fc.tree[1].name).toBe('Category B');
-            expect(fc.tree[1].feeds.length).toBe(2);
-            expect(fc.tree[1].feeds[0].url).toBe('http://d.com/feed');
-            expect(fc.tree[1].feeds[1].url).toBe('http://z.com/feed');
+            expect(fst.feeds[0].url).toBe('http://a.com/feed');
+            expect(fst.feeds[0].siteUrl).toBe('http://a.com');
+            expect(fst.feeds[0].title).toBe('a');
+            expect(fst.feeds[0].category).toBe('Category A');
             
-            expect(fc.tree[2].type).toBe('feed');
-            expect(fc.tree[2].url).toBe('http://e.com/feed');
-            expect(fc.tree[2].siteUrl).toBe('http://e.com');
-            
-            expect(fc.tree[3].siteUrl).toBe(undefined);
+            expect(fst.feeds[7].title).toBe('g');
+            expect(fst.feeds[7].category).toBeUndefined();
         });
         
         it('should do nothing if not valid OPML was given', function () {
-            var fc = feedsCentral.make();
-            opml.import('<data><item>Hello!</item></data>', fc, 0);
-            expect(fc.tree.length).toBe(0);
-            expect(fc.feeds.length).toBe(0);
+            var fst = feedsStorage.make();
+            opml.import('<data><item>Hello!</item></data>', fst);
+            expect(fst.categories.length).toBe(0);
+            expect(fst.feeds.length).toBe(0);
         });
     });
     
-    
     describe('exporting', function () {
         
-        function getFeedsData() {
-            var fs = require('fs');
-            return JSON.parse(fs.readFileSync('./data/feeds.json'));
-        }
-        
-        it('should create empty OPML from empty tree', function () {
-            var opmlContent = opml.export([]);
+        it('should create empty OPML from empty storage', function () {
+            var fst = feedsStorage.make();
+            var opmlContent = opml.export(fst);
             var xml = new xmldoc.XmlDocument(opmlContent);
             expect(xml.name).toBe('opml');
             expect(xml.childNamed('head').children.length).toBe(1);
@@ -92,23 +79,43 @@ describe('opml', function () {
         });
         
         it('should create OPML', function () {
-            var data = getFeedsData();
-            var fc = feedsCentral.make(data);
-            var opmlContent = opml.export(fc.tree);
+            var fst = feedsStorage.make();
+            
+            fst.addFeed({
+                url: 'a.com/feed',
+                siteUrl: 'a.com',
+                title: 'a',
+                category: 'First Category ąĄłŁ', // utf8 test
+            });
+            fst.addFeed({
+                url: 'b.com/feed',
+                siteUrl: 'b.com',
+                title: 'b',
+                category: 'First Category ąĄłŁ',
+            });
+            fst.addFeed({
+                url: 'c.com/feed',
+            });
+            fst.addFeed({
+                url: 'd.com/feed',
+            });
+            
+            var opmlContent = opml.export(fst);
             var xml = new xmldoc.XmlDocument(opmlContent);
             
             expect(xml.childNamed('body').children.length).toBe(3);
             
-            expect(xml.childNamed('body').children[0].attr.title).toBe('First Category');
-            expect(xml.childNamed('body').children[0].attr.text).toBe('First Category');
-            expect(xml.childNamed('body').children[0].children.length).toBe(1);
-            expect(xml.childNamed('body').children[0].children[0].attr.text).toBe('Site A');
+            expect(xml.childNamed('body').children[0].attr.title).toBe('First Category ąĄłŁ');
+            expect(xml.childNamed('body').children[0].attr.text).toBe('First Category ąĄłŁ');
+            expect(xml.childNamed('body').children[0].children.length).toBe(2);
+            expect(xml.childNamed('body').children[0].children[0].attr.text).toBe('a');
+            expect(xml.childNamed('body').children[0].children[1].attr.text).toBe('b');
             
-            expect(xml.childNamed('body').children[1].attr.text).toBe('Site B');
-            expect(xml.childNamed('body').children[1].attr.title).toBe('Site B');
+            expect(xml.childNamed('body').children[1].attr.text).toBe('Feed');
+            expect(xml.childNamed('body').children[1].attr.title).toBe('Feed');
             expect(xml.childNamed('body').children[1].attr.type).toBe('rss');
-            expect(xml.childNamed('body').children[1].attr.xmlUrl).toBe('http://b.com/feed');
-            expect(xml.childNamed('body').children[1].attr.htmlUrl).toBe('http://b.com/');
+            expect(xml.childNamed('body').children[1].attr.xmlUrl).toBe('c.com/feed');
+            expect(xml.childNamed('body').children[1].attr.htmlUrl).toBeUndefined();
         });
     });
     

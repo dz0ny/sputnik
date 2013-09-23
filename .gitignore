@@ -14,5 +14,8 @@ node_modules
 # 7zip (command line version)
 /scripts/7zip/*
 
+# temporaty folder used for testing
+/spec/temp
+
 # data folder for testing
 /data
