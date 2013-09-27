@@ -11,7 +11,8 @@ exports.getUrl = function (url) {
         url: url,
         encoding: null,
         headers: {
-            "User-Agent": "Sputnik News Reader"
+            "User-Agent": "Sputnik News Reader",
+            "Accept-Encoding": "gzip, deflate",
         },
         timeout: 5000
     };
