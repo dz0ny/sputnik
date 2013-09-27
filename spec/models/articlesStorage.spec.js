@@ -170,7 +170,33 @@ describe('articlesStorage', function () {
         waitsFor(function () { return done; }, "timeout", 500);
     });
     
-    it('should do fine when 2 identical jobs executed simultaneously', function () {
+    it('should update article title or content if has changed in xml', function () {
+        var done = false;
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', harvest1)
+        .then(function () {
+            return as.digest('a.com/feed', [{
+                // same article as digested earlier, but with changed content
+                "title": "different title",
+                "description": "different description",
+                "link": "link3",
+                "pubDate": new Date(3),
+            }]);
+        })
+        .then(function () {
+            return as.getArticles(['a.com/feed'], 0, 100);
+        })
+        .then(function (result) {
+            var art = getArt(result.articles, 'link3');
+            expect(art.title).toBe('different title');
+            expect(art.content).toBe('different description');
+            
+            done = true;
+        });
+        waitsFor(function () { return done; }, "timeout", 500);
+    });
+    
+    it('should do fine when 2 jobs were executed simultaneously', function () {
         var doneTasks = 0;
         var as = articlesStorage.make();
         
