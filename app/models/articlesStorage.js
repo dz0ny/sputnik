@@ -184,7 +184,7 @@ exports.make = function (dbPath) {
     function markAllAsRead(feedUrls) {
         var deferred = Q.defer();
         
-        db.update({ feedUrl: { $in: feedUrls} }, { $set: { isRead: true } }, { multi: true }, function (err, numReplaced) {
+        db.update({ feedUrl: { $in: feedUrls}, isRead: false }, { $set: { isRead: true } }, { multi: true }, function (err, numReplaced) {
             deferred.resolve();
         });
         
