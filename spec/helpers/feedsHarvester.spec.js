@@ -6,9 +6,12 @@ describe('feedsHarvester', function () {
     var fs = require('fs');
     var fh = require('../app/helpers/feedsHarvester');
     
+    // feeds
     var atomXml = fs.readFileSync('./data/atom.xml');
     var rss2Xml = fs.readFileSync('./data/rss2.xml');
     var isoEncoded = fs.readFileSync('./data/iso-encoded.xml');
+    
+    // html sites
     var htmlLinkAtom = '<html><head><link href="http://atom-xml" title="The Site" type="application/atom+xml"></head></html>';
     var htmlLinkRss = '<html><head><link href="http://rss2-xml" title="The Site" type="application/rss+xml"></head></html>';
     // sometimes relative links are given
@@ -20,10 +23,10 @@ describe('feedsHarvester', function () {
     var htmlNoLink = '<html><head></head></html>';
     
     mockNet.injectUrlMap({
-        "http://404": null,
         "http://atom-xml": atomXml,
         "http://rss2-xml": rss2Xml,
         "http://iso-encoded": isoEncoded,
+        
         "http://html-link-atom": htmlLinkAtom,
         "http://html-link-rss": htmlLinkRss,
         "http://html-link-relative-rss": htmlLinkRelativeRss,
@@ -118,24 +121,67 @@ describe('feedsHarvester', function () {
         
         it("should fetch feeds' xmls", function () {
             var done = false;
+            var firedProgressCount = 0;
             var feedUrls = [
-                'http://404', // to test edge case
+                'http://404',
+                'http://timeout',
+                'http://unknown-error',
                 'http://html-no-link', // html instead of feed xml to test edge case
                 'http://atom-xml',
                 'http://rss2-xml',
             ];
-            fh.getFeeds(feedUrls, mockNet).then(
-                function (result) {
-                    expect(result.length).toBe(2);
-                    expect(result[0].url).toBe('http://atom-xml');
-                    expect(result[1].url).toBe('http://rss2-xml');
+            fh.getFeeds(feedUrls, mockNet)
+            .then(
+                function () {
+                    expect(firedProgressCount).toBe(6);
                     done = true;
                 },
                 null,
+                // progress fired with any just fetched feed
                 function (progress) {
+                    
+                    firedProgressCount += 1;
+                    
                     expect(progress.completed).toBeGreaterThan(0);
                     expect(progress.completed).toBeLessThan(feedUrls.length + 1);
                     expect(progress.total).toBe(feedUrls.length);
+                    
+                    switch (progress.url) {
+                        case 'http://404':
+                            expect(progress.status).toBe('404');
+                            expect(progress.meta).toEqual({});
+                            expect(progress.articles).toEqual([]);
+                            break;
+                        case 'http://timeout':
+                            expect(progress.status).toBe('timeout');
+                            expect(progress.meta).toEqual({});
+                            expect(progress.articles).toEqual([]);
+                            break;
+                        case 'http://unknown-error':
+                            expect(progress.status).toBe('unknownError');
+                            expect(progress.meta).toEqual({});
+                            expect(progress.articles).toEqual([]);
+                            break;
+                        case 'http://html-no-link':
+                            expect(progress.status).toBe('parseError');
+                            expect(progress.meta).toEqual({});
+                            expect(progress.articles).toEqual([]);
+                            break;
+                        case 'http://atom-xml':
+                            expect(progress.status).toBe('ok');
+                            expect(progress.meta.title).toBe('Paul Irish');
+                            expect(progress.meta.link).toBe('http://paulirish.com/');
+                            expect(progress.articles.length).toBe(20);
+                            expect(progress.articles[0].title).toBe('WebKit for Developers');
+                            break;
+                        case 'http://rss2-xml':
+                            expect(progress.status).toBe('ok');
+                            expect(progress.meta.title).toBe('The Weinberg Foundation');
+                            expect(progress.meta.link).toBe('http://www.the-weinberg-foundation.org');
+                            expect(progress.articles.length).toBe(10);
+                            expect(progress.articles[0].title).toBe('Liquid fission: The best thing since sliced bread?');
+                            break;
+                    }
                 }
             );
             waitsFor(function () { return done; }, "timeout", 500);
@@ -143,9 +189,11 @@ describe('feedsHarvester', function () {
         
         it("should convert to UTF-8 any feed encoded in different charset", function () {
             var done = false;
-            fh.getFeeds(['http://iso-encoded'], mockNet).then(function (result) {
-                expect(result[0].articles[0].title).toBe('ąśćńłóżźĄŚŻĆŃÓŁ');
-                expect(result[0].articles[0].description).toBe('ąśćńłóżźĄŚŻĆŃÓŁ');
+            fh.getFeeds(['http://iso-encoded'], mockNet)
+            .then(null, null,
+            function (progress) {
+                expect(progress.articles[0].title).toBe('ąśćńłóżźĄŚŻĆŃÓŁ');
+                expect(progress.articles[0].description).toBe('ąśćńłóżźĄŚŻĆŃÓŁ');
                 done = true;
             });
             waitsFor(function () { return done; }, "timeout", 500);

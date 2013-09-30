@@ -118,41 +118,75 @@ exports.discoverFeedUrl = function (url, requester) {
 exports.getFeeds = function (feedUrls, requester) {
     var deferred = Q.defer();
     requester = requester || net;
-    var completedTasks = 0;
-    var results = [];
+    var index = -1;
+    var completed = 0;
+    var simultaneousTasks = 5;
+    var workingTasks = 0;
     
-    function tickTask() {
-        completedTasks += 1;
+    function notify(url, status, meta, articles) {
+        
+        workingTasks -= 1;
+        completed += 1;
+        
         deferred.notify({
-            completed: completedTasks,
-            total: feedUrls.length
+            completed: completed,
+            total: feedUrls.length,
+            url: url,
+            status: status,
+            meta: meta || {},
+            articles: articles || []
         });
-        if (completedTasks === feedUrls.length) {
-            deferred.resolve(results);
+        
+        if (completed === feedUrls.length) {
+            deferred.resolve();
+        } else {
+            if (workingTasks < simultaneousTasks) {
+                next();
+            }
         }
     }
     
-    feedUrls.forEach(function (url) {
+    function fetch(url) {
+        
+        workingTasks += 1;
+        
         requester.getUrl(url).then(function (bodyBuf) {
             
             var body = normalizeEncoding(bodyBuf);
             
             parseFeed(body).then(function (result) {
-                result.url = url;
-                results.push(result);
-                tickTask();
+                notify(url, 'ok', result.meta, result.articles);
             }, function (err) {
-                //console.log(err)
-                //console.log(url)
-                tickTask();
+                notify(url, 'parseError');
             });
             
         }, function (err) {
-            //console.log(err)
-            //console.log(url)
-            tickTask();
+            switch (err.code) {
+                case 'ENOTFOUND':
+                    notify(url, '404');
+                    break;
+                case 'ETIMEDOUT':
+                    notify(url, 'timeout');
+                    break;
+                default:
+                    notify(url, 'unknownError');
+            }
         });
-    });
+    }
+    
+    function next() {
+        index += 1;
+        if (index < feedUrls.length) {
+            
+            fetch(feedUrls[index]);
+            
+            if (workingTasks < simultaneousTasks) {
+                next();
+            }
+        }
+    }
+    
+    next();
     
     return deferred.promise;
 };
