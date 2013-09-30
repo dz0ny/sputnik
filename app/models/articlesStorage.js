@@ -10,6 +10,8 @@ exports.make = function (dbPath) {
         autoload: true
     });
     
+    db.ensureIndex({ fieldName: 'feedUrl' });
+    
     var digestInProgress;
     
     function indexOfArticle(list, article) {

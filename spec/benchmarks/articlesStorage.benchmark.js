@@ -117,6 +117,12 @@ function monthTest() {
     })
     .then(function () {
         stopTime();
+        process.stdout.write('count unread...');
+        startTime();
+        return as.countUnread(feeds[0]);
+    })
+    .then(function () {
+        stopTime();
         process.stdout.write('mark one of articles as read...');
         startTime();
         return as.setArticleReadState('http://something.com/' + currDate, true);
