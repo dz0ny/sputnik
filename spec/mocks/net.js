@@ -8,7 +8,7 @@ exports.injectUrlMap = function (passedUrlMap) {
     urlMap = passedUrlMap;
 };
 
-function get(url) {
+function get(url, options) {
     var deferred = Q.defer();
     
     if (urlMap[url]) {
@@ -17,15 +17,20 @@ function get(url) {
         switch (url) {
             case 'http://404':
                 deferred.reject({
+                    code: '404'
+                });
+                break;
+            case 'not-found':
+                deferred.reject({
                     code: 'ENOTFOUND'
                 });
                 break;
-            case 'http://timeout':
+            case 'timeout':
                 deferred.reject({
                     code: 'ETIMEDOUT'
                 });
                 break;
-            case 'http://unknown-error':
+            case 'unknown-error':
             default:
                 deferred.reject({
                     code: '???'
