@@ -4,6 +4,8 @@ var Q = require('q');
 
 exports.make = function (urlMap) {
     
+    var gerUrlSpy;
+    
     function get(url, options) {
         var deferred = Q.defer();
         
@@ -34,10 +36,17 @@ exports.make = function (urlMap) {
             }
         }
         
+        if (gerUrlSpy) {
+            gerUrlSpy(url, options);
+        }
+        
         return deferred.promise;
     }
 
     return {
-        getUrl: get
+        getUrl: get,
+        injectGeturlSpy: function (spy) {
+            gerUrlSpy = spy;
+        }
     };
 };

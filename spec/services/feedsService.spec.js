@@ -141,10 +141,6 @@ describe('feedsService', function () {
         feed.category = 'wtf?';
         expect(feed.category).toBe('wtf?');
         
-        expect(feed.lastDownload).toBeUndefined();
-        feed.lastDownload = 123;
-        expect(feed.lastDownload).toBe(123);
-        
         expect(feed.averageActivity).toBeUndefined();
         feed.averageActivity = 7;
         expect(feed.averageActivity).toBe(7);

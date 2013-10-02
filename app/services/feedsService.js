@@ -104,14 +104,6 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
                     feedsStorage.setFeedValue(feedModel.url, 'averageActivity', value);
                 }
             },
-            get lastDownload() {
-                return feedModel.lastDownload;
-            },
-            set lastDownload(value) {
-                if (feedModel.lastDownload !== value) {
-                    feedsStorage.setFeedValue(feedModel.url, 'lastDownload', value);
-                }
-            },
             
             remove: function () {
                 feedsStorage.removeFeed(feedModel.url);
