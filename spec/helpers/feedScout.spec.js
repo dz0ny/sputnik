@@ -4,7 +4,7 @@ describe('feedScout', function () {
     
     var fs = require('fs');
     
-    var netMock = require('./mocks/net');
+    var netMock = require('./mocks/net.mock');
     var feedParser = require('../app/helpers/feedParser');
     var scout = require('../app/helpers/feedScout');
     
@@ -21,7 +21,7 @@ describe('feedScout', function () {
     var htmlLinkHtml = '<html><head><link href="http://html-link-rss" title="The Site" type="application/rss+xml"></head></html>';
     var htmlNoLink = '<html><head></head></html>';
     
-    netMock.injectUrlMap({
+    var net = netMock.make({
         "http://atom-xml": atomXml,
         "http://rss2-xml": rss2Xml,
         "http://html-link-atom": htmlLinkAtom,
@@ -36,7 +36,7 @@ describe('feedScout', function () {
     
     it("should return nothing if 404", function () {
         var done = false;
-        scout.scout('http://404', netMock, feedParser).fail(function () {
+        scout.scout('http://404', net, feedParser).fail(function () {
             done = true;
         });
         waitsFor(function () { return done; }, "timeout", 500);
@@ -44,7 +44,7 @@ describe('feedScout', function () {
     
     it("should deal with Atom XML", function () {
         var done = false;
-        scout.scout('http://atom-xml', netMock, feedParser).then(function (feedUrl) {
+        scout.scout('http://atom-xml', net, feedParser).then(function (feedUrl) {
             expect(feedUrl).toBe('http://atom-xml');
             done = true;
         });
@@ -53,7 +53,7 @@ describe('feedScout', function () {
     
     it("should deal with RSS XML", function () {
         var done = false;
-        scout.scout('http://rss2-xml', netMock, feedParser).then(function (feedUrl) {
+        scout.scout('http://rss2-xml', net, feedParser).then(function (feedUrl) {
             expect(feedUrl).toBe('http://rss2-xml');
             done = true;
         });
@@ -62,7 +62,7 @@ describe('feedScout', function () {
     
     it("should deal with HTML with <link> to Atom", function () {
         var done = false;
-        scout.scout('http://html-link-atom', netMock, feedParser).then(function (feedUrl) {
+        scout.scout('http://html-link-atom', net, feedParser).then(function (feedUrl) {
             expect(feedUrl).toBe('http://atom-xml');
             done = true;
         });
@@ -71,7 +71,7 @@ describe('feedScout', function () {
     
     it("should deal with HTML with <link> to RSS", function () {
         var done = false;
-        scout.scout('http://html-link-rss', netMock, feedParser).then(function (feedUrl) {
+        scout.scout('http://html-link-rss', net, feedParser).then(function (feedUrl) {
             expect(feedUrl).toBe('http://rss2-xml');
             done = true;
         });
@@ -80,7 +80,7 @@ describe('feedScout', function () {
     
     it("should deal with HTML with RELATIVE <link> to RSS", function () {
         var done = false;
-        scout.scout('http://html-link-relative-rss', netMock, feedParser).then(function (feedUrl) {
+        scout.scout('http://html-link-relative-rss', net, feedParser).then(function (feedUrl) {
             expect(feedUrl).toBe('http://html-link-relative-rss/rss2-xml');
             done = true;
         });
@@ -89,7 +89,7 @@ describe('feedScout', function () {
     
     it("should return nothing if HTML has no <link> tag", function () {
         var done = false;
-        scout.scout('http://html-no-link', netMock, feedParser).fail(function () {
+        scout.scout('http://html-no-link', net, feedParser).fail(function () {
             done = true;
         });
         waitsFor(function () { return done; }, "timeout", 500);
@@ -97,7 +97,7 @@ describe('feedScout', function () {
     
     it("should return nothing if HTMLs <link> gets 404", function () {
         var done = false;
-        scout.scout('http://html-link-404', netMock, feedParser).fail(function () {
+        scout.scout('http://html-link-404', net, feedParser).fail(function () {
             done = true;
         });
         waitsFor(function () { return done; }, "timeout", 500);
@@ -105,7 +105,7 @@ describe('feedScout', function () {
     
     it("should return nothing if HTMLs <link> gets HTML instead of feed format", function () {
         var done = false;
-        scout.scout('http://html-link-html', netMock, feedParser).fail(function () {
+        scout.scout('http://html-link-html', net, feedParser).fail(function () {
             done = true;
         });
         waitsFor(function () { return done; }, "timeout", 500);
