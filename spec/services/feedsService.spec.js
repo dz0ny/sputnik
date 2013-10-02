@@ -76,7 +76,7 @@ describe('feedsService', function () {
     
     it('updates tree if feed category changed', inject(function (feedsService) {
         expect(feedsService.tree[4].title).toBe('e');
-        feedsService.tree[4].setCategory('Third Category');
+        feedsService.tree[4].category = 'Third Category';
         expect(feedsService.tree[2].feeds[0].title).toBe('e');
     }));
     
@@ -124,11 +124,32 @@ describe('feedsService', function () {
         var feed = feedsService.getFeedByUrl('a.com/feed');
         expect(feed.type).toBe('feed');
         expect(feed.unreadArticlesCount).toBe(0);
-        expect(feed.setTitle).toBeDefined();
-        expect(feed.setSiteUrl).toBeDefined();
-        expect(feed.setFavicon).toBeDefined();
+        
+        expect(feed.title).toBe('ąĄ');
+        feed.title = 'abc';
+        expect(feed.title).toBe('abc');
+        
+        expect(feed.siteUrl).toBeUndefined();
+        feed.siteUrl = 'url';
+        expect(feed.siteUrl).toBe('url');
+        
+        expect(feed.favicon).toBeUndefined();
+        feed.favicon = 'fav';
+        expect(feed.favicon).toBe('fav');
+        
+        expect(feed.category).toBe('ą First Category');
+        feed.category = 'wtf?';
+        expect(feed.category).toBe('wtf?');
+        
+        expect(feed.lastDownload).toBeUndefined();
+        feed.lastDownload = 123;
+        expect(feed.lastDownload).toBe(123);
+        
+        expect(feed.averageActivity).toBeUndefined();
+        feed.averageActivity = 7;
+        expect(feed.averageActivity).toBe(7);
+        
         expect(feed.remove).toBeDefined();
-        expect(feed.setCategory).toBeDefined();
     }));
     
     describe('events', function () {

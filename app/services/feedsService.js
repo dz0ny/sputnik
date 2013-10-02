@@ -62,32 +62,57 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
             get url() {
                 return feedModel.url;
             },
+            
             get title() {
                 return feedModel.title || '...';
+            },
+            set title(value) {
+                if (feedModel.title !== value) {
+                    feedsStorage.setFeedValue(feedModel.url, 'title', value);
+                }
             },
             get siteUrl() {
                 return feedModel.siteUrl;
             },
+            set siteUrl(value) {
+                if (feedModel.siteUrl !== value) {
+                    feedsStorage.setFeedValue(feedModel.url, 'siteUrl', value);
+                }
+            },
+            get favicon() {
+                return feedModel.favicon;
+            },
+            set favicon(value) {
+                if (feedModel.favicon !== value) {
+                    feedsStorage.setFeedValue(feedModel.url, 'favicon', value);
+                }
+            },
+            
             get category() {
                 return feedModel.category;
             },
-            setCategory: function (newCategory) {
-                feedsStorage.setFeedValue(feedModel.url, 'category', newCategory);
+            set category(value) {
+                feedsStorage.setFeedValue(feedModel.url, 'category', value);
                 treeObsolete = true;
             },
-            setTitle: function (title) {
-                if (feedModel.title !== title) {
-                    feedsStorage.setFeedValue(feedModel.url, 'title', title);
+            
+            get averageActivity() {
+                return feedModel.averageActivity;
+            },
+            set averageActivity(value) {
+                if (feedModel.averageActivity !== value) {
+                    feedsStorage.setFeedValue(feedModel.url, 'averageActivity', value);
                 }
             },
-            setSiteUrl: function (siteUrl) {
-                if (feedModel.siteUrl !== siteUrl) {
-                    feedsStorage.setFeedValue(feedModel.url, 'siteUrl', siteUrl);
+            get lastDownload() {
+                return feedModel.lastDownload;
+            },
+            set lastDownload(value) {
+                if (feedModel.lastDownload !== value) {
+                    feedsStorage.setFeedValue(feedModel.url, 'lastDownload', value);
                 }
             },
-            setFavicon: function (path) {
-                throw new Error('TODO');
-            },
+            
             remove: function () {
                 feedsStorage.removeFeed(feedModel.url);
                 constructFeedsList();
@@ -186,8 +211,8 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
     
     function digestFeedMeta(feedUrl, meta) {
         var feed = getFeedByUrl(feedUrl);
-        feed.setTitle(meta.title);
-        feed.setSiteUrl(meta.link);
+        feed.title = meta.title;
+        feed.siteUrl = meta.link;
     }
     
     return  {
