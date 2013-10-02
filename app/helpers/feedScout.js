@@ -34,7 +34,6 @@ exports.scout = function (url, net, feedParser) {
         }, function () {
             // if not, treat it as html and try to find rss tag inside
             var foundFeedUrl = findFeedUrlInHtml(buff.toString(), url);
-            console.log(foundFeedUrl)
             if (foundFeedUrl) {
                 // download found url, and check if it is appropriate format
                 net.getUrl(foundFeedUrl).then(function (buff) {
