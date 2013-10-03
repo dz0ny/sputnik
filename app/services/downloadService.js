@@ -1,8 +1,10 @@
 'use strict';
 
-sputnik.factory('downloadService', function (net, feedParser, configService, feedsService, articlesService) {
+sputnik.factory('downloadService', function (net, feedParser, config, feedsService, articlesService) {
     
     var Q = require('q');
+    
+    var isWorking = false;
     
     //-----------------------------------------------------
     // Helper functions
@@ -17,7 +19,7 @@ sputnik.factory('downloadService', function (net, feedParser, configService, fee
         var lo = [];
         
         var now = Date.now();
-        var lastDownload = configService.lastFeedsDownload;
+        var lastDownload = config.lastFeedsDownload;
         
         // if lastDownload was more than 3 days ago we want to download everything as hi basket
         // because if someone launches the app every 3 days or less often he/she can see the article 6 days after its publication
@@ -221,14 +223,20 @@ sputnik.factory('downloadService', function (net, feedParser, configService, fee
         console.log('Baskets to download ->');
         console.log(baskets);
         
-        configService.lastFeedsDownload = Date.now();
+        isWorking = true;
+        
+        config.lastFeedsDownload = Date.now();
         
         downloadJob(baskets.hi, 'normal')
         .then(function () {
             // after main job start lo basket in background
+            isWorking = false;
             deferred.resolve(downloadJob(baskets.lo, 'background'));
         },
-        deferred.reject,
+        function (message) {
+            isWorking = false;
+            deferred.reject(message);
+        },
         function (prog) {
             if (prog.status === 'timeout') {
                 // if timeout occured try to download again with lo basket,
@@ -243,6 +251,9 @@ sputnik.factory('downloadService', function (net, feedParser, configService, fee
     
     return  {
         download: download,
+        get isWorking() {
+            return isWorking;
+        },
         
         // exposed only for testing
         calculateAverageActivity: calculateAverageActivity,

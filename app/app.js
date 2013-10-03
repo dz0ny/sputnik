@@ -2,17 +2,23 @@
 
 var sputnik = angular.module('sputnik', ['ngRoute', 'ngSanitize']);
 
-sputnik.config(function ($routeProvider, configService) {
+sputnik.config(function ($provide, $routeProvider) {
+    
+    var config = initSputnikConfig();
+    
+    $provide.value('config', config);
     
     var feedsStorage = require('./models/feedsStorage');
-    var dataPath = configService.dataHomeFolder + '/feeds.json';
-    sputnik.value('feedsStorage', feedsStorage.make(dataPath));
+    var dataPath = config.dataHomeFolder + '/feeds.json';
+    $provide.value('feedsStorage', feedsStorage.make(dataPath));
     
     var articlesStorage = require('./models/articlesStorage');
-    var dbPath = configService.dataHomeFolder + '/articles.nedb';
-    sputnik.value('articlesStorage', articlesStorage.make(dbPath));
+    var dbPath = config.dataHomeFolder + '/articles.nedb';
+    $provide.value('articlesStorage', articlesStorage.make(dbPath));
     
-    sputnik.value('opml', require('./helpers/opml'));
+    $provide.value('opml', require('./helpers/opml'));
+    $provide.value('net', require('./helpers/net'));
+    $provide.value('feedParser', require('./helpers/feedParser'));
     
     $routeProvider.when('/', {
         controller: 'ReadCtrl',

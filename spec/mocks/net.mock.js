@@ -6,11 +6,19 @@ exports.make = function (urlMap) {
     
     var gerUrlSpy;
     
+    function isTiemout(str) {
+        return str.substr(0, 7) === 'timeout';
+    }
+    
     function get(url, options) {
         var deferred = Q.defer();
         
         if (urlMap[url]) {
             deferred.resolve(urlMap[url]);
+        } else if (isTiemout(url)) {
+            deferred.reject({
+                code: 'ETIMEDOUT'
+            });
         } else {
             switch (url) {
                 case 'http://404':
@@ -21,11 +29,6 @@ exports.make = function (urlMap) {
                 case 'not-found':
                     deferred.reject({
                         code: 'ENOTFOUND'
-                    });
-                    break;
-                case 'timeout':
-                    deferred.reject({
-                        code: 'ETIMEDOUT'
                     });
                     break;
                 case 'unknown-error':

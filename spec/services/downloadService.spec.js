@@ -27,7 +27,7 @@ describe('downloadService', function () {
         $provide.value('net', net);
         $provide.value('opml', {});
         $provide.value('feedParser', feedParser);
-        $provide.value('configService', {});
+        $provide.value('config', {});
     }));
     
     describe('calculating feeds average activity', function () {
@@ -67,8 +67,8 @@ describe('downloadService', function () {
     
     describe('preparing fetch baskets', function () {
         
-        it('if no averageActivity place everything in HI basket', inject(function (feedsService, configService, downloadService) {
-            configService.lastFeedsDownload = moment().valueOf();
+        it('if no averageActivity place everything in HI basket', inject(function (feedsService, config, downloadService) {
+            config.lastFeedsDownload = moment().valueOf();
             feedsService.addFeed({
                 url: 'a.com/feed'
             });
@@ -80,8 +80,8 @@ describe('downloadService', function () {
             expect(baskets.lo).toEqual([]);
         }));
         
-        it('if last download was more than 3 days ago place everything in HI basket', inject(function (feedsService, configService, downloadService) {
-            configService.lastFeedsDownload = moment().subtract('hours', 73).valueOf();
+        it('if last download was more than 3 days ago place everything in HI basket', inject(function (feedsService, config, downloadService) {
+            config.lastFeedsDownload = moment().subtract('hours', 73).valueOf();
             feedsService.addFeed({
                 url: 'a.com/feed',
                 averageActivity: 1,
@@ -97,8 +97,8 @@ describe('downloadService', function () {
         }));
         
         // if someone hits refresh after 10min from last one none feeds will go into hi basket, so force more sensible behaviour then
-        it('if last download was less than 24h ago place in HI basket things like it was 24h ago', inject(function (feedsService, configService, downloadService) {
-            configService.lastFeedsDownload = moment().subtract('hours', 1).valueOf();
+        it('if last download was less than 24h ago place in HI basket things like it was 24h ago', inject(function (feedsService, config, downloadService) {
+            config.lastFeedsDownload = moment().subtract('hours', 1).valueOf();
             feedsService.addFeed({
                 url: 'a.com/feed',
                 averageActivity: 25,
@@ -112,8 +112,8 @@ describe('downloadService', function () {
             expect(baskets.lo).toEqual(['b.com/feed']);
         }));
         
-        it('if HI basket is empty LO basket should be switched to HI', inject(function (feedsService, configService, downloadService) {
-            configService.lastFeedsDownload = moment().subtract('hours', 1).valueOf();
+        it('if HI basket is empty LO basket should be switched to HI', inject(function (feedsService, config, downloadService) {
+            config.lastFeedsDownload = moment().subtract('hours', 1).valueOf();
             feedsService.addFeed({
                 url: 'a.com/feed',
                 averageActivity: 73,
@@ -254,10 +254,10 @@ describe('downloadService', function () {
             });
         }));
         
-        it('should work', inject(function (configService, feedsService, articlesService, downloadService) {
+        it('should work', inject(function (config, feedsService, articlesService, downloadService) {
             var doneCount = 0;
             
-            configService.lastFeedsDownload = moment().subtract('days', 2).valueOf();
+            config.lastFeedsDownload = moment().subtract('days', 2).valueOf();
             
             feedsService.addFeed({
                 url: 'a.com/feed',
@@ -274,13 +274,18 @@ describe('downloadService', function () {
             expect(feedA.averageActivity).toBe(5);
             expect(feedB.averageActivity).toBe(999);
             
+            expect(downloadService.isWorking).toBe(false);
+            
             downloadService.download()
             .then(function (backgroundDownloadPromise) {
                 
                 expect(feedA.averageActivity).toBe(48);
                 
+                // only main job is indicated by isWorking
+                expect(downloadService.isWorking).toBe(false);
+                
                 // should have saved time of this download
-                expect(configService.lastFeedsDownload).toBeGreaterThan(moment().subtract('minute', 1).valueOf());
+                expect(config.lastFeedsDownload).toBeGreaterThan(moment().subtract('minute', 1).valueOf());
                 
                 // digested articles should be accesible through articlesService
                 articlesService.getArticles(['a.com/feed'], 0, 100)
@@ -303,6 +308,9 @@ describe('downloadService', function () {
                 });
                 
             });
+            
+            expect(downloadService.isWorking).toBe(true);
+            
             waitsFor(function () { return doneCount === 2; }, null, 500);
         }));
         
@@ -319,6 +327,33 @@ describe('downloadService', function () {
             })
             .then(function () {
                 expect(spy.callCount).toBe(2);
+                done = true;
+            });
+            waitsFor(function () { return done; }, null, 500);
+        }));
+        
+        it('should give up when 5 timeoust in a row', inject(function (net, feedsService, downloadService) {
+            var done = false;
+            feedsService.addFeed({
+                url: 'timeout1',
+            });
+            feedsService.addFeed({
+                url: 'timeout2',
+            });
+            feedsService.addFeed({
+                url: 'timeout3',
+            });
+            feedsService.addFeed({
+                url: 'timeout4',
+            });
+            feedsService.addFeed({
+                url: 'timeout5',
+            });
+            downloadService.download()
+            .then(null, 
+            function (message) {
+                expect(message).toBe('No connection');
+                expect(downloadService.isWorking).toBe(false);
                 done = true;
             });
             waitsFor(function () { return done; }, null, 500);

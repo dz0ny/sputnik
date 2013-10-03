@@ -1,17 +1,8 @@
 'use strict';
 
-sputnik.factory('updateService', function () {
+sputnik.factory('updateService', function (config, net) {
     
     var Q = require('q');
-    var net = require('./helpers/net');
-    
-    var checkUpdatesUrl;
-    var appVersion;
-    
-    function init(passedCheckUpdatesUrl, passedAppVersion) {
-        checkUpdatesUrl = passedCheckUpdatesUrl;
-        appVersion = passedAppVersion;
-    }
     
     /**
      * Compares given version with application version,
@@ -19,7 +10,7 @@ sputnik.factory('updateService', function () {
      * Only format MAJOR.MINOR.PATCH is supported.
      */
     function isNewerVersion(version) {
-        var appV = appVersion.split('.');
+        var appV = config.appVersion.split('.');
         var v = version.split('.');
         if (v[0] > appV[0]) {
             return true;
@@ -38,7 +29,7 @@ sputnik.factory('updateService', function () {
     function checkUpdates() {
         var deferred = Q.defer();
         
-        net.getUrl(checkUpdatesUrl)
+        net.getUrl(config.checkUpdatesUrl)
         .then(function (data) {
             var updatesData = JSON.parse(data);
             var latesVersion = updatesData.version;
@@ -53,7 +44,6 @@ sputnik.factory('updateService', function () {
     }
     
     return  {
-        init: init,
         checkUpdates: checkUpdates,
         isNewerVersion: isNewerVersion
     };

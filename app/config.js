@@ -1,18 +1,23 @@
 'use strict';
 
-sputnik.factory('configService', function () {
+function initSputnikConfig() {
     
     var fs = require('fs');
     var gui = require('nw.gui');
     
     var appConf = JSON.parse(fs.readFileSync('./appConfig.json'));
-    var guid;
     
     var dataHomeFolder = appConf.dataHomeFolder;
     if (appConf.targetPlatform === 'macos') {
         dataHomeFolder = gui.App.dataPath[0];
     } else {
         dataHomeFolder = '../data';
+    }
+    
+    var userConf = {};
+    var userConfPath = dataHomeFolder + '/config.json';
+    if (fs.existsSync(userConfPath)) {
+        userConf = JSON.parse(fs.readFileSync(userConfPath));
     }
     
     function generateGuid() {
@@ -22,34 +27,30 @@ sputnik.factory('configService', function () {
         return crypto.createHash('md5').update(rand + now).digest('hex');
     }
     
-    guid = localStorage.guid;
-    if (!guid) {
-        // legacy from v0.7.0
-        // guid was stored in config.json
-        var filepath = dataHomeFolder + '/config.json';
-        if (fs.existsSync(filepath)) {
-            var config = JSON.parse(fs.readFileSync(filepath));
-            guid = config.guid;
-            localStorage.guid = guid;
-        }
+    function setUserConfProperty(key, value) {
+        userConf[key] = value;
+        fs.writeFile(userConfPath, JSON.stringify(userConf, null, 4), { encoding: 'utf8' });
     }
-    if (!guid) {
-        localStorage.guid = generateGuid();
-        guid = localStorage.guid;
+    
+    if (!userConf.guid && localStorage.guid) {
+        // legacy from v0.9.0
+        // guid was stored in localStorage
+        setUserConfProperty('guid', localStorage.guid);
+    }
+    if (!userConf.guid) {
+        setUserConfProperty('guid', generateGuid());
     }
     
     return  {
         get version() {
             return gui.App.manifest.version;
         },
-        get targetPlatform() {
-            return appConf.targetPlatform;
-        },
         get dataHomeFolder() {
             return dataHomeFolder;
         },
-        get guid() {
-            return guid;
+        
+        get targetPlatform() {
+            return appConf.targetPlatform;
         },
         get websiteUrl() {
             return appConf.websiteUrl;
@@ -62,6 +63,16 @@ sputnik.factory('configService', function () {
         },
         get checkUpdatesUrl() {
             return appConf.checkUpdatesUrl;
-        }
+        },
+        
+        get guid() {
+            return userConf.guid;
+        },
+        get lastFeedsDownload() {
+            return userConf.lastFeedsDownload;
+        },
+        set lastFeedsDownload(value) {
+            setUserConfProperty('lastFeedsDownload', value);
+        },
     };
-});
+}
