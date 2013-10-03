@@ -1,10 +1,10 @@
 <div>
     <div>
         <h2 class="organize__category-name">
-            <span ng-hide="showRename">{{category.name}}</span>
+            <span ng-hide="showRename">{{category.title}}</span>
             <span ng-show="showRename">
                 <input type="text" ng-model="newName"/>
-                <button ng-click="onChangeName()">save</button>
+                <button ng-click="rename()">save</button>
             </span>
         </h2>
         <a class="button2" ng-click="showRename = !showRename">
@@ -15,7 +15,7 @@
             <span ng-hide="showDelete">delete</span>
             <span ng-show="showDelete">cancel</span>
         </a>
-        <span ng-show="showDelete">Are you sure? <a class="button2" ng-click="onDelete()">Yes, delete whole category.</a></span>
+        <span ng-show="showDelete">Are you sure? <a class="button2" ng-click="remove()">Yes, delete whole category.</a></span>
     </div>
     <div ng-repeat="feed in category.feeds">
         <organize-feed feed="feed" categories-names="categoriesNames"/>

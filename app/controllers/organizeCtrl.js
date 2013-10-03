@@ -3,38 +3,72 @@
 function OrganizeCtrl($scope, feedsService) {
     
     function refresh() {
-        $scope.feedsTree = feedsService.central.tree;
-        $scope.categoriesNames = feedsService.central.categoriesNames;
+        $scope.feedsTree = feedsService.tree;
+        $scope.categoriesNames = feedsService.categoriesNames;
     }
-    
-    refresh();
     
     $scope.newCategoryName = '';
     $scope.addNewCategory = function () {
-        feedsService.central.addCategory($scope.newCategoryName);
+        feedsService.addCategory($scope.newCategoryName);
         $scope.newCategoryName = '';
         refresh();
     };
     
-    $scope.$on('changeFeedCategory', function (e, feedUrl, newCategoryName) {
-        //console.log('changeCategory: '+feedUrl+'  '+newCategoryName);
-        feedsService.central.changeFeedCategory(feedUrl, newCategoryName);
-        refresh();
-    });
-    $scope.$on('deleteFeed', function (e, feedUrl) {
-        //console.log('deleteFeed: '+feedUrl);
-        feedsService.central.removeFeed(feedUrl);
-        refresh();
-    });
+    $scope.$on('changed', refresh);
     
-    $scope.$on('changeCategoryName', function (e, oldName, newName) {
-        //console.log('changeCategoryName: '+oldName+'  '+newName);
-        feedsService.central.changeCategoryName(oldName, newName);
-        refresh();
-    });
-    $scope.$on('deleteCategory', function (e, name) {
-        //console.log('deleteCategory: '+name);
-        feedsService.central.removeCategory(name);
-        refresh();
-    });
+    refresh();
 }
+
+//---------------------------------------------------------
+// Helper directives
+//---------------------------------------------------------
+
+sputnik.directive('organizeCategory', function () {
+    return {
+        restrict: 'E',
+        replace: true,
+        templateUrl: './views/directives/organizeCategory.html',
+        scope: {
+            category: '=',
+            categoriesNames: '=',
+        },
+        link: function ($scope, element, attrs) {
+            $scope.showRename = false;
+            $scope.showDelete = false;
+            $scope.newName = $scope.category.title;
+            $scope.rename = function () {
+                $scope.category.setTitle($scope.newName);
+                $scope.$emit('changed');
+            };
+            $scope.remove = function () {
+                $scope.category.remove();
+                $scope.$emit('changed');
+            };
+        }
+    };
+});
+
+sputnik.directive('organizeFeed', function () {
+    return {
+        restrict: 'E',
+        replace: true,
+        templateUrl: './views/directives/organizeFeed.html',
+        scope: {
+            feed: '=',
+            categoriesNames: '=',
+        },
+        link: function ($scope, element, attrs) {
+            $scope.showChangeCategory = false;
+            $scope.showDelete = false;
+            $scope.chosenCategoryName = $scope.feed.category;
+            $scope.changeCategory = function () {
+                $scope.feed.category = $scope.chosenCategoryName;
+                $scope.$emit('changed');
+            };
+            $scope.remove = function () {
+                $scope.feed.remove();
+                $scope.$emit('changed');
+            };
+        }
+    };
+});

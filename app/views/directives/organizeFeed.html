@@ -7,7 +7,7 @@
         <span ng-show="showChangeCategory">cancel</span>
     </a>
     <select ng-show="showChangeCategory" ng-model="chosenCategoryName"
-        ng-change="onCategorySelected()"
+        ng-change="changeCategory()"
         ng-options="catName for catName in categoriesNames">
         <option value="">(no category)</option>
     </select>
@@ -15,5 +15,5 @@
         <span ng-hide="showDelete">delete</span>
         <span ng-show="showDelete">cancel</span>
     </a>
-    <span ng-show="showDelete">Are you sure? <a class="button2" ng-click="onDelete()">Yes, delete.</a></span>
+    <span ng-show="showDelete">Are you sure? <a class="button2" ng-click="remove()">Yes, delete.</a></span>
 </div>
