@@ -1,6 +1,6 @@
 'use strict';
 
-function ReadCtrl($scope, $window, feedsService) {
+function ReadCtrl($scope, $window, feedsService, articlesService, downloadService) {
     
     var Q = require('q');
     var organizer = require('./helpers/articlesOrganizer');
@@ -8,20 +8,25 @@ function ReadCtrl($scope, $window, feedsService) {
     var pageIndex = 0;
     var articlesPerPage = 50;
     
-    $scope.state = 'notInitiated';
-    
     function downloadFeeds() {
         
-        if ($scope.state === 'noFeeds' || $scope.state === 'refreshing') {
+        if (feedsService.feeds.length === 0 || downloadService.isWorking) {
             return;
         }
         
-        feedsService.downloadFeeds()
-        .progress(function (progress) {
+        downloadService.download()
+        .then(function () {
+            showArticles();
+        },
+        function (failMessage) {
+            if (failMessage === 'No connection') {
+                console.log('No connection!!!');
+            }
+        },
+        function (progress) {
             var ratio = Math.round(progress.completed / progress.total * 100);
             angular.element('.refreshing__progress-bar').css('width', ratio + '%');
-        })
-        .then(showArticles);
+        });
         
         $scope.state = 'refreshing';
         angular.element('.refreshing__progress-bar').css('width', '0%');
@@ -33,18 +38,22 @@ function ReadCtrl($scope, $window, feedsService) {
         
         console.log("pagination from: " + from + " to: " + to);
         
-        var feedUrls = $scope.selectedItem.feeds.map(function (feed) {
-            return feed.url;
-        });
+        var feedUrls;
+        if ($scope.selectedItem.type === 'feed') {
+            feedUrls = [$scope.selectedItem.url];
+        } else {
+            feedUrls = $scope.selectedItem.feeds.map(function (feed) {
+                return feed.url;
+            });
+        }
         
         var options = {};
         if ($scope.selectedTag) {
-            options.tag = $scope.selectedTag._id;
+            options.tagId = $scope.selectedTag._id;
         }
         
-        feedsService.getArticles(feedUrls, from, to, options)
+        articlesService.getArticles(feedUrls, from, to, options)
         .then(function (result) {
-            
             $scope.isPrevPage = (from > 0);
             $scope.isNextPage = (to <= result.numAll);
             
@@ -73,8 +82,8 @@ function ReadCtrl($scope, $window, feedsService) {
         }, 1);
     }
     
-    $scope.feedsTree = feedsService.central.tree;
-    $scope.all = feedsService.central;
+    $scope.feedsTree = feedsService.tree;
+    $scope.all = feedsService;
     $scope.days = [];
     
     $scope.refresh = downloadFeeds;
@@ -126,30 +135,12 @@ function ReadCtrl($scope, $window, feedsService) {
         });
     };
     
-    if (feedsService.central.feeds.length === 0) {
-        $scope.state = 'noFeeds';
-    }
-    
     $scope.$on('articleReadStateChange', function () {
         if ($scope.selectedItem.unreadArticlesCount === 0) {
             showEverythingReadInfo();
         }
         $scope.$apply();
     });
-    
-    $scope.$emit('readCtrlInstantiated', function (message) {
-        switch (message) {
-        case 'feedAdded':
-        case 'feedsImported':
-        case 'firstRun':
-            downloadFeeds();
-            break;
-        }
-    });
-    
-    if ($scope.state === 'notInitiated') {
-        showArticles();
-    }
     
     var showEverythingReadInfoAnimationInterval;
     function showEverythingReadInfo() {
@@ -159,6 +150,21 @@ function ReadCtrl($scope, $window, feedsService) {
         showEverythingReadInfoAnimationInterval = setInterval(function () {
             ele.removeClass('popup--visible');
         }, 4000);
+    }
+    
+    //-----------------------------------------------------
+    // Init
+    //-----------------------------------------------------
+    
+    if (feedsService.feeds.length === 0) {
+        $scope.state = 'noFeeds';
+    } else if ($scope.$parent.lastSignificantEvent === 'appJustStarted' ||
+               $scope.$parent.lastSignificantEvent === 'feedAdded' ||
+               $scope.$parent.lastSignificantEvent === 'feedsImported') {
+        downloadFeeds();
+        $scope.$parent.lastSignificantEvent = null;
+    } else {
+        showArticles();
     }
     
     //-----------------------------------------------------

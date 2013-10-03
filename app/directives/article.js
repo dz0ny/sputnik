@@ -117,7 +117,6 @@ sputnik.directive('article', function ($sanitize, $sce) {
                 .then(function () {
                     $scope.newTagName = '';
                     $scope.showPickTagMenu = false;
-                    $scope.$emit('tagsChanged');
                     $scope.$apply();
                 });
             };

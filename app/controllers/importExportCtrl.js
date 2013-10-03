@@ -6,7 +6,7 @@ function ImportExportCtrl($scope, $location, feedsService) {
     
     $scope.state = 'waitingForUser';
     
-    $scope.exportVisible = (feedsService.central.tree.length > 0);
+    $scope.exportVisible = (feedsService.feeds.length > 0);
     
     $scope.openImportDialog = function () {
         angular.element('#selectedOpmlPath').trigger('click');
@@ -15,11 +15,9 @@ function ImportExportCtrl($scope, $location, feedsService) {
     angular.element('#selectedOpmlPath').change(function () {
         var filePath = this.value;
         $scope.$apply(function () {
-            var opmlFileContent = fs.readFileSync(filePath);
-            var isValid = opml.isOpml(opmlFileContent);
-            if (isValid) {
-                opml.import(opmlFileContent, feedsService.central.addFeed);
-                $scope.$emit('importFeedsSuccess');
+            var opmlFileContent = fs.readFileSync(filePath, { encoding : 'utf8' });
+            if (feedsService.isValidOpml(opmlFileContent)) {
+                feedsService.importOpml(opmlFileContent);
                 $location.path('/');
             } else {
                 $scope.state = 'importFileInvalid';
@@ -33,7 +31,7 @@ function ImportExportCtrl($scope, $location, feedsService) {
     
     angular.element('#saveOpmlToPath').change(function () {
         var filePath = this.value;
-        var opmlData = opml.export(feedsService.central.tree);
+        var opmlData = feedsService.exportOpml();
         fs.writeFileSync(filePath, opmlData);
         $scope.state = 'exportDone';
         $scope.$apply();

@@ -2,18 +2,16 @@
 
 function TagsCtrl($scope, feedsService) {
     
-    $scope.changeTagName = function (tagId, newName) {
-        feedsService.changeTagName(tagId, newName)
+    $scope.changeTagName = function (tag, newName) {
+        tag.setName(newName)
         .then(function () {
-            $scope.$emit('tagsChanged');
             $scope.$apply();
         });
     };
     
-    $scope.removeTag = function (tagId) {
-        feedsService.removeTag(tagId)
+    $scope.removeTag = function (tag) {
+        tag.remove()
         .then(function () {
-            $scope.$emit('tagsChanged');
             $scope.$apply();
         });
     };

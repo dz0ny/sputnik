@@ -1,9 +1,9 @@
 'use strict';
 
-var gui = require('nw.gui');
-
-function AddFeedCtrl($scope, $location, feedsService) {
+function AddFeedCtrl($scope, $location, feedsService, net, feedParser) {
     
+    var gui = require('nw.gui');
+    var scout = require('./helpers/feedScout');
     var determinedFeedUrl;
     var clipboard = gui.Clipboard.get();
     
@@ -18,7 +18,7 @@ function AddFeedCtrl($scope, $location, feedsService) {
                 value: "#addNewCategory#"
             }
         ];
-        feedsService.central.categoriesNames.forEach(function (category) {
+        feedsService.categoriesNames.forEach(function (category) {
             cats.push({
                 name: category,
                 value: category
@@ -46,7 +46,7 @@ function AddFeedCtrl($scope, $location, feedsService) {
             $scope.urlValidity = 'checking';
             $scope.$apply();
             checkUrlTimeout = 0;
-            feedsService.discoverFeedUrl(url.trim())
+            scout.scout(url.trim(), net, feedParser)
             .then(function (feedUrl) {
                 if (url !== $scope.url) {
                     // it means user typed more characters and this search is obsolete
@@ -89,11 +89,8 @@ function AddFeedCtrl($scope, $location, feedsService) {
         
         $scope.state = 'loadingFeed';
         
-        feedsService.addFeed(feedBaseModel)
-        .then(function (feed) {
-            $scope.$emit('feedAdded', feed);
-            $location.path('/');
-        });
+        feedsService.addFeed(feedBaseModel);
+        $location.path('/');
     };
     
     // context menu for pasting text

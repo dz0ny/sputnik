@@ -58,7 +58,7 @@ describe('articlesService', function () {
             expect(art.pubDate.getTime()).toBe(art.pubTime);
             done = true;
         });
-        waitsFor(function () { return done; }, "timeout", 500);
+        waitsFor(function () { return done; }, null, 500);
     }));
     
     describe('tagging', function () {
@@ -80,7 +80,7 @@ describe('articlesService', function () {
                 expect(articlesService.allTags[2].name).toBe('ź');
                 done = true;
             });
-            waitsFor(function () { return done; }, "timeout", 500);
+            waitsFor(function () { return done; }, null, 500);
         }));
         
         it('should fire event when tags list change', inject(function ($rootScope, articlesService) {
@@ -105,40 +105,25 @@ describe('articlesService', function () {
                 expect(removeSpy).toHaveBeenCalled();
                 done = true;
             });
-            waitsFor(function () { return done; }, "timeout", 500);
+            waitsFor(function () { return done; }, null, 500);
         }));
         
         it('article can be tagged, tags list is sorted', inject(function (articlesService) {
             var done = false;
-            var tag1;
-            var tag2;
-            var tag3;
             var art;
             articlesService.digest('a.com/feed', harvest)
             .then(function () {
-                return articlesService.addTag('ź');
-            })
-            .then(function (addedTag) {
-                tag1 = addedTag;
-                return articlesService.addTag('ą');
-            })
-            .then(function (addedTag) {
-                tag2 = addedTag;
-                return articlesService.addTag('ć');
-            })
-            .then(function (addedTag) {
-                tag3 = addedTag;
                 return articlesService.getArticles(['a.com/feed'], 0, 3);
             })
             .then(function (result) {
                 art = result.articles[0];
-                return art.toggleTag(tag1.id);
+                return art.addNewTag('ź');
             })
             .then(function () {
-                return art.toggleTag(tag2.id);
+                return art.addNewTag('ą');
             })
             .then(function () {
-                return art.toggleTag(tag3.id);
+                return art.addNewTag('ć');
             })
             .then(function () {
                 expect(art.tags.length).toBe(3);
@@ -147,7 +132,35 @@ describe('articlesService', function () {
                 expect(art.tags[2].name).toBe('ź');
                 done = true;
             });
-            waitsFor(function () { return done; }, "timeout", 500);
+            waitsFor(function () { return done; }, null, 500);
+        }));
+        
+        it('article can toggle tag', inject(function (articlesService) {
+            var done = false;
+            var art;
+            var tag;
+            articlesService.digest('a.com/feed', harvest)
+            .then(function () {
+                return articlesService.addTag('tag1')
+            })
+            .then(function (addedTag) {
+                tag = addedTag;
+                return articlesService.getArticles(['a.com/feed'], 0, 3);
+            })
+            .then(function (result) {
+                art = result.articles[0];
+                return art.toggleTag(tag.id);
+            })
+            .then(function () {
+                expect(art.tags.length).toBe(1);
+                expect(art.tags[0].name).toBe('tag1');
+                return art.toggleTag(tag.id);
+            })
+            .then(function () {
+                expect(art.tags.length).toBe(0);
+                done = true;
+            });
+            waitsFor(function () { return done; }, null, 500);
         }));
         
     });

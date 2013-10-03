@@ -12,7 +12,7 @@ sputnik.factory('articlesService', function ($rootScope, articlesStorage, feedsS
     
     function getTag(tagId) {
         for (var i = 0; i < tags.length; i += 1) {
-            if (tags[i].id === tagId) {
+            if (tags[i]._id === tagId) {
                 return tags[i];
             }
         }
@@ -20,15 +20,19 @@ sputnik.factory('articlesService', function ($rootScope, articlesStorage, feedsS
     }
     
     function mapTagIdsToTags(tagsIds) {
-        if (!tagsIds) {
+        if (!tagsIds || tagsIds.length === 0) {
             return [];
         }
-        return tagsIds.map(getTag);
+        var tags = tagsIds.map(getTag);
+        tags.sort(function (a, b) {
+            return a.name.localeCompare(b.name);
+        });
+        return tags;
     }
     
-    function hasTag(art, tag) {
+    function hasTag(art, tagId) {
         for (var i = 0; i < art.tags.length; i += 1) {
-            if (art.tags[i].id === tag.id) {
+            if (art.tags[i].id === tagId) {
                 return true;
             }
         }
@@ -104,29 +108,27 @@ sputnik.factory('articlesService', function ($rootScope, articlesStorage, feedsS
             }
             promise.then(function (article) {
                 art.tags = mapTagIdsToTags(article.tags);
-                art.tags.sort(function (a, b) {
-                    return a.name.localeCompare(b.name);
-                });
                 deferred.resolve();
             });
             
             return deferred.promise;
         };
         
-        /*art.addNewTag = function (tagName) {
+        art.addNewTag = function (tagName) {
             var deferred = Q.defer();
             
-            articlesStorage.addTag(tagName)
+            addTag(tagName)
             .then(function (addedTag) {
-                return articlesStorage.tagArticle(art.guid, addedTag.id)
-                .then(function (article) {
-                    art.tags = mapTagIds(article.tags);
-                    deferred.resolve();
-                });
+                return articlesStorage.tagArticle(art.guid, addedTag._id)
+            })
+            .then(function (article) {
+                art.tags = mapTagIdsToTags(article.tags);
+                
+                deferred.resolve();
             });
             
             return deferred.promise;
-        }*/
+        }
         
         art.feed = feedsService.getFeedByUrl(art.feedUrl);
     }

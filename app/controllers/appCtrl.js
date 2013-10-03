@@ -1,25 +1,47 @@
 'use strict';
 
-function AppCtrl($scope, $location, configService, feedsService, faviconsService, updateService) {
+function AppCtrl($scope, $location, config, feedsService, articlesService, faviconsService, updateService) {
     
     var os = require('os');
     var analytics = require('./helpers/analytics');
     var gui = require('nw.gui');
-    
     var win = gui.Window.get();
-    var scheduleInterval;
-    var messageForReadCtrl = 'firstRun';
     
-    $scope.config = configService;
     $scope.allTags = [];
     
-    feedsService.init()
-    .then(function () {
-        $scope.allTags = feedsService.allTags;
+    $scope.lastSignificantEvent = 'appJustStarted';
+    
+    analytics.init(config.analyticsUrl, config.guid, config.version);
+    
+    //-----------------------------------------------------
+    // Model events
+    //-----------------------------------------------------
+    
+    $scope.$on('feedAdded', function (evt, feed) {
+        $scope.lastSignificantEvent = 'feedAdded';
     });
     
-    updateService.init(configService.checkUpdatesUrl, configService.version);
-    analytics.init(configService.analyticsUrl, configService.guid, configService.version);
+    $scope.$on('feedSiteUrlSpecified', function (evt, feed) {
+        // is siteUrl first time specified try to get its favicon
+        faviconsService.updateOne(feed)
+        .then(function () {
+            $scope.$apply();
+        });
+    });
+    
+    $scope.$on('feedRemoved', function (evt, feed) {
+        faviconsService.deleteFaviconIfHas(feed);
+        // Articles for now are not deleted (seems more user friendly approach)
+    });
+    
+    $scope.$on('feedsImported', function (evt) {
+        faviconsService.updateMany(feedsService.feeds);
+        $scope.lastSignificantEvent = 'feedsImported';
+    });
+    
+    $scope.$on('tagsListChanged', function (evt) {
+        $scope.allTags = articlesService.allTags;
+    });
     
     //-----------------------------------------------------
     // Preserving window size
@@ -132,42 +154,6 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     });
     
     //-----------------------------------------------------
-    // Misc feeds stuff
-    //-----------------------------------------------------
-    
-    $scope.$on('feedAdded', function (evt, feed) {
-        // if new feed added, try to load favicon for it
-        if (feed.siteUrl) {
-            faviconsService.updateOne(feed)
-            .then(function () {
-                $scope.$apply();
-            });
-        }
-        messageForReadCtrl = 'feedAdded';
-    });
-    
-    feedsService.central.events.on('feedRemoved', function (feed) {
-        faviconsService.deleteFaviconIfHas(feed);
-    });
-    
-    $scope.$on('importFeedsSuccess', function (evt) {
-        messageForReadCtrl = 'feedsImported';
-        faviconsService.updateMany(feedsService.central.feeds);
-    });
-    
-    $scope.$on('readCtrlInstantiated', function (evt, messageFunc) {
-        if (messageForReadCtrl) {
-            messageFunc(messageForReadCtrl);
-            messageForReadCtrl = undefined;
-        }
-    });
-    
-    $scope.$on('tagsChanged', function (evt) {
-        $scope.allTags = feedsService.allTags;
-        $scope.$apply();
-    });
-    
-    //-----------------------------------------------------
     // Open link in system default browser,
     // if has class 'js-external-link' somewhere in DOM chain.
     //-----------------------------------------------------
@@ -254,10 +240,10 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
             schedule.nextAnalyticsMonthlyReaport = nowTime + daysToMs(7);
         } else if (schedule.nextAnalyticsMonthlyReaport <= nowTime) {
             analytics.monthlyReaport({
-                feedsCount: feedsService.central.feeds.length,
-                categoriesCount: feedsService.central.categoriesNames.length,
-                articlesDbSize: feedsService.articlesDbSize,
-                platform: configService.targetPlatform + '|' + os.platform() + '|' + os.type() + '|' + os.release(),
+                feedsCount: feedsService.feeds.length,
+                categoriesCount: feedsService.categoriesNames.length,
+                articlesDbSize: articlesService.dbSize,
+                platform: config.targetPlatform + '|' + os.platform() + '|' + os.type() + '|' + os.release(),
                 windowSize: win.width + 'x' + win.height
             });
             schedule.nextAnalyticsMonthlyReaport = nowTime + daysToMs(30);
@@ -271,7 +257,7 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
         
         // update all feeds' favicons every 7 days
         if (!schedule.nextFaviconUpdate || schedule.nextFaviconUpdate <= nowTime) {
-            faviconsService.updateMany(feedsService.central.feeds);
+            faviconsService.updateMany(feedsService.feeds);
             schedule.nextFaviconUpdate = nowTime + daysToMs(7);
         }
         
@@ -280,6 +266,6 @@ function AppCtrl($scope, $location, configService, feedsService, faviconsService
     }
     
     // every 30min walk through schedule
-    scheduleInterval = setInterval(walkThroughSchedule, 1800000);
+    var scheduleInterval = setInterval(walkThroughSchedule, 1800000);
     walkThroughSchedule();
 }

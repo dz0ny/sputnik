@@ -185,7 +185,7 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
     
     function importOpml(fileContent) {
         opml.import(fileContent, feedsStorage);
-        
+        constructFeedsList();
         $rootScope.$broadcast('feedsImported');
     }
     
@@ -225,6 +225,7 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
     }
     
     return  {
+        isValidOpml: opml.isOpml,
         importOpml: importOpml,
         exportOpml: exportOpml,
         

@@ -39,9 +39,19 @@ describe('feedsService', function () {
         $provide.value('opml', require('../app/helpers/opml'));
     }));
     
-    it('has interface to import and export OPML', inject(function (feedsService) {
-        expect(feedsService.importOpml).toBeDefined();
-        expect(feedsService.exportOpml).toBeDefined();
+    it('can import and export OPML', inject(function (feedsService) {
+        var opml = '<?xml version="1.0" encoding="UTF-8"?>' +
+            '<opml version="1.0">' +
+                '<body>' +
+                    '<outline text="new" type="rss" xmlUrl="http://new.com/feed" />' +
+                '</body>' +
+            '</opml>';
+        expect(feedsService.isValidOpml).toBeDefined();
+        expect(feedsService.feeds.length).toBe(5);
+        feedsService.importOpml(opml);
+        expect(feedsService.feeds.length).toBe(6);
+        var exportedOpml = feedsService.exportOpml();
+        expect(exportedOpml.length).toBeGreaterThan(0);
     }));
     
     it('has sorted tree of categories and feeds', inject(function (feedsService) {
