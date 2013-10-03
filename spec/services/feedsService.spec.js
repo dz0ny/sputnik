@@ -151,7 +151,7 @@ describe('feedsService', function () {
     describe('events', function () {
         
         it('fires event when feed added', inject(function ($rootScope, feedsService) {
-            var spy = jasmine.createSpy('feedAddedEvent')
+            var spy = jasmine.createSpy();
             $rootScope.$on('feedAdded', spy);
             feedsService.addFeed({
                 url: 'something.com/feed'
@@ -161,7 +161,7 @@ describe('feedsService', function () {
         }));
         
         it('fires event when feed removed', inject(function ($rootScope, feedsService) {
-            var spy = jasmine.createSpy('feedRemovedEvent')
+            var spy = jasmine.createSpy();
             $rootScope.$on('feedRemoved', spy);
             var feed = feedsService.getFeedByUrl('a.com/feed');
             feed.remove();
@@ -169,8 +169,15 @@ describe('feedsService', function () {
             expect(spy.mostRecentCall.args[1].url).toBe('a.com/feed');
         }));
         
+        it('fires event for every feed when category of feeds removed', inject(function ($rootScope, feedsService) {
+            var spy = jasmine.createSpy();
+            $rootScope.$on('feedRemoved', spy);
+            feedsService.tree[0].remove();
+            expect(spy.callCount).toBe(2);
+        }));
+        
         it('fires event after opml imported', inject(function ($rootScope, feedsService) {
-            var spy = jasmine.createSpy('feedsImportedEvent')
+            var spy = jasmine.createSpy()
             $rootScope.$on('feedsImported', spy);
             feedsService.importOpml('<opml><body></body></opml>');
             expect(spy).toHaveBeenCalled();

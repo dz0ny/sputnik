@@ -74,10 +74,16 @@ exports.make = function (dataPath) {
     
     function setFeedValue(feedUrl, key, value) {
         var feed = getFeedByUrl(feedUrl);
-        feed[key] = value;
+        
         if (key === 'category') {
-            addCategory(value);
+            if (!value || value === '') {
+                value = undefined;
+            } else {
+                addCategory(value);
+            }
         }
+        
+        feed[key] = value;
         
         save();
         
@@ -107,6 +113,10 @@ exports.make = function (dataPath) {
     }
     
     function changeCategoryName(currentName, newName) {
+        if (!newName || newName === '') {
+            return;
+        }
+        
         var currNameIndex = model.categories.indexOf(currentName);
         if (currNameIndex !== -1) {
             if (model.categories.indexOf(newName) !== -1) {

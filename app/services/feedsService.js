@@ -127,6 +127,9 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
                 treeObsolete = true;
             },
             remove: function () {
+                this.feeds.forEach(function (feed) {
+                    feed.remove();
+                });
                 feedsStorage.removeCategory(categoryName);
                 constructFeedsList();
             },
@@ -165,6 +168,15 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
             }
         });
     });
+    
+    function getCategoryByName(name) {
+        for (var i = 0; i < tree.length; i += 1) {
+            if (tree[i].type === 'category' && tree[i].title === name) {
+                return tree[i];
+            }
+        }
+        return null;
+    }
     
     //-----------------------------------------------------
     // API methods

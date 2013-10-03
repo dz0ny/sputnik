@@ -70,6 +70,30 @@ describe('feedsStorage', function () {
         expect(f.favicon).toBe('favicon.gif');
     });
     
+    it('can change feed category', function () {
+        var fst = feedsStorage.make();
+        var f = fst.addFeed({
+            url: "a.com/feed",
+            category: 'A'
+        });
+        
+        f = fst.setFeedValue(f.url, 'category', 'B');
+        expect(f.category).toBe('B');
+        expect(fst.categories).toEqual(['A', 'B']);
+    });
+    
+    it('can remove feed category', function () {
+        var fst = feedsStorage.make();
+        var f = fst.addFeed({
+            url: "a.com/feed",
+            category: 'A'
+        });
+        
+        f = fst.setFeedValue(f.url, 'category', '');
+        expect(f.category).toBeUndefined();
+        expect(fst.categories).toEqual(['A']);
+    });
+    
     it('can delete feed', function () {
         var fst = feedsStorage.make();
         fst.addFeed({
@@ -101,8 +125,19 @@ describe('feedsStorage', function () {
             category: 'Cool Category'
         });
         fst.changeCategoryName('Cool Category', 'Better Name');
-        expect(fst.categories).toContain('Better Name');
+        expect(fst.categories).toEqual(['Better Name']);
         expect(fst.feeds[0].category).toBe('Better Name');
+    });
+    
+    it("can't change category name to invalid one", function () {
+        var fst = feedsStorage.make();
+        fst.addFeed({
+            url: 'a.com/feed',
+            category: 'Cool Category'
+        });
+        fst.changeCategoryName('Cool Category', '');
+        expect(fst.categories).toEqual(['Cool Category']);
+        expect(fst.feeds[0].category).toBe('Cool Category');
     });
     
     it('can create new category via feed property', function () {
