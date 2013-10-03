@@ -160,6 +160,17 @@ describe('feedsService', function () {
             expect(spy.mostRecentCall.args[1].url).toBe('something.com/feed');
         }));
         
+        it("fires event when feed's siteUrl specified", inject(function ($rootScope, feedsService) {
+            var spy = jasmine.createSpy();
+            $rootScope.$on('feedSiteUrlSpecified', spy);
+            var f = feedsService.addFeed({
+                url: 'something.com/feed',
+            });
+            f.siteUrl = 'something.com';
+            expect(spy).toHaveBeenCalled();
+            expect(spy.mostRecentCall.args[1].url).toBe('something.com/feed');
+        }));
+        
         it('fires event when feed removed', inject(function ($rootScope, feedsService) {
             var spy = jasmine.createSpy();
             $rootScope.$on('feedRemoved', spy);

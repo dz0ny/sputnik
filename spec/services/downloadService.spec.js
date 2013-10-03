@@ -286,7 +286,7 @@ describe('downloadService', function () {
             expect(downloadService.isWorking).toBe(false);
             
             downloadService.download()
-            .then(function (backgroundDownloadPromise) {
+            .then(function (result) {
                 
                 expect(feedA.averageActivity).toBe(48);
                 
@@ -303,7 +303,7 @@ describe('downloadService', function () {
                     doneCount += 1;
                 });
                 
-                return backgroundDownloadPromise;
+                return result.backgroundJob;
             })
             .then(function () {
                 

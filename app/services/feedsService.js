@@ -77,6 +77,7 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
             set siteUrl(value) {
                 if (feedModel.siteUrl !== value) {
                     feedsStorage.setFeedValue(feedModel.url, 'siteUrl', value);
+                    $rootScope.$broadcast('feedSiteUrlSpecified', this);
                 }
             },
             get favicon() {
@@ -205,7 +206,11 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
         var storedFeed = feedsStorage.addFeed(feedModel);
         constructFeedsList();
         
-        $rootScope.$broadcast('feedAdded', getFeedByUrl(feedModel.url));
+        var feed = getFeedByUrl(feedModel.url);
+        
+        $rootScope.$broadcast('feedAdded', feed);
+        
+        return feed;
     }
     
     function addCategory(categoryName) {

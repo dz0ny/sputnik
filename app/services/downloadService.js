@@ -235,7 +235,9 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
         .then(function () {
             // after main job start lo basket in background
             isWorking = false;
-            deferred.resolve(downloadJob(baskets.lo, 'background'));
+            deferred.resolve({
+                backgroundJob: downloadJob(baskets.lo, 'background')
+            });
         },
         function (message) {
             isWorking = false;
