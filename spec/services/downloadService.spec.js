@@ -218,6 +218,15 @@ describe('downloadService', function () {
             waitsFor(function () { return done; }, null, 500);
         }));
         
+        it("should terminate gracefully if provided with empty list", inject(function (downloadService) {
+            var done = false;
+            downloadService.fetchFeeds([], 'normal')
+            .then(function () {
+                done = true;
+            });
+            waitsFor(function () { return done; }, null, 500);
+        }));
+        
     });
     
     describe('main API', function () {

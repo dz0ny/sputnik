@@ -178,6 +178,10 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
         
         next();
         
+        if (feedUrls.length === 0) {
+            deferred.resolve();
+        }
+        
         return deferred.promise;
     };
     
