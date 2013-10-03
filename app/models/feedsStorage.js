@@ -105,6 +105,9 @@ exports.make = function (dataPath) {
     }
     
     function addCategory(name) {
+        if (!name || name === '') {
+            return;
+        }
         if (model.categories.indexOf(name) === -1) {
             model.categories.push(name);
         }

@@ -42,6 +42,12 @@ describe('feedsStorage', function () {
         expect(fst.categories).toContain('Cool Category');
     });
     
+    it("can't add new category with invalid name", function () {
+        var fst = feedsStorage.make();
+        fst.addCategory('');
+        expect(fst.categories.length).toBe(0);
+    });
+    
     it('should not allow to add 2 categories with same name', function () {
         var fst = feedsStorage.make();
         fst.addCategory("Cool Category");
