@@ -132,17 +132,17 @@ sputnik.directive('article', function ($sanitize, $sce) {
             
             // right click anywhere on an article makes it read
             // and scrolls to next unread article
-            element.bind('contextmenu', function(evt) {
+            /*element.bind('contextmenu', function(evt) {
                 $scope.$apply(function() {
                     evt.preventDefault();
                     
                     $scope.artData.setIsRead(true)
                     .then(function () {
                         $scope.$emit('articleReadStateChange');
-                        $scope.$emit('articleReadDone', $scope.artData.guid);
+                        $scope.$emit('articleReadDone', $scope.artData);
                     });
                 });
-            });
+            });*/
             
         }
     };

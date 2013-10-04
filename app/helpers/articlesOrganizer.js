@@ -18,11 +18,17 @@ function monthLabel(month) {
     return labels[month];
 }
 
-exports.organizeByDays = function (articles) {
-    var days = [];
+function sortChronologically(articles) {
     articles.sort(function (art1, art2) {
         return art2.pubDate - art1.pubDate;
     });
+}
+
+exports.sortChronologically = sortChronologically;
+
+exports.organizeByDays = function (articles) {
+    var days = [];
+    
     var currDate = -1;
     
     var now = new Date();
