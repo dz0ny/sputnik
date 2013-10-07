@@ -97,7 +97,7 @@ sputnik.directive('article', function ($sanitize, $sce) {
             $scope.toggleIsRead = function () {
                 $scope.artData.setIsRead(!$scope.artData.isRead)
                 .then(function () {
-                    $scope.$emit('articleReadStateChange');
+                    $scope.$emit('articleReadStateChanged');
                 });
             };
             

@@ -44,7 +44,7 @@
             <div class="feeds-tree__content  scroll">
                 <div class="feeds-tree__category-container  feeds-tree__category-container--nested">
                     <h1 ng-click="selectCategory(all)"
-                        ng-class="{'feeds-tree__category--selected': selectedItem == all}"
+                        ng-class="{'feeds-tree__category--selected': selectedCategory == all}"
                         class="feeds-tree__category">
                         <span class="feeds-tree__category-name">All</span>
                         <span class="feeds-tree__count">{{all.unreadArticlesCount}}</span>
@@ -55,14 +55,14 @@
                     <div ng-switch-when="category"
                         class="feeds-tree__category-container  feeds-tree__category-container--nested">
                         <h1 ng-click="selectCategory(item)"
-                            ng-class="{'feeds-tree__category--selected': selectedItem == item}"
+                            ng-class="{'feeds-tree__category--selected': selectedCategory == item}"
                             class="feeds-tree__category">
                             <span class="feeds-tree__category-name">{{item.title}}</span>
                             <span ng-show="item.unreadArticlesCount > 0" class="feeds-tree__count">{{item.unreadArticlesCount}}</span>
                         </h1>
                         <h2 ng-repeat="feed in item.feeds"
                             ng-click="selectCategory(feed)"
-                            ng-class="{'feeds-tree__category--selected': selectedItem == feed}"
+                            ng-class="{'feeds-tree__category--selected': selectedCategory == feed}"
                             class="feeds-tree__category  feeds-tree__category--minor">
                             <div ng-hide="feed.favicon != undefined" class="feeds-tree__icon  feeds-tree__icon--none"/>
                             <img ng-show="feed.favicon != undefined" ng-src="{{feed.favicon}}" class="feeds-tree__icon"/>
@@ -73,7 +73,7 @@
                     <!-- same as above -->
                     <h2 ng-switch-when="feed"
                         ng-click="selectCategory(item)"
-                        ng-class="{'feeds-tree__category--selected': selectedItem == item}"
+                        ng-class="{'feeds-tree__category--selected': selectedCategory == item}"
                         class="feeds-tree__category  feeds-tree__category--minor">
                         <div ng-hide="item.favicon != undefined" class="feeds-tree__icon  feeds-tree__icon--none"/>
                         <img ng-show="item.favicon != undefined" ng-src="{{item.favicon}}" class="feeds-tree__icon"/>
@@ -203,10 +203,6 @@
                 </div>
                 
             </div>
-    
-    <div class="popup">
-        You've read everything on this list.
-    </div>
     
     </div>
 

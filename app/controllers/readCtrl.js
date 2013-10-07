@@ -146,23 +146,17 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         }
     };
     
-    // TODO need refactoring?
-    $scope.$on('articleReadStateChange', function () {
-        if ($scope.selectedCategory.unreadArticlesCount === 0) {
-            showEverythingReadInfo();
-        }
+    $scope.$on('articleReadStateChanged', function () {
+        checkIfAllRead();
+        // needed to update unreadArticlesCount, which was recounted automaticly
+        // but scope doesn't know it happened
         $scope.$apply();
     });
     
-    // TODO refactor
-    var showEverythingReadInfoAnimationInterval;
-    function showEverythingReadInfo() {
-        var ele = angular.element(".popup");
-        ele.addClass('popup--visible');
-        clearInterval(showEverythingReadInfoAnimationInterval);
-        showEverythingReadInfoAnimationInterval = setInterval(function () {
-            ele.removeClass('popup--visible');
-        }, 4000);
+    function checkIfAllRead() {
+        if ($scope.selectedCategory.unreadArticlesCount === 0) {
+            $scope.$emit('showNotification', 'Everything read here.');
+        }
     }
     
     //-----------------------------------------------------
@@ -373,8 +367,8 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
                     } else if (unreadBeforeThisPage > 0) {
                         position = 0;
                     } else {
-                        // TODO no unread article, show notification
-                        return;
+                        // no article to scroll to
+                        return false;
                     }
                 }
                 break;
@@ -395,6 +389,8 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         angular.element(".js-articles-list").animate({
             scrollTop: position
         }, duration, afterAutoScroll);
+        
+        return true;
     }
     
     function afterAutoScroll() {
@@ -409,7 +405,9 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         article.setIsRead(true)
         .then(function () {
             $scope.$apply();
-            scrollTo('nextUnread');
+            if (!scrollTo('nextUnread')) {
+                checkIfAllRead();
+            }
         });
     }
     

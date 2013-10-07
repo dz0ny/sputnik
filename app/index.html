@@ -10,6 +10,7 @@
     <script src="./bower_components/angular/angular.js"></script>
     <script src="./bower_components/angular-sanitize/angular-sanitize.js"></script>
     <script src="./bower_components/angular-route/angular-route.js"></script>
+    <script src="./bower_components/angular-animate/angular-animate.js"></script>
     
     <script src="./config.js"></script>
     <script src="./app.js"></script>
@@ -34,6 +35,10 @@
 <body>
     
     <ng-view></ng-view>
+    
+    <div class="notification"
+        ng-if="notificationVisible"
+        ng-animate>{{notificationMessage}}</div>
     
 </body>
 </html>

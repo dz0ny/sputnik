@@ -1,6 +1,6 @@
 'use strict';
 
-var sputnik = angular.module('sputnik', ['ngRoute', 'ngSanitize']);
+var sputnik = angular.module('sputnik', ['ngRoute', 'ngSanitize', 'ngAnimate']);
 
 sputnik.config(function ($provide, $routeProvider) {
     

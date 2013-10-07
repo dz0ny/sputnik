@@ -458,3 +458,34 @@ button {
 @-webkit-keyframes spin {
     to { -webkit-transform: rotate(360deg); }
 }
+
+// NOTIFICATION BAR
+//-------------------------------------
+.notification {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    margin-left: -12rem;
+    padding: 0.5rem 2rem;
+    font-size: 0.8rem;
+    background: black;
+    color: white;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+    &.ng-enter,
+    &.ng-leave {
+        -webkit-transition: 0.3s linear all;
+    }
+    &.ng-enter {
+        top: -3rem;
+    }
+    &.ng-enter-active {
+        top: 0;
+    }
+    &.ng-leave {
+        top: 0;
+    }
+    &.ng-leave-active {
+        top: -3rem;
+    }
+}

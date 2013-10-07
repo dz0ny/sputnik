@@ -14,6 +14,25 @@ function AppCtrl($scope, $location, config, feedsService, articlesService, favic
     analytics.init(config.analyticsUrl, config.guid, config.version);
     
     //-----------------------------------------------------
+    // Notification bar
+    //-----------------------------------------------------
+    
+    var notificationInterval;
+    $scope.notificationVisible = false;
+    $scope.notificationMessage = null;
+    
+    $scope.$on('showNotification', function (evt, message) {
+        $scope.notificationMessage = message;
+        $scope.notificationVisible = true;
+        $scope.$apply();
+        clearInterval(notificationInterval);
+        notificationInterval = setInterval(function () {
+            $scope.notificationVisible = false;
+            $scope.$apply();
+        }, 4000);
+    });
+    
+    //-----------------------------------------------------
     // Model events
     //-----------------------------------------------------
     
