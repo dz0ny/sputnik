@@ -37,27 +37,6 @@ function overwriteJsonProperties(path, properties) {
     fs.writeFileSync(path, JSON.stringify(json, null, 4));
 }
 
-
-//-----------------------------------------------
-// 
-//-----------------------------------------------
-
-var version = JSON.parse(fs.readFileSync('app/package.json')).version;
-
-// folder where built files will end up
-var workingPath = '../release';
-
-// if working path folder exists clear it
-if (fs.existsSync(workingPath)) {
-    wrench.rmdirSyncRecursive(workingPath);
-}
-fs.mkdirSync(workingPath);
-
-
-//-----------------------------------------------
-// App
-//-----------------------------------------------
-
 function zip(sourceFile, destFile) {
     var deferred = Q.defer();
     
@@ -164,63 +143,44 @@ function build(platform) {
     return deferred.promise;
 }
 
-
-//-----------------------------------------------
-// Website
-//-----------------------------------------------
-
-function buildWebsite() {
+function makeManifestFile() {
     var deferred = Q.defer();
     
-    process.stdout.write('Building website');
-    
-    overwriteJsonProperties(__dirname + '/../../website/config.json', {
-        locals: {
-            windowsDownload: '/downloads/' + filenameWindows,
-            macosDownload: '/downloads/' + filenameMacos
-        }
-    });
-    
-    childProcess.exec("wintersmith build",
-        { cwd: __dirname + '/../../website' },
-    function (error, stdout, stderr) {
-        if (error) {
-            console.log(error);
-        } else {
-            
-            // make file for autoupdates
-            var updates = JSON.stringify({
-                version: version
-            }, null, 4);
-            fs.mkdirSync(workingPath + '/website/check-updates');
-            fs.writeFileSync(workingPath + '/website/check-updates/updates.json', updates);
-            
-            // copy packaged apps to website structure
-            var downloadsPath = workingPath + '/website/downloads';
-            fs.mkdirSync(downloadsPath);
-            copyFile(workingPath + '/' + filenameWindows, downloadsPath + '/' + filenameWindows);
-            copyFile(workingPath + '/' + filenameMacos, downloadsPath + '/' + filenameMacos);
-            
-            console.log(' - DONE');
-            
-            deferred.resolve();
-        }
+    var manifest = {
+        version: version,
+        packageForWindows: filenameWindows,
+        packageForMacos: filenameMacos,
+    };
+    var fileData = JSON.stringify(manifest, null, 4);
+    fs.writeFile(workingPath + '/manifest.json', fileData, function () {
+        deferred.resolve();
     });
     
     return deferred.promise;
 }
 
 //-----------------------------------------------
-// Building...
+// Start building
 //-----------------------------------------------
+
+var version = JSON.parse(fs.readFileSync('app/package.json')).version;
+
+// folder where built files will end up
+var workingPath = '../release';
+
+// if working path folder exists clear it
+if (fs.existsSync(workingPath)) {
+    wrench.rmdirSyncRecursive(workingPath);
+}
+fs.mkdirSync(workingPath);
 
 build('windows')
 .then(function () {
     return build('macos');
 })
-.then(buildWebsite)
+.then(makeManifestFile)
 .then(function () {
-    console.log('SUCCESS!');
+    console.log('Success!');
 })
 .catch(function (error) {
     console.log(error);
