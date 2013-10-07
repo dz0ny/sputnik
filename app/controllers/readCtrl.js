@@ -101,6 +101,7 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     };
     
     $scope.onTagSelected = function () {
+        pageIndex = 0;
         showArticles();
     };
     
