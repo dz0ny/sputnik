@@ -8,20 +8,21 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     var pageIndex = 0;
     var articlesPerPage = 50;
     var presentedArticles = [];
+    var unreadBeforeThisPage = 0;
+    var unreadAfterThisPage = 0;
+    
+    var articlesList = angular.element(".js-articles-list");
     
     function downloadFeeds() {
-        
         if (feedsService.feeds.length === 0 || downloadService.isWorking) {
             return;
         }
         
         downloadService.download()
-        .then(function () {
-            showArticles();
-        },
+        .then(showArticles,
         function (failMessage) {
             if (failMessage === 'No connection') {
-                console.log('No connection!!!');
+                // TODO display notification
             }
         },
         function (progress) {
@@ -37,13 +38,11 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         var from = pageIndex * articlesPerPage;
         var to = from + articlesPerPage;
         
-        console.log("pagination from: " + from + " to: " + to);
-        
         var feedUrls;
-        if ($scope.selectedItem.type === 'feed') {
-            feedUrls = [$scope.selectedItem.url];
+        if ($scope.selectedCategory.type === 'feed') {
+            feedUrls = [$scope.selectedCategory.url];
         } else {
-            feedUrls = $scope.selectedItem.feeds.map(function (feed) {
+            feedUrls = $scope.selectedCategory.feeds.map(function (feed) {
                 return feed.url;
             });
         }
@@ -58,7 +57,8 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
             $scope.isPrevPage = (from > 0);
             $scope.isNextPage = (to <= result.numAll);
             
-            console.log("result.numAll: " + result.numAll);
+            unreadBeforeThisPage = result.unreadBefore;
+            unreadAfterThisPage = result.unreadAfter;
             
             renderArticles(result.articles);
             $scope.$apply();
@@ -80,9 +80,34 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
                 articlesList.scrollTop(0);
             } else {
                 clearInterval(interval);
+                lazyLoadImages();
             }
-            lazyLoadImages();
         }, 1);
+    }
+    
+    function markAllAsRead() {
+        var promises = [];
+        $scope.days.forEach(function (day) {
+            day.articles.forEach(function (art) {
+                if (!art.isRead) {
+                    promises.push(art.setIsRead(true));
+                }
+            });
+        });
+        Q.all(promises)
+        .then(function () {
+            // above code changes to read only articles on this side
+            // this code marks as read everything on other pages of this list
+            var feedUrls = $scope.selectedCategory.feeds.map(function (feed) {
+                return feed.url;
+            });
+            return articlesService.markAllAsReadInFeeds(feedUrls);
+        })
+        .then(function () {
+            unreadBeforeThisPage = 0;
+            unreadAfterThisPage = 0;
+            $scope.$apply();
+        });
     }
     
     $scope.feedsTree = feedsService.tree;
@@ -90,10 +115,12 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     $scope.days = [];
     
     $scope.refresh = downloadFeeds;
+    $scope.markAllAsRead = markAllAsRead;
     
-    $scope.selectedItem = $scope.all;
-    $scope.selectItem = function (item) {
-        $scope.selectedItem = item;
+    // could be any element of feedsService.tree
+    $scope.selectedCategory = $scope.all;
+    $scope.selectCategory = function (cat) {
+        $scope.selectedCategory = cat;
         pageIndex = 0;
         if ($scope.state !== 'noFeeds' && $scope.state !== 'refreshing') {
             showArticles();
@@ -119,33 +146,15 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         }
     };
     
-    $scope.markCategoryAsRead = function () {
-        var promises = [];
-        $scope.days.forEach(function (day) {
-            day.articles.forEach(function (art) {
-                if (!art.isRead) {
-                    promises.push(art.setIsRead(true));
-                }
-            }); 
-        });
-        Q.all(promises)
-        .then(function () {
-            // above code changes to read only articles on this side
-            // this code marks as read everything on other pages of this list
-            return feedsService.markAllArticlesAsRead($scope.selectedItem.feeds);
-        })
-        .then(function () {
-            $scope.$apply();
-        });
-    };
-    
+    // TODO need refactoring?
     $scope.$on('articleReadStateChange', function () {
-        if ($scope.selectedItem.unreadArticlesCount === 0) {
+        if ($scope.selectedCategory.unreadArticlesCount === 0) {
             showEverythingReadInfo();
         }
         $scope.$apply();
     });
     
+    // TODO refactor
     var showEverythingReadInfoAnimationInterval;
     function showEverythingReadInfo() {
         var ele = angular.element(".popup");
@@ -157,10 +166,8 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     }
     
     //-----------------------------------------------------
-    // Init
+    // Initial actions
     //-----------------------------------------------------
-    
-    var articlesList = angular.element(".js-articles-list");
     
     if (feedsService.feeds.length === 0) {
         $scope.state = 'noFeeds';
@@ -220,6 +227,11 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
                 scrollTo('+1');
                 event.preventDefault();
                 break;
+            // space
+            case 32:
+                //just prevent default behaviour, to not allow to scroll by space
+                event.preventDefault();
+                break;
         }
     }
     
@@ -245,7 +257,7 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
                 break;
             // enter
             case 13:
-                // TODO mark all as read
+                markAllAsRead();
                 event.preventDefault();
                 break;
         }
@@ -309,21 +321,20 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     }
     
     function getNextUnreadArticle(referenceArticle) {
-        var i;
         var referenceIndex;
         var mode = 'searchingReference';
         
-        for (i = 0; i < presentedArticles.length; i += 1) {
+        for (var i = 0; i < presentedArticles.length; i += 1) {
             if (mode === 'searchingUnread') {
                 if (i === referenceIndex) {
                     // done full circle and no unread article found
-                    break;
+                    return null;
                 } else if (!presentedArticles[i].isRead) {
                     return presentedArticles[i];
                 }
                 if (i === presentedArticles.length - 1) {
                     // search once again from beginning
-                    i = 0;
+                    i = -1;
                 }
             }
             if (mode === 'searchingReference') {
@@ -353,9 +364,18 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
             case 'nextUnread':
                 article = getNextUnreadArticle(getFirstVisibleArticle());
                 if (article) {
+                    // there is still unread article on this page
                     position = angular.element('#' + article.id)[0].offsetTop - 20;
                 } else {
-                    // TODO search for unread article on other pages
+                    // all articles on current page are read
+                    if (unreadAfterThisPage > 0) {
+                        position = articlesList[0].scrollHeight;
+                    } else if (unreadBeforeThisPage > 0) {
+                        position = 0;
+                    } else {
+                        // TODO no unread article, show notification
+                        return;
+                    }
                 }
                 break;
             case 'prev':

@@ -164,9 +164,29 @@ exports.make = function (dbPath) {
                 return b.pubTime - a.pubTime;
             });
             
+            var unreadBefore = 0;
+            var unreadAfter = 0;
+            var countMode = 'before';
+            for (var i = 0; i < docs.length; i += 1) {
+                if (i === from) {
+                    countMode = 'gap';
+                }
+                if (i === to) {
+                    countMode = 'after';
+                }
+                if (countMode === 'before' && !docs[i].isRead) {
+                    unreadBefore += 1;
+                }
+                if (countMode === 'after' && !docs[i].isRead) {
+                    unreadAfter += 1;
+                }
+            }
+            
             deferred.resolve({
                 articles: docs.slice(from, to),
-                numAll: docs.length
+                numAll: docs.length,
+                unreadBefore: unreadBefore,
+                unreadAfter: unreadAfter,
             });
         });
         

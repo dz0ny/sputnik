@@ -43,7 +43,7 @@
         <div class="feeds-tree__content-wrap  column-flex__item  column-flex__item--greedy">
             <div class="feeds-tree__content  scroll">
                 <div class="feeds-tree__category-container  feeds-tree__category-container--nested">
-                    <h1 ng-click="selectItem(all)"
+                    <h1 ng-click="selectCategory(all)"
                         ng-class="{'feeds-tree__category--selected': selectedItem == all}"
                         class="feeds-tree__category">
                         <span class="feeds-tree__category-name">All</span>
@@ -54,14 +54,14 @@
                     class="feeds-tree__category-container">
                     <div ng-switch-when="category"
                         class="feeds-tree__category-container  feeds-tree__category-container--nested">
-                        <h1 ng-click="selectItem(item)"
+                        <h1 ng-click="selectCategory(item)"
                             ng-class="{'feeds-tree__category--selected': selectedItem == item}"
                             class="feeds-tree__category">
                             <span class="feeds-tree__category-name">{{item.title}}</span>
                             <span ng-show="item.unreadArticlesCount > 0" class="feeds-tree__count">{{item.unreadArticlesCount}}</span>
                         </h1>
                         <h2 ng-repeat="feed in item.feeds"
-                            ng-click="selectItem(feed)"
+                            ng-click="selectCategory(feed)"
                             ng-class="{'feeds-tree__category--selected': selectedItem == feed}"
                             class="feeds-tree__category  feeds-tree__category--minor">
                             <div ng-hide="feed.favicon != undefined" class="feeds-tree__icon  feeds-tree__icon--none"/>
@@ -72,7 +72,7 @@
                     </div>
                     <!-- same as above -->
                     <h2 ng-switch-when="feed"
-                        ng-click="selectItem(item)"
+                        ng-click="selectCategory(item)"
                         ng-class="{'feeds-tree__category--selected': selectedItem == item}"
                         class="feeds-tree__category  feeds-tree__category--minor">
                         <div ng-hide="item.favicon != undefined" class="feeds-tree__icon  feeds-tree__icon--none"/>
@@ -160,7 +160,7 @@
                     </h1>
                     <div class="articles-sheet__actions">
                         <a class="button2"
-                           ng-click="markCategoryAsRead()"
+                           ng-click="markAllAsRead()"
                            ng-class="{'button2--inactive': selectedItem.unreadArticlesCount == 0}">
                             <svg class="button2__icon"
                                 width="128px" height="128px" viewBox="0 0 128 128">

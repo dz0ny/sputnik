@@ -363,6 +363,44 @@ describe('articlesStorage', function () {
         waitsFor(function () { return done; }, "timeout", 500);
     });
     
+    it('getArticles should tell how much unread articles not visible on current page', function () {
+        var done = false;
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', harvest1)
+        .then(function () {
+            return as.digest('a.com/feed', harvest2);
+        })
+        .then(function () {
+            return as.setArticleReadState('link1', true);
+        })
+        .then(function () {
+            return as.getArticles(['a.com/feed'], 1, 2);
+        })
+        .then(function (result) {
+            expect(result.unreadBefore).toBe(1);
+            expect(result.unreadAfter).toBe(1);
+        })
+        .then(function () {
+            return as.getArticles(['a.com/feed'], 0, 5);
+        })
+        .then(function (result) {
+            expect(result.unreadBefore).toBe(0);
+            expect(result.unreadAfter).toBe(0);
+        })
+        .then(function () {
+            return as.markAllAsRead(['a.com/feed']);
+        })
+        .then(function () {
+            return as.getArticles(['a.com/feed'], 1, 2);
+        })
+        .then(function (result) {
+            expect(result.unreadBefore).toBe(0);
+            expect(result.unreadAfter).toBe(0);
+            done = true;
+        });
+        waitsFor(function () { return done; }, null, 500);
+    });
+    
     describe('tagging', function () {
         
         it('should add tag', function () {
