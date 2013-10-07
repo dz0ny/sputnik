@@ -264,6 +264,43 @@ describe('articlesStorage', function () {
         waitsFor(function () { return done; }, null, 500);
     });
     
+    it('should ignore article with guid already existing in database', function () {
+        var done = false;
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', [{
+            title: "art",
+            description: "description",
+            link: "link",
+            pubDate: new Date(1),
+        }])
+        .then(function () {
+            return as.digest('a.com/feed', [{
+                title: "art",
+                description: "description",
+                link: "link-other",
+                pubDate: new Date(2),
+            }]);
+        })
+        .then(function () {
+            return as.digest('a.com/feed', [{
+                title: "art",
+                description: "description",
+                link: "link", // same as 2 digests ago
+                pubDate: new Date(3),
+            }]);
+        })
+        .then(function () {
+            return as.getArticles(['a.com/feed'], 0, 100);
+        })
+        .then(function (result) {
+            expect(result.articles.length).toBe(2);
+            expect(result.articles[0].guid).toBe('link');
+            expect(result.articles[1].guid).toBe('link-other');
+            done = true;
+        });
+        waitsFor(function () { return done; }, null, 500);
+    });
+    
     it('should mark article as read', function () {
         var done = false;
         var as = articlesStorage.make();

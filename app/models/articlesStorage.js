@@ -88,7 +88,7 @@ exports.make = function (dbPath) {
                         });
                     }
                     totalOperations += 1;
-                    db.insert(art, operationTick);
+                    db.update({ guid: art.guid }, art, { upsert: true }, operationTick);
                 }
                 
             });

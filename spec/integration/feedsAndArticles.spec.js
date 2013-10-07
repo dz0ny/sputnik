@@ -9,13 +9,27 @@ describe('integration: feedsService and articlesService', function () {
         {
             "title": "art1",
             "description": "desc",
-            "link": "linkToArt1",
+            "link": "link1A",
             "pubDate": new Date(1),
         },
         {
             "title": "art2",
             "description": "desc",
-            "link": "linkToArt2",
+            "link": "link2A",
+            "pubDate": new Date(2),
+        }
+    ];
+    var harvest2 = [
+        {
+            "title": "art1",
+            "description": "desc",
+            "link": "link1B",
+            "pubDate": new Date(1),
+        },
+        {
+            "title": "art2",
+            "description": "desc",
+            "link": "link2B",
             "pubDate": new Date(2),
         }
     ];
@@ -64,7 +78,7 @@ describe('integration: feedsService and articlesService', function () {
         var done = false;
         articlesService.digest('a.com/feed', harvest)
         .then(function () {
-            return articlesService.digest('b.com/feed', harvest)
+            return articlesService.digest('b.com/feed', harvest2)
         })
         .then(function () {
             expect(feedsService.unreadArticlesCount).toBe(4);
