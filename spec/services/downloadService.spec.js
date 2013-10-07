@@ -197,13 +197,30 @@ describe('downloadService', function () {
             waitsFor(function () { return done; }, null, 500);
         }));
         
-        it("should terminate if 5 errors in a row (what means we don't have connection)", inject(function (downloadService) {
+        it("should assume no connection if 5 errors in a row", inject(function (downloadService) {
             var done = false;
             var feedUrls = [
                 'timeout',
                 'not-found',
                 'timeout',
                 'not-found',
+                'timeout',
+                'not-found',
+            ];
+            downloadService.fetchFeeds(feedUrls, 'normal')
+            .then(
+                null,
+                function (err) {
+                    expect(err).toBe('No connection');
+                    done = true;
+                }
+            );
+            waitsFor(function () { return done; }, null, 500);
+        }));
+        
+        it("should assume no connection if less than 5 feeds and all failed", inject(function (downloadService) {
+            var done = false;
+            var feedUrls = [
                 'timeout',
                 'not-found',
             ];
@@ -330,12 +347,15 @@ describe('downloadService', function () {
             feedsService.addFeed({
                 url: 'timeout',
             });
+            feedsService.addFeed({
+                url: 'http://404',
+            });
             downloadService.download()
-            .then(function (backgroundDownloadPromise) {
-                return backgroundDownloadPromise;
+            .then(function (result) {
+                return result.backgroundJob;
             })
-            .then(function () {
-                expect(spy.callCount).toBe(2);
+            .then(null, function () {
+                expect(spy.callCount).toBe(3); // 2 calls from timeout and 1 from http://404
                 done = true;
             });
             waitsFor(function () { return done; }, null, 500);
@@ -359,7 +379,7 @@ describe('downloadService', function () {
                 url: 'timeout5',
             });
             downloadService.download()
-            .then(null, 
+            .then(null,
             function (message) {
                 expect(message).toBe('No connection');
                 expect(downloadService.isWorking).toBe(false);

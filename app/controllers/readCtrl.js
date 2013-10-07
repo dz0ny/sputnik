@@ -22,8 +22,9 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         .then(showArticles,
         function (failMessage) {
             if (failMessage === 'No connection') {
-                // TODO display notification
+                $scope.$emit('showNotification', 'It looks like there is no internet connection. Only old articles are shown.');
             }
+            showArticles();
         },
         function (progress) {
             var ratio = Math.round(progress.completed / progress.total * 100);

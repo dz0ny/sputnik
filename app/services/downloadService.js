@@ -111,7 +111,7 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
                 timeoutsInARow = 0;
             }
             
-            if (timeoutsInARow >= 5) {
+            if (timeoutsInARow >= 5 || timeoutsInARow === feedUrls.length) {
                 deferred.reject('No connection');
                 return;
             }
