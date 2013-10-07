@@ -196,7 +196,7 @@ describe('articlesStorage', function () {
         waitsFor(function () { return done; }, "timeout", 500);
     });
     
-    it('should do fine when 2 jobs were executed simultaneously', function () {
+    it('should do fine when 2 digest jobs were executed simultaneously', function () {
         var doneTasks = 0;
         var as = articlesStorage.make();
         
@@ -243,6 +243,25 @@ describe('articlesStorage', function () {
             done = true;
         });
         waitsFor(function () { return done; }, "timeout", 500);
+    });
+    
+    it('should not mark as abandoned if empty list of articles provided', function () {
+        var done = false;
+        var as = articlesStorage.make();
+        as.digest('a.com/feed', harvest1)
+        .then(function () {
+            return as.digest('a.com/feed', []);
+        })
+        .then(function () {
+            return as.getArticles(['a.com/feed'], 0, 100);
+        })
+        .then(function (result) {
+            expect(getArt(result.articles, 'link3').isAbandoned).toBe(false);
+            expect(getArt(result.articles, 'guid2').isAbandoned).toBe(false);
+            expect(getArt(result.articles, 'link1').isAbandoned).toBe(false);
+            done = true;
+        });
+        waitsFor(function () { return done; }, null, 500);
     });
     
     it('should mark article as read', function () {
@@ -349,7 +368,7 @@ describe('articlesStorage', function () {
         waitsFor(function () { return done; }, "timeout", 500);
     });
     
-    it('should give unread articles for feed', function () {
+    it('should count unread articles for feed', function () {
         var done = false;
         var as = articlesStorage.make();
         as.digest('a.com/feed', harvest1)
