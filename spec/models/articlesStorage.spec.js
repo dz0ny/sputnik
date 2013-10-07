@@ -252,7 +252,7 @@ describe('articlesStorage', function () {
         .then(function () {
             return as.digest('a.com/feed', []);
         })
-        .then(function () {
+        .then(null, function () {
             return as.getArticles(['a.com/feed'], 0, 100);
         })
         .then(function (result) {
