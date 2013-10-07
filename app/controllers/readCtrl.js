@@ -270,6 +270,10 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     // Scrolling to articles
     //-----------------------------------------------------
     
+    var currScrollPos;
+    var targetScrollPos;
+    var scrollInterval;
+    
     /**
      * Checks if any part of given article is visible on screen.
      */
@@ -346,13 +350,11 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     function scrollTo(what) {
         var position;
         var article;
-        var duration = 600;
         
         switch (what) {
             case '+1':
             case '-1':
-                duration = 300;
-                var distance = 400;
+                var distance = 300;
                 if (what === '-1') { distance = -distance; }
                 position = articlesList.scrollTop() + distance;
                 break;
@@ -384,21 +386,38 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
                 break;
         }
         
-        // TODO smooth animation when many actions in short time
+        if (position < 0) {
+            position = 0;
+        } else if (position > articlesList[0].scrollHeight) {
+            position = articlesList[0].scrollHeight;
+        }
         
-        autoScrolling = true;
-        angular.element(".js-articles-list").animate({
-            scrollTop: position
-        }, duration, afterAutoScroll);
+        targetScrollPos = position;
+        if (scrollInterval === undefined) {
+            autoScrolling = true;
+            currScrollPos = articlesList.scrollTop();
+            scrollInterval = setInterval(autoScrollLoop, 17);
+        }
         
         return true;
     }
     
-    function afterAutoScroll() {
-        autoScrolling = false;
-        // while autoScrolling we have suspended images lazy loading
-        // so now event have to be fired to let them load
-        articlesList.scroll();
+    function autoScrollLoop() {
+        var nextScrollPos = currScrollPos + ((targetScrollPos - currScrollPos) / 8);
+        
+        // if end of scroll
+        if (Math.abs(nextScrollPos - currScrollPos) < 0.1) {
+            articlesList.scrollTop(targetScrollPos);
+            clearInterval(scrollInterval);
+            scrollInterval = undefined;
+            autoScrolling = false;
+            // while autoScrolling we have suspended images lazy loading
+            // so now event have to be fired to let them load
+            articlesList.scroll();
+        }
+        
+        articlesList.scrollTop(nextScrollPos);
+        currScrollPos = nextScrollPos;
     }
     
     function markFirstAsReadAndScrollToNext() {
