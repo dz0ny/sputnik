@@ -25,12 +25,6 @@
         </div>
     </div>
     <div class="article__content" ng-bind-html="articleContent"></div>
-    <!--<div class="article__additional-actions"
-        ng-show="artData.enclosures">
-        <div ng-repeat="enc in artData.enclosures">
-            <a class="article__audio-link" ng-href="{{enc.url}}">listen to the audio</a>
-        </div>
-    </div>-->
     <div class="article__tags">
         <span ng-repeat="tag in artData.tags" class="article__tag-item">{{tag.name}}</span>
     </div>
