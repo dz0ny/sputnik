@@ -15,6 +15,7 @@ sputnik.directive('pickTagMenu', function ($rootScope) {
             $rootScope.$on('showPickTag', function (evt, art) {
                 article = art;
                 $scope.show = true;
+                $scope.$apply();
             });
             
             $scope.toggleTag = function (tagId) {

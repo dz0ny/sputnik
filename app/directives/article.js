@@ -69,7 +69,7 @@ sputnik.directive('article', function ($sanitize, $sce) {
         replace: true,
         templateUrl: './views/directives/article.html',
         scope: true,
-        link: function ($scope, element, attrs) {
+        link: function ($scope, $element, attrs) {
             
             var articleContent = $scope.artData.content;
             articleContent = processHtml(articleContent, $scope.artData.link);
@@ -83,25 +83,48 @@ sputnik.directive('article', function ($sanitize, $sce) {
             
             articleContent = lazyLoadImages(articleContent);
             
-            $scope.articleContent = $sce.trustAsHtml(articleContent);
             
-            $scope.showPickTagMenu = function () {
-                $scope.$emit('showPickTag', $scope.artData);
-            };
+            
+            // have to insert data manually with jquery due to performance issues
+            $element.attr('id', $scope.artData.id);
+            $element.find('.js-title').html($scope.artData.title);
+            $element.find('.js-title').attr('href', $scope.artData.link);
+            $element.find('.js-article-content').html(articleContent);
+            
+            var feedInfo = '';
+            if ($scope.artData.feed.favicon) {
+                feedInfo += '<img src="' + $scope.artData.feed.favicon + '" class="article__feed-icon"/>';
+            } else {
+                feedInfo += '<div class="article__feed-icon  article__feed-icon--none"></div>';
+            }
+            feedInfo += '<span class="article__feed-title">' + $scope.artData.feed.title + '</span>';
+            $element.find('.js-feed-info').html(feedInfo);
+            
+            $element.find('.js-see-in-browser').attr('href', $scope.artData.link);
+            
             
             // when rollover title hilight 'see in browser' button
-            element.find('.js-title').hover(function (evt) {
+            /*element.find('.js-title').hover(function (evt) {
                 element.find('.js-see-in-browser').addClass('hovered');
             }, function (evt) {
                 element.find('.js-see-in-browser').removeClass('hovered');
+            });*/
+            
+            $element.find('.js-show-pick-tag-menu').click(function () {
+                $scope.$emit('showPickTag', $scope.artData);
             });
             
-            $scope.toggleIsRead = function () {
+            $element.find('.js-toggle-is-read').click(function () {
                 $scope.artData.setIsRead(!$scope.artData.isRead)
                 .then(function () {
                     $scope.$emit('articleReadStateChanged');
+                    if ($scope.artData.isRead) {
+                        $element.addClass('article--read');
+                    } else {
+                        $element.removeClass('article--read');
+                    }
                 });
-            };
+            });
             
         }
     };
