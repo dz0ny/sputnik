@@ -62,7 +62,6 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
             unreadAfterThisPage = result.unreadAfter;
             
             renderArticles(result.articles);
-            $scope.$apply();
         });
     }
     
@@ -72,11 +71,12 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         $scope.days = organizer.organizeByDays(articles);
         $scope.state = 'articles';
         
+        $scope.$apply();
+        
         // little hack to scroll to top every time articles list was updated,
         // but articles list is display: none sometimes and then you have
         // to wait for it to appear to set the scroll
         var interval = setInterval(function () {
-            var articlesList = angular.element('.js-articles-list');
             if (articlesList.scrollTop() !== 0) {
                 articlesList.scrollTop(0);
             } else {
