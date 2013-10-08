@@ -1,5 +1,6 @@
 <div id="{{artData.id}}" class="article"
     ng-class="{'article--read': artData.isRead}">
+    
     <div class="article__header">
         <h1 class="article__title">
             <a class="js-title" ng-href="{{artData.link}}" ng-bind-html="artData.title"></a>
@@ -24,23 +25,16 @@
             </div>
         </div>
     </div>
+    
     <div class="article__content" ng-bind-html="articleContent"></div>
+    
     <div class="article__tags">
         <span ng-repeat="tag in artData.tags" class="article__tag-item">{{tag.name}}</span>
     </div>
+    
     <div class="article__actions  article__actions--bottom">
         
-        <div ng-show="showPickTagMenu" class="article__pick-tag">
-            <div class="article__pick-tag__add-new">
-                <input type="text" ng-model="newTagName" placeholder="Add new tag" />
-                <button ng-click="addNewTag()">Add</button>
-            </div>
-            <div ng-show="allTags.length > 0" class="article__pick-tag__list  scroll">
-                <span ng-repeat="tag in allTags" class="article__pick-tag__item" ng-class="{ 'article__pick-tag__item--selected': articleHasTag(tag) }" ng-click="toggleTag(tag._id)">{{tag.name}}</span>
-            </div>
-        </div>
-        
-        <a class="article__action-button  button2" ng-click="showPickTagMenu = !showPickTagMenu">
+        <a class="article__action-button  button2" ng-click="showPickTagMenu()">
             <span class="button2__text">tags</span>
         </a>
         
@@ -60,4 +54,5 @@
             <span ng-hide="artData.isRead" class="button2__text">mark as read</span>
         </div>
     </div>
+    
 </div>

@@ -1,0 +1,13 @@
+<div ng-if="show" class="article__pick-tag">
+    <div class="article__pick-tag__add-new">
+        <input type="text" ng-model="newTagName" placeholder="Add new tag" />
+        <button ng-click="addNewTag()">Add</button>
+    </div>
+    <div ng-show="allTags.length > 0" class="article__pick-tag__list  scroll">
+        <span ng-repeat="tag in allTags" class="article__pick-tag__item"
+            ng-class="{ 'article__pick-tag__item--selected': articleHasTag(tag) }"
+            ng-click="toggleTag(tag._id)">
+            {{tag.name}}
+        </span>
+    </div>
+</div>

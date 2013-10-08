@@ -73,19 +73,21 @@ sputnik.directive('article', function ($sanitize, $sce) {
             
             var articleContent = $scope.artData.content;
             articleContent = processHtml(articleContent, $scope.artData.link);
-            //console.log(articleContent)
+            
             try {
                 articleContent = $sanitize(articleContent);
             } catch (err) {
                 // if not sanitized, kill it as insecure
-                articleContent = "Oops. Sorry, this article can't be displayed. See it in browser.";
+                articleContent = "Oops. Sorry, this article can't be displayed. See it in the browser.";
             }
             
             articleContent = lazyLoadImages(articleContent);
             
             $scope.articleContent = $sce.trustAsHtml(articleContent);
             
-            $scope.showPickTagMenu = false;
+            $scope.showPickTagMenu = function () {
+                $scope.$emit('showPickTag', $scope.artData);
+            };
             
             // when rollover title hilight 'see in browser' button
             element.find('.js-title').hover(function (evt) {
@@ -100,49 +102,6 @@ sputnik.directive('article', function ($sanitize, $sce) {
                     $scope.$emit('articleReadStateChanged');
                 });
             };
-            
-            $scope.toggleTag = function (tagId) {
-                $scope.artData.toggleTag(tagId)
-                .then(function () {
-                    $scope.showPickTagMenu = false;
-                    $scope.$apply();
-                });
-            };
-            
-            $scope.addNewTag = function () {
-                if (!$scope.newTagName || $scope.newTagName === '') {
-                    return;
-                }
-                $scope.artData.addNewTag($scope.newTagName)
-                .then(function () {
-                    $scope.newTagName = '';
-                    $scope.showPickTagMenu = false;
-                    $scope.$apply();
-                });
-            };
-            
-            $scope.articleHasTag = function (tag) {
-                for (var i = 0; i < $scope.artData.tags.length; i += 1) {
-                    if ($scope.artData.tags[i]._id === tag._id) {
-                        return true;
-                    }
-                }
-                return false;
-            };
-            
-            // right click anywhere on an article makes it read
-            // and scrolls to next unread article
-            /*element.bind('contextmenu', function(evt) {
-                $scope.$apply(function() {
-                    evt.preventDefault();
-                    
-                    $scope.artData.setIsRead(true)
-                    .then(function () {
-                        $scope.$emit('articleReadStateChange');
-                        $scope.$emit('articleReadDone', $scope.artData);
-                    });
-                });
-            });*/
             
         }
     };
