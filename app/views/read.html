@@ -151,17 +151,17 @@
             <div ng-show="state == 'articles'" class="articles-sheet  scroll  js-external-link  js-articles-list">
                 <div class="articles-sheet__element">
                     <h1 class="articles-sheet__category">
-                        <span ng-hide="selectedItem.type == 'feed' && selectedItem.siteUrl">
-                            {{selectedItem.title}}
+                        <span ng-hide="selectedCategory.type == 'feed' && selectedCategory.siteUrl">
+                            {{selectedCategory.title}}
                         </span>
-                        <a ng-show="selectedItem.type == 'feed' && selectedItem.siteUrl" ng-href="{{selectedItem.siteUrl}}">
-                            {{selectedItem.title}}
+                        <a ng-show="selectedCategory.type == 'feed' && selectedCategory.siteUrl" ng-href="{{selectedCategory.siteUrl}}">
+                            {{selectedCategory.title}}
                         </a>
                     </h1>
                     <div class="articles-sheet__actions">
                         <a class="button2"
                            ng-click="markAllAsRead()"
-                           ng-class="{'button2--inactive': selectedItem.unreadArticlesCount == 0}">
+                           ng-class="{'button2--inactive': selectedCategory.unreadArticlesCount == 0}">
                             <svg class="button2__icon"
                                 width="128px" height="128px" viewBox="0 0 128 128">
                                 <path class="button2__icon-obj" d="m 53.137425,98.563519 c -1.31855,1.31855 -3.471404,1.31855 -4.797247,0 l -1.064758,-1.066217 0,0 -1.136229,-1.13477 -4.992695,-4.999988 c -0.02188,-0.02188 -0.01459,-0.04813 -0.02917,-0.06272 L 18.227937,68.241244 c -1.325843,-1.317092 -1.325843,-3.471404 0,-4.795789 l 7.195141,-7.202433 c 1.333136,-1.324385 3.478697,-1.324385 4.810374,0 L 50.765785,76.937256 93.948299,33.756201 c 1.317092,-1.325843 3.471404,-1.325843 4.797247,0 l 7.195144,7.202433 c 1.33167,1.325843 1.33167,3.471404 0,4.803082 z"/>
