@@ -248,13 +248,13 @@ describe('downloadService', function () {
     
     describe('main API', function () {
         
-        function generateArticles(num, timeGap) {
+        function generateArticles(feedName, num, timeGap) {
             var arts = [];
             while (num > 0) {
                 arts.push({
                     title: "title",
                     description: "description",
-                    link: "link" + num,
+                    link: "link" + feedName + num,
                     pubDate: moment().subtract('hours', (arts.length + 1) * timeGap)._d,
                 });
                 num -= 1;
@@ -263,8 +263,8 @@ describe('downloadService', function () {
         }
         
         var articles = {
-            'a.com/feed': generateArticles(3, 48),
-            'b.com/feed': generateArticles(9, 600),
+            'a.com/feed': generateArticles('a', 3, 48),
+            'b.com/feed': generateArticles('b', 9, 600),
         };
         
         beforeEach(module('sputnik', function($provide) {

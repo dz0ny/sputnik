@@ -36,8 +36,18 @@ exports.make = function (dbPath) {
             }
         }
         
+        function getGuid(parsedArticle) {
+            // if guid not specified use link as guid
+            return parsedArticle.guid || parsedArticle.link;
+        }
+        
+        var newArticlesGuids = articles.map(getGuid);
+        
         // get from database all not abandoned articles for this feed
-        db.find({ feedUrl: feedUrl, isAbandoned: false }, function (err, storedArticles) {
+        db.find({ $or: [
+            { feedUrl: feedUrl, isAbandoned: false },
+            { guid: { $in: newArticlesGuids } },
+        ] }, function (err, storedArticles) {
             
             // now iterate through new articles and add only new ones
             articles.forEach(function (article) {
@@ -69,7 +79,7 @@ exports.make = function (dbPath) {
                     var art = {
                         feedUrl: feedUrl,
                         link: article.link,
-                        guid: article.guid || article.link, // if guid not specified use link as guid
+                        guid: getGuid(article),
                         title: article.title,
                         content: article.description,
                         pubTime: pubTime,
@@ -88,7 +98,7 @@ exports.make = function (dbPath) {
                         });
                     }
                     totalOperations += 1;
-                    db.update({ guid: art.guid }, art, { upsert: true }, operationTick);
+                    db.insert(art, operationTick);
                 }
                 
             });

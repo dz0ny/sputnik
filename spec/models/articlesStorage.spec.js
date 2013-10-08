@@ -264,7 +264,7 @@ describe('articlesStorage', function () {
         waitsFor(function () { return done; }, null, 500);
     });
     
-    it('should ignore article with guid already existing in database', function () {
+    it('if article reappeared in feed after some time merge it in DB with old one', function () {
         var done = false;
         var as = articlesStorage.make();
         as.digest('a.com/feed', [{
@@ -283,8 +283,8 @@ describe('articlesStorage', function () {
         })
         .then(function () {
             return as.digest('a.com/feed', [{
-                title: "art",
-                description: "description",
+                title: "art-again",
+                description: "description-again",
                 link: "link", // same as 2 digests ago
                 pubDate: new Date(3),
             }]);
@@ -294,8 +294,14 @@ describe('articlesStorage', function () {
         })
         .then(function (result) {
             expect(result.articles.length).toBe(2);
-            expect(result.articles[0].guid).toBe('link');
-            expect(result.articles[1].guid).toBe('link-other');
+            
+            expect(result.articles[0].guid).toBe('link-other');
+            
+            expect(result.articles[1].guid).toBe('link');
+            expect(result.articles[1].title).toBe('art-again'); // title should be updated
+            expect(result.articles[1].content).toBe('description-again'); // description should be updated
+            expect(result.articles[1].pubTime).toBe(1); // pubTime of first article should be preserved
+            
             done = true;
         });
         waitsFor(function () { return done; }, null, 500);
