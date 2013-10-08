@@ -66,9 +66,8 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     }
     
     function renderArticles(articles) {
-        organizer.sortChronologically(articles);
-        presentedArticles = articles;
-        $scope.days = organizer.organizeByDays(articles);
+        presentedArticles = organizer.organizeByDays(articles);
+        $scope.presentedArticles = presentedArticles;
         $scope.state = 'articles';
         
         $scope.$apply();
@@ -88,12 +87,10 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     
     function markAllAsRead() {
         var promises = [];
-        $scope.days.forEach(function (day) {
-            day.articles.forEach(function (art) {
-                if (!art.isRead) {
-                    promises.push(art.setIsRead(true));
-                }
-            });
+        presentedArticles.forEach(function (art) {
+            if (!art.isRead) {
+                promises.push(art.setIsRead(true));
+            }
         });
         Q.all(promises)
         .then(function () {
@@ -113,7 +110,7 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     
     $scope.feedsTree = feedsService.tree;
     $scope.all = feedsService;
-    $scope.days = [];
+    $scope.presentedArticles = [];
     
     $scope.refresh = downloadFeeds;
     $scope.markAllAsRead = markAllAsRead;

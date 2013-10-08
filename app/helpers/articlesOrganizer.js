@@ -18,22 +18,11 @@ function monthLabel(month) {
     return labels[month];
 }
 
-function sortChronologically(articles) {
-    articles.sort(function (art1, art2) {
-        return art2.pubDate - art1.pubDate;
-    });
-}
-
-exports.sortChronologically = sortChronologically;
-
 exports.organizeByDays = function (articles) {
-    var days = [];
-    
-    var currDate = -1;
-    
     var now = new Date();
     var yesterday = new Date();
     yesterday.setDate(now.getDate() - 1);
+    
     function getDayName(date) {
         if (now.getDate() === date.getDate() &&
             now.getMonth() === date.getMonth() &&
@@ -48,19 +37,29 @@ exports.organizeByDays = function (articles) {
         return date.getDate() + ' ' + monthLabel(date.getMonth());
     }
     
+    function isSameDay(date1, date2) {
+        return (
+            date1.getDate() === date2.getDate() &&
+            date1.getMonth() === date2.getMonth() &&
+            date1.getFullYear() === date2.getFullYear()
+        );
+    }
+    
+    articles.sort(function (art1, art2) {
+        return art2.pubDate - art1.pubDate;
+    });
+    
+    var articlesDays = [];
+    var currDate = new Date(0); // 1970
+    
     for (var i = 0; i < articles.length; i += 1) {
         var art = articles[i];
-        var pubDate = new Date(art.pubDate);
-        if (currDate !== pubDate.getDate()) {
-            var day = {
-                id: 'day-' + pubDate.getTime(),
-                name: getDayName(pubDate),
-                articles: [],
-            };
-            days.push(day);
-            currDate = pubDate.getDate();
+        if (!isSameDay(currDate, art.pubDate)) {
+            art.dayLabel = getDayName(art.pubDate);
         }
-        day.articles.push(art);
+        currDate = art.pubDate;
+        articlesDays.push(art);
     }
-    return days;
+    
+    return articlesDays;
 }

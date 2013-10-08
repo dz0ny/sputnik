@@ -180,7 +180,7 @@
                     <div class="clear"></div>
                 </div>
                 
-                <div ng-show="days.length == 0" class="articles-sheet__element">
+                <div ng-show="presentedArticles.length == 0" class="articles-sheet__element">
                     <br/>
                     Sorry, nothing here yet.
                 </div>
@@ -189,13 +189,11 @@
                     <button class="articles-sheet__pagination-button" ng-click="prevPage()">Previous page</button>
                 </div>
                 
-                <div ng-repeat="day in days">
-                    <div id="{{day.id}}" class="articles-sheet__element  day-label">
-                        {{day.name}}
+                <div ng-repeat="artData in presentedArticles">
+                    <div ng-if="artData.dayLabel" class="articles-sheet__element  day-label">
+                        {{artData.dayLabel}}
                     </div>
-                    <div ng-repeat="artData in day.articles">
-                        <article></article>
-                    </div>
+                    <article></article>
                 </div>
                 
                 <div ng-show="isNextPage" class="articles-sheet__element  articles-sheet__controls">
