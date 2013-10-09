@@ -93,6 +93,7 @@ sputnik.factory('articlesService', function ($rootScope, articlesStorage, feedsS
             var that = this;
             return articlesStorage.setArticleReadState(this.guid, newIsRead)
             .then(function () {
+                $rootScope.$broadcast('articleReadStateChanged', art);
                 return recountUnread(that.feed.url);
             });
         };
@@ -108,6 +109,7 @@ sputnik.factory('articlesService', function ($rootScope, articlesStorage, feedsS
             }
             promise.then(function (article) {
                 art.tags = mapTagIdsToTags(article.tags);
+                $rootScope.$broadcast('articleTagsChanged', art);
                 deferred.resolve();
             });
             
@@ -119,11 +121,11 @@ sputnik.factory('articlesService', function ($rootScope, articlesStorage, feedsS
             
             addTag(tagName)
             .then(function (addedTag) {
-                return articlesStorage.tagArticle(art.guid, addedTag._id)
+                return articlesStorage.tagArticle(art.guid, addedTag._id);
             })
             .then(function (article) {
                 art.tags = mapTagIdsToTags(article.tags);
-                
+                $rootScope.$broadcast('articleTagsChanged', art);
                 deferred.resolve();
             });
             

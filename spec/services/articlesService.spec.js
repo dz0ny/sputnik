@@ -61,6 +61,27 @@ describe('articlesService', function () {
         waitsFor(function () { return done; }, null, 500);
     }));
     
+    it('should fire event when article tags change', inject(function ($rootScope, articlesService) {
+        var done = false;
+        var article;
+        var spy = jasmine.createSpy();
+        articlesService.digest('a.com/feed', harvest)
+        .then(function () {
+            return articlesService.getArticles(['a.com/feed'], 0, 3);
+        })
+        .then(function (result) {
+            article = result.articles[0];
+            $rootScope.$on('articleReadStateChanged', spy);
+            return article.setIsRead(true);
+        })
+        .then(function () {
+            expect(spy).toHaveBeenCalled();
+            expect(spy.mostRecentCall.args[1]).toBe(article);
+            done = true;
+        });
+        waitsFor(function () { return done; }, null, 500);
+    }));
+    
     describe('tagging', function () {
         
         it('should have tags list (sorted)', inject(function (articlesService) {
@@ -158,6 +179,34 @@ describe('articlesService', function () {
             })
             .then(function () {
                 expect(art.tags.length).toBe(0);
+                done = true;
+            });
+            waitsFor(function () { return done; }, null, 500);
+        }));
+        
+        it('should fire event when article tags change', inject(function ($rootScope, articlesService) {
+            var done = false;
+            var article;
+            var addSpy = jasmine.createSpy('add');
+            var toggleSpy = jasmine.createSpy('toggle');
+            articlesService.digest('a.com/feed', harvest)
+            .then(function () {
+                return articlesService.getArticles(['a.com/feed'], 0, 3);
+            })
+            .then(function (result) {
+                article = result.articles[0];
+                $rootScope.$on('articleTagsChanged', addSpy);
+                return article.addNewTag('tag');
+            })
+            .then(function (tag) {
+                expect(addSpy).toHaveBeenCalled();
+                expect(addSpy.mostRecentCall.args[1]).toBe(article);
+                $rootScope.$on('articleTagsChanged', toggleSpy);
+                return article.toggleTag(article.tags[0].id);
+            })
+            .then(function () {
+                expect(toggleSpy).toHaveBeenCalled();
+                expect(toggleSpy.mostRecentCall.args[1]).toBe(article);
                 done = true;
             });
             waitsFor(function () { return done; }, null, 500);
