@@ -3,10 +3,9 @@
 function ReadCtrl($scope, $window, feedsService, articlesService, downloadService) {
     
     var Q = require('q');
-    var organizer = require('./helpers/articlesOrganizer');
     
     var pageIndex = 0;
-    var articlesPerPage = 50;
+    var articlesPerPage = 30;
     var presentedArticles = [];
     var unreadBeforeThisPage = 0;
     var unreadAfterThisPage = 0;
@@ -66,7 +65,7 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     }
     
     function renderArticles(articles) {
-        presentedArticles = organizer.organizeByDays(articles);
+        presentedArticles = articles;
         $scope.presentedArticles = presentedArticles;
         $scope.state = 'articles';
         

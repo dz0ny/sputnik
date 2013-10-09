@@ -115,7 +115,7 @@
     
     <div class="column-two">
         
-            <div ng-show="state == 'noFeeds'" class="center  welcome">
+            <div ng-if="state == 'noFeeds'" class="center  welcome">
                 <h1>Welcome to Sputnik!</h1>
                 <p><br/>Now you can add your first feed</p>
                 <p>
@@ -139,7 +139,7 @@
                 </p>
             </div>
             
-            <div ng-show="state == 'refreshing'" class="center  refreshing">
+            <div ng-if="state == 'refreshing'" class="center  refreshing">
                 <div class="refreshing__label">
                     Checking what's new...
                 </div>
@@ -180,7 +180,7 @@
                     <div class="clear"></div>
                 </div>
                 
-                <div ng-show="presentedArticles.length == 0" class="articles-sheet__element">
+                <div ng-if="presentedArticles.length == 0" class="articles-sheet__element">
                     <br/>
                     Sorry, nothing here yet.
                 </div>
@@ -189,12 +189,7 @@
                     <button class="articles-sheet__pagination-button" ng-click="prevPage()">Previous page</button>
                 </div>
                 
-                <div ng-repeat="artData in presentedArticles">
-                    <div ng-if="artData.dayLabel" class="articles-sheet__element  day-label">
-                        {{artData.dayLabel}}
-                    </div>
-                    <article></article>
-                </div>
+                <articles-list></articles-list>
                 
                 <div ng-show="isNextPage" class="articles-sheet__element  articles-sheet__controls">
                     <button class="articles-sheet__pagination-button" ng-click="nextPage()">Next page</button>
