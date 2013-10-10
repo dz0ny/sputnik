@@ -259,15 +259,13 @@ exports.make = function (dbPath) {
         var deferred = Q.defer();
         
         var query = {
-            pubTime: { $lt: time }
+            $and: [
+                { pubTime: { $lt: time } },
+                { isAbandoned: true }
+            ]
         };
         if (leaveTagged) {
-            query = {
-                $and: [
-                    { pubTime: { $lt: time } },
-                    { tags: { $exists: false } }
-                ]
-            };
+            query.$and.push({ tags: { $exists: false } });
         }
         
         db.remove(query, {
