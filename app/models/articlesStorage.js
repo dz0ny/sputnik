@@ -255,6 +255,30 @@ exports.make = function (dbPath) {
         return fs.statSync(dbPath).size;
     }
     
+    function removeOlderThan(time, leaveTagged) {
+        var deferred = Q.defer();
+        
+        var query = {
+            pubTime: { $lt: time }
+        };
+        if (leaveTagged) {
+            query = {
+                $and: [
+                    { pubTime: { $lt: time } },
+                    { tags: { $exists: false } }
+                ]
+            };
+        }
+        
+        db.remove(query, {
+            multi: true
+        }, function (err, numRemoved) {
+            deferred.resolve();
+        });
+        
+        return deferred.promise;
+    }
+    
     //-----------------------------------------------------
     // Tags
     //-----------------------------------------------------
@@ -357,6 +381,8 @@ exports.make = function (dbPath) {
         markAllAsRead: markAllAsRead,
         countUnread: countUnread,
         removeAllForFeed: removeAllForFeed,
+        
+        removeOlderThan: removeOlderThan,
         
         getTags: getTags,
         addTag: addTag,

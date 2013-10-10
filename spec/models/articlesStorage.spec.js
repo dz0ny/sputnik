@@ -112,7 +112,7 @@ describe('articlesStorage', function () {
             
             done = true;
         });
-        waitsFor(function () { return done; }, "timeout", 500);
+        waitsFor(function () { return done; }, null, 500);
     });
     
     it('should paginate results, sorted: 0-newest, last-oldest', function () {
@@ -144,7 +144,7 @@ describe('articlesStorage', function () {
             
             done = true;
         });
-        waitsFor(function () { return done; }, "timeout", 500);
+        waitsFor(function () { return done; }, null, 500);
     });
     
     it('should not duplicate same articles when digested many times', function () {
@@ -167,7 +167,7 @@ describe('articlesStorage', function () {
             
             done = true;
         });
-        waitsFor(function () { return done; }, "timeout", 500);
+        waitsFor(function () { return done; }, null, 500);
     });
     
     it('should update article title or content if has changed in xml', function () {
@@ -193,7 +193,7 @@ describe('articlesStorage', function () {
             
             done = true;
         });
-        waitsFor(function () { return done; }, "timeout", 500);
+        waitsFor(function () { return done; }, null, 500);
     });
     
     it('should do fine when 2 digest jobs were executed simultaneously', function () {
@@ -220,7 +220,7 @@ describe('articlesStorage', function () {
             doneTasks += 1;
         });
         
-        waitsFor(function () { return doneTasks === 2; }, "timeout", 500);
+        waitsFor(function () { return doneTasks === 2; }, null, 500);
     });
     
     it('should mark articles which not appear in feeds xml anymore as abandoned', function () {
@@ -242,7 +242,7 @@ describe('articlesStorage', function () {
             
             done = true;
         });
-        waitsFor(function () { return done; }, "timeout", 500);
+        waitsFor(function () { return done; }, null, 500);
     });
     
     it('should not mark as abandoned if empty list of articles provided', function () {
@@ -325,7 +325,7 @@ describe('articlesStorage', function () {
             
             done = true;
         });
-        waitsFor(function () { return done; }, "timeout", 500);
+        waitsFor(function () { return done; }, null, 500);
     });
     
     it('should count unread articles for given feed', function () {
@@ -346,7 +346,7 @@ describe('articlesStorage', function () {
             expect(count).toBe(2);
             done = true;
         });
-        waitsFor(function () { return done; }, "timeout", 500);
+        waitsFor(function () { return done; }, null, 500);
     });
     
     it('should set "now" date for article if pubDate was not provided in feed xml', function () {
@@ -365,7 +365,7 @@ describe('articlesStorage', function () {
             
             done = true;
         });
-        waitsFor(function () { return done; }, "timeout", 500);
+        waitsFor(function () { return done; }, null, 500);
     });
     
     it('should parse audio enclosures', function () {
@@ -389,7 +389,7 @@ describe('articlesStorage', function () {
             
             done = true;
         });
-        waitsFor(function () { return done; }, "timeout", 500);
+        waitsFor(function () { return done; }, null, 500);
     });
     
     it('should remove all articles of given feed', function () {
@@ -408,7 +408,7 @@ describe('articlesStorage', function () {
             
             done = true;
         });
-        waitsFor(function () { return done; }, "timeout", 500);
+        waitsFor(function () { return done; }, null, 500);
     });
     
     it('should count unread articles for feed', function () {
@@ -422,7 +422,7 @@ describe('articlesStorage', function () {
             expect(count).toBe(3);
             done = true;
         });
-        waitsFor(function () { return done; }, "timeout", 500);
+        waitsFor(function () { return done; }, null, 500);
     });
     
     it('getArticles should tell how much unread articles not visible on current page', function () {
@@ -480,7 +480,7 @@ describe('articlesStorage', function () {
                 expect(tags[0].name).toBe('tag1');
                 done = true;
             });
-            waitsFor(function () { return done; }, "timeout", 500);
+            waitsFor(function () { return done; }, null, 500);
         });
         
         it('should not add 2 tags with the same name', function () {
@@ -502,7 +502,7 @@ describe('articlesStorage', function () {
                 expect(tags[0]._id).toBe(tag1._id);
                 done = true;
             });
-            waitsFor(function () { return done; }, "timeout", 500);
+            waitsFor(function () { return done; }, null, 500);
         });
         
         it('should tag and untag articles', function () {
@@ -558,7 +558,7 @@ describe('articlesStorage', function () {
                 expect(art.tags[0]).toBe(tag2._id);
                 done = true;
             });
-            waitsFor(function () { return done; }, "timeout", 500);
+            waitsFor(function () { return done; }, null, 500);
         });
         
         it('should not tag article twice with same tag', function () {
@@ -580,7 +580,7 @@ describe('articlesStorage', function () {
                 expect(taggedArticle.tags.length).toBe(1);
                 done = true;
             });
-            waitsFor(function () { return done; }, "timeout", 500);
+            waitsFor(function () { return done; }, null, 500);
         });
         
         it('should list all articles with given tag', function () {
@@ -609,7 +609,7 @@ describe('articlesStorage', function () {
                 expect(result.articles[1].guid).toBe('link1');
                 done = true;
             });
-            waitsFor(function () { return done; }, "timeout", 500);
+            waitsFor(function () { return done; }, null, 500);
         });
         
         it('should remove tag', function () {
@@ -631,7 +631,7 @@ describe('articlesStorage', function () {
                 expect(tags.length).toBe(0);
                 done = true;
             });
-            waitsFor(function () { return done; }, "timeout", 500);
+            waitsFor(function () { return done; }, null, 500);
         });
         
         it('should remove tag, and its reference from articles', function () {
@@ -665,7 +665,7 @@ describe('articlesStorage', function () {
                 expect(result.articles.length).toBe(0);
                 done = true;
             });
-            waitsFor(function () { return done; }, "timeout", 500);
+            waitsFor(function () { return done; }, null, 500);
         });
         
         it('should change tag name', function () {
@@ -685,7 +685,71 @@ describe('articlesStorage', function () {
                 expect(tags[0].name).toBe('new name');
                 done = true;
             });
-            waitsFor(function () { return done; }, "timeout", 500);
+            waitsFor(function () { return done; }, null, 500);
+        });
+        
+    });
+    
+    describe('cleaning database', function () {
+        
+        it('should remove articles older than X even if tagged', function () {
+            var done = false;
+            var as = articlesStorage.make();
+            var tag1;
+            as.digest('a.com/feed', harvest1)
+            .then(function () {
+                return as.addTag('tag1');
+            })
+            .then(function (addedTag) {
+                tag1 = addedTag;
+                return as.tagArticle('link1', tag1._id);
+            })
+            .then(function () {
+                return as.removeOlderThan(3, false);
+            })
+            .then(function () {
+                return as.getArticles(['a.com/feed'], 0, 100);
+            })
+            .then(function (result) {
+                expect(result.numAll).toBe(1);
+                expect(result.articles[0].guid).toBe('link3');
+                done = true;
+            });
+            waitsFor(function () { return done; }, null, 500);
+        });
+        
+        it('should leave tagged articles even if older than X', function () {
+            var done = false;
+            var as = articlesStorage.make();
+            var tag1;
+            as.digest('a.com/feed', harvest1)
+            .then(function () {
+                return as.addTag('tag1');
+            })
+            .then(function (addedTag) {
+                tag1 = addedTag;
+                return as.tagArticle('link1', tag1._id);
+            })
+            .then(function () {
+                return as.tagArticle('guid2', tag1._id);
+            })
+            .then(function () {
+                // was tagged and untagged, so should be deleted as well
+                return as.untagArticle('guid2', tag1._id);
+            })
+            .then(function () {
+                return as.removeOlderThan(3, true);
+            })
+            .then(function () {
+                return as.getArticles(['a.com/feed'], 0, 100);
+            })
+            .then(function (result) {
+                expect(result.numAll).toBe(2);
+                expect(result.articles[0].guid).toBe('link3');
+                expect(result.articles[1].guid).toBe('link1');
+                done = true;
+            });
+            waitsFor(function () { return done; }, null, 500);
         });
         
     });
