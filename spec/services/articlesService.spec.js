@@ -44,6 +44,7 @@ describe('articlesService', function () {
     it('should pass to storage this methods', inject(function (articlesService) {
         expect(articlesService.countUnread).toBeDefined();
         expect(articlesService.removeAllForFeed).toBeDefined();
+        expect(articlesService.removeOlderThan).toBeDefined();
     }));
     
     it('article object spec', inject(function (articlesService) {

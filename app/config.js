@@ -5,6 +5,13 @@ function initSputnikConfig() {
     var fs = require('fs');
     var gui = require('nw.gui');
     
+    function generateGuid() {
+        var crypto = require('crypto');
+        var rand = crypto.randomBytes(8).toString('hex');
+        var now = Date.now().toString();
+        return crypto.createHash('md5').update(rand + now).digest('hex');
+    }
+    
     var appConf = JSON.parse(fs.readFileSync('./appConfig.json'));
     
     var dataHomeFolder = appConf.dataHomeFolder;
@@ -20,17 +27,12 @@ function initSputnikConfig() {
         userConf = JSON.parse(fs.readFileSync(userConfPath));
     }
     
-    function generateGuid() {
-        var crypto = require('crypto');
-        var rand = crypto.randomBytes(8).toString('hex');
-        var now = Date.now().toString();
-        return crypto.createHash('md5').update(rand + now).digest('hex');
-    }
-    
     function setUserConfProperty(key, value) {
         userConf[key] = value;
         fs.writeFile(userConfPath, JSON.stringify(userConf, null, 4), { encoding: 'utf8' });
     }
+    
+    // default values
     
     if (!userConf.guid && localStorage.guid) {
         // legacy from v0.9.0
@@ -39,6 +41,14 @@ function initSputnikConfig() {
     }
     if (!userConf.guid) {
         setUserConfProperty('guid', generateGuid());
+    }
+    
+    if (userConf.keepArticlesForMonths === undefined) {
+        setUserConfProperty('keepArticlesForMonths', 12);
+    }
+    
+    if (userConf.keepTaggedArticlesForever === undefined) {
+        setUserConfProperty('keepTaggedArticlesForever', true);
     }
     
     return  {
@@ -73,6 +83,18 @@ function initSputnikConfig() {
         },
         set lastFeedsDownload(value) {
             setUserConfProperty('lastFeedsDownload', value);
+        },
+        get keepArticlesForMonths() {
+            return userConf.keepArticlesForMonths;
+        },
+        set keepArticlesForMonths(value) {
+            setUserConfProperty('keepArticlesForMonths', value);
+        },
+        get keepTaggedArticlesForever() {
+            return userConf.keepTaggedArticlesForever;
+        },
+        set keepTaggedArticlesForever(value) {
+            setUserConfProperty('keepTaggedArticlesForever', value);
         },
     };
 }

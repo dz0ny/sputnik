@@ -1,0 +1,30 @@
+<div class="two-columns">
+    
+    <div class="column-one">
+        <div class="toolbar-on-left__container">
+            <div class="toolbar-on-left">
+                <a class="button2" href="#/">Go back</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="column-two">
+        
+        <div class="organize  scroll">
+        
+            <h1>Settings</h1>
+            
+            <p>
+                Delete articles older than 
+                <input type="number" ng-model="config.keepArticlesForMonths" min="1" max="100"/>
+            </p>
+            <p>
+                Keep tagged articles ferever
+                <input type="checkbox" ng-model="config.keepTaggedArticlesForever"/>
+            </p>
+            
+        </div>
+        
+    </div>
+    
+</div>

@@ -205,6 +205,7 @@ sputnik.factory('articlesService', function ($rootScope, articlesStorage, feedsS
         markAllAsReadInFeeds: markAllAsReadInFeeds,
         countUnread: articlesStorage.countUnread,
         removeAllForFeed: articlesStorage.removeAllForFeed,
+        removeOlderThan: articlesStorage.removeOlderThan,
         
         get allTags() {
             return tags || [];

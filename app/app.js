@@ -35,6 +35,9 @@ sputnik.config(function ($provide, $routeProvider) {
     }).when('/tags', {
         controller: 'TagsCtrl',
         templateUrl: 'views/tags.html'
+    }).when('/settings', {
+        controller: 'SettingsCtrl',
+        templateUrl: 'views/settings.html'
     }).when('/about/:subview', {
         controller: 'AboutCtrl',
         templateUrl: 'views/about/main.html'

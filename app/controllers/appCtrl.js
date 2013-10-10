@@ -280,11 +280,26 @@ function AppCtrl($scope, $location, config, feedsService, articlesService, favic
             schedule.nextFaviconUpdate = nowTime + daysToMs(7);
         }
         
+        // perform database compaction every 7 days
+        if (!schedule.nextDatabaseCompaction || schedule.nextDatabaseCompaction <= nowTime) {
+            // assume month is 31 days
+            var olderThan = nowTime - (config.keepArticlesForMonths * 31 * 24 * 60 * 60 * 1000);
+            articlesService.removeOlderThan(olderThan, config.keepTaggedArticlesForever)
+            .then(function (numRemoved) {
+                // logging for testing purpouse
+                var fs = require('fs');
+                var now = new Date();
+                fs.appendFile('./_db_compact.log', now + ' | removed articles: ' + numRemoved + '\r\n');
+            });
+            schedule.nextDatabaseCompaction = nowTime + daysToMs(3);
+        }
+        
         // save changed schedule after every run
         localStorage.schedule = JSON.stringify(schedule);
     }
     
     // every 30min walk through schedule
     var scheduleInterval = setInterval(walkThroughSchedule, 1800000);
-    walkThroughSchedule();
+    // first schedule do after 1 minute from startup
+    setTimeout(walkThroughSchedule, 60000);
 }

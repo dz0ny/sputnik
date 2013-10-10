@@ -271,7 +271,7 @@ exports.make = function (dbPath) {
         db.remove(query, {
             multi: true
         }, function (err, numRemoved) {
-            deferred.resolve();
+            deferred.resolve(numRemoved);
         });
         
         return deferred.promise;
