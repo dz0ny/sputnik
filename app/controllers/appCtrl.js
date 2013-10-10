@@ -79,6 +79,14 @@ function AppCtrl($scope, $location, config, feedsService, articlesService, favic
             if (currWinMode === 'maximized') {
                 win.maximize();
             } else {
+                // reset to safe defaults when something unusable was saved
+                if (winState.x < -10 || winState.x > window.screen.width) {
+                    winState.x = 0;
+                }
+                if (winState.y < -10 || winState.y > window.screen.height) {
+                    winState.y = 0;
+                }
+                
                 restoreWindowState();
             }
         } else {
