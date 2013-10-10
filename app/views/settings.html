@@ -15,6 +15,11 @@
             <h1>Settings</h1>
             
             <p>
+                Show articles per page
+                <input type="number" ng-model="config.articlesPerPage" min="1" max="100"/>
+            </p>
+            
+            <p>
                 Delete articles older than 
                 <input type="number" ng-model="config.keepArticlesForMonths" min="1" max="100"/>
             </p>

@@ -1,11 +1,11 @@
 'use strict';
 
-function ReadCtrl($scope, $window, feedsService, articlesService, downloadService) {
+function ReadCtrl($scope, $window, feedsService, articlesService, downloadService, config) {
     
     var Q = require('q');
     
     var pageIndex = 0;
-    var articlesPerPage = 30;
+    var articlesPerPage = config.articlesPerPage;
     var presentedArticles = [];
     var unreadBeforeThisPage = 0;
     var unreadAfterThisPage = 0;

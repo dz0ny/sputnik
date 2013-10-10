@@ -43,6 +43,10 @@ function initSputnikConfig() {
         setUserConfProperty('guid', generateGuid());
     }
     
+    if (userConf.articlesPerPage === undefined) {
+        setUserConfProperty('articlesPerPage', 30);
+    }
+    
     if (userConf.keepArticlesForMonths === undefined) {
         setUserConfProperty('keepArticlesForMonths', 12);
     }
@@ -77,6 +81,12 @@ function initSputnikConfig() {
         
         get guid() {
             return userConf.guid;
+        },
+        get articlesPerPage() {
+            return userConf.articlesPerPage;
+        },
+        set articlesPerPage(value) {
+            setUserConfProperty('articlesPerPage', value);
         },
         get lastFeedsDownload() {
             return userConf.lastFeedsDownload;
