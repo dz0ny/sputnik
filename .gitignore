@@ -4,6 +4,8 @@ node_modules
 .komodotools
 *.komodoproject
 
+*.log
+
 # compiled css
 /app/visual/css/*
 
