@@ -309,5 +309,5 @@ function AppCtrl($scope, $location, config, feedsService, articlesService, favic
     // every 30min walk through schedule
     var scheduleInterval = setInterval(walkThroughSchedule, 1800000);
     // first schedule do after 1 minute from startup
-    setTimeout(walkThroughSchedule, 60000);
+    setTimeout(walkThroughSchedule, 30000);
 }
