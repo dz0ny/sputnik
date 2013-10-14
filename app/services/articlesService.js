@@ -89,13 +89,20 @@ sputnik.factory('articlesService', function ($rootScope, articlesStorage, feedsS
         art.tags = mapTagIdsToTags(art.tags);
         
         art.setIsRead = function (newIsRead) {
+            var deferred = Q.defer();
+            
             this.isRead = newIsRead;
             var that = this;
-            return articlesStorage.setArticleReadState(this.guid, newIsRead)
+            articlesStorage.setArticleReadState(this.guid, newIsRead)
+            .then(function () {
+                return recountUnread(that.feed.url);
+            })
             .then(function () {
                 $rootScope.$broadcast('articleReadStateChanged', art);
-                return recountUnread(that.feed.url);
+                deferred.resolve();
             });
+            
+            return deferred.promise;
         };
         
         art.toggleTag = function (tagId) {
