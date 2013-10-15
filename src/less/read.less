@@ -355,6 +355,44 @@
     border-radius: 0.3rem;
 }
 
+.navigation-controls {
+    position: absolute;
+    display: -webkit-flex;
+    -webkit-flex-direction: column;
+    top: 13px;
+    right: -29px;
+    background: white;
+    padding: 5px 5px 5px 2px;
+    border-top-right-radius: 7px;
+    border-bottom-right-radius: 7px;
+    .button2 {
+        padding: 0.2rem;
+        &:first-child {
+            margin-bottom: 2px;
+        }
+    }
+}
+.navigation-controls:before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: -8px;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    background: url('../images/rounded-corner-BL.svg') no-repeat;
+}
+.navigation-controls:after {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    background: url('../images/rounded-corner-TL.svg') no-repeat;
+}
+
 // Tagging menu
 //-------------------------------------
 .article__pick-tag {

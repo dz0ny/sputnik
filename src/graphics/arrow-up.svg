@@ -19,13 +19,11 @@
    enable-background="new 0 0 128 128"
    xml:space="preserve"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="caution.svg"><metadata
-   id="metadata13"><rdf:RDF><cc:Work
+   sodipodi:docname="arrow-up.svg"><metadata
+   id="metadata11"><rdf:RDF><cc:Work
        rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
          rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
-   id="defs11">
-		
-	</defs><sodipodi:namedview
+   id="defs9" /><sodipodi:namedview
    pagecolor="#ffffff"
    bordercolor="#666666"
    borderopacity="1"
@@ -36,22 +34,20 @@
    inkscape:pageshadow="2"
    inkscape:window-width="1280"
    inkscape:window-height="962"
-   id="namedview9"
+   id="namedview7"
    showgrid="false"
-   inkscape:zoom="1.84375"
-   inkscape:cx="-20.610169"
+   inkscape:zoom="5.2149125"
+   inkscape:cx="58.307924"
    inkscape:cy="64"
    inkscape:window-x="-8"
    inkscape:window-y="-8"
    inkscape:window-maximized="1"
-   inkscape:current-layer="g3" />
-<g
-   id="g3">
-	<path
-   style="fill-rule:evenodd;fill:#d24a41;fill-opacity:1"
+   inkscape:current-layer="Layer_1" />
+
+<path
+   d="m 30.850122,89.215712 c -2.667209,2.637732 -6.979481,1.867078 -9.646681,-0.770654 -2.657826,-2.635052 -2.661842,-7.680466 0,-10.319537 L 59.717809,40.382778 c 2.663184,-2.636389 6.982152,-2.636389 9.646677,0 l 38.510344,37.741404 c 2.66453,2.64041 2.66453,7.681805 0,10.319537 -2.66318,2.637731 -6.97947,3.408385 -9.641311,0.771993 L 64.540478,58.264895 z"
+   id="path5"
+   style="fill:#000000;fill-opacity:1"
    inkscape:connector-curvature="0"
-   id="path7"
-   d="M 123.612,101.997 71.957,13.548 c -4.309,-4.31 -11.299,-4.31 -15.607,0 L 4.69,101.997 c -4.308,4.308 -4.308,11.295 0,15.606 h 118.922 c 4.312,-4.311 4.312,-11.298 0,-15.606 z M 59.396,45.3 c 0,-3.419 2.772,-6.189 6.189,-6.189 3.417,0 6.189,2.77 6.189,6.189 v 28.885 c 0,3.417 -2.772,6.189 -6.189,6.189 -3.417,0 -6.189,-2.772 -6.189,-6.189 V 45.3 z m 6.226,55.742 c -3.417,0 -6.189,-2.769 -6.189,-6.189 0,-3.422 2.772,-6.19 6.189,-6.19 3.417,0 6.189,2.769 6.189,6.19 10e-4,3.42 -2.772,6.189 -6.189,6.189 z"
-   clip-rule="evenodd" />
-</g>
+   sodipodi:nodetypes="cccccccccc" />
 </svg>

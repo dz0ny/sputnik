@@ -398,6 +398,8 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         return true;
     }
     
+    $scope.scrollTo = scrollTo;
+    
     function autoScrollLoop() {
         var nextScrollPos = currScrollPos + ((targetScrollPos - currScrollPos) / 8);
         
