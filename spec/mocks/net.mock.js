@@ -31,6 +31,11 @@ exports.make = function (urlMap) {
                         code: 'ENOTFOUND'
                     });
                     break;
+                case 'connection-refused':
+                    deferred.reject({
+                        code: 'ECONNREFUSED'
+                    });
+                    break;
                 case 'unknown-error':
                 default:
                     deferred.reject({

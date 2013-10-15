@@ -202,7 +202,7 @@ describe('downloadService', function () {
             var feedUrls = [
                 'timeout',
                 'not-found',
-                'timeout',
+                'connection-refused',
                 'not-found',
                 'timeout',
                 'not-found',

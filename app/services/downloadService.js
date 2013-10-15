@@ -151,7 +151,8 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
                     case '404':
                         notify(url, '404');
                         break;
-                    case 'ENOTFOUND':
+                    case 'ENOTFOUND': 
+                    case 'ECONNREFUSED':
                         notify(url, 'notFound');
                         break;
                     case 'ETIMEDOUT':
