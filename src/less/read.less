@@ -303,20 +303,21 @@
     cite {
         
     }
-    pre,
-    code {
-        border: 1px solid rgb(221, 221, 221);
-        background-color: rgb(248, 248, 248);
-        border-radius: 0.3rem;
-        padding: 0 0.3rem;
-        font-family: Consolas, "Liberation Mono", Courier, monospace;
-    }
     pre {
-        padding: 0.5rem;
+        color: #474747;
+        code {
+            padding: 0.5rem;
+            display: block;
+        }
     }
-    pre code {
-        background: none;
-        border: none;
+    code {
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.3rem;
+        border: 1px solid #e5e5e5;
+        background-color: #f4f4f4;
+        color: #2c2c2c;
+        font-family: Consolas, "Liberation Mono", Courier, monospace;
+        font-size: 14px;
     }
     .flash-patch {
         display: -webkit-flex;
