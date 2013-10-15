@@ -140,16 +140,46 @@
     }
 }
 
-.articles-sheet__controls {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    text-align: center;
-}
-
-.articles-sheet__pagination-button {
+.pagination-button {
     display: block;
-    width: 100%;
-    height: 3rem;
+    position: relative;
+    margin: 4rem auto 2rem auto;
+    width: 16rem;
+    height: 2.6rem;
+    &:hover .pagination-button__unread-counter {
+        background: #1f727b;
+        border-color: #165960;
+    }
+}
+.pagination-button__unread-counter {
+    display: inline-block;
+    padding: 0.2rem 0.3rem;
+    margin-left: 0.5rem;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.3rem;
+    font-size: 0.6rem;
+    vertical-align: 2px;
+}
+.pagination-button--prev:before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: -46px;
+    width: 42px;
+    height: 42px;
+    background: url('../images/prev-page.svg') no-repeat;
+}
+.pagination-button--next:after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    right: -46px;
+    width: 42px;
+    height: 42px;
+    background: url('../images/next-page.svg') no-repeat;
 }
 
 // REFRESHING STATE

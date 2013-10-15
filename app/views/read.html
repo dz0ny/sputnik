@@ -188,14 +188,14 @@
                     Sorry, nothing here yet.
                 </div>
                 
-                <div ng-show="isPrevPage" class="articles-sheet__element  articles-sheet__controls">
-                    <button class="articles-sheet__pagination-button" ng-click="prevPage()">Previous page</button>
+                <div ng-show="isPrevPage" class="articles-sheet__element">
+                    <button class="pagination-button  pagination-button--prev" ng-click="prevPage()">Previous page <span class="pagination-button__unread-counter" ng-if="unreadBeforeThisPage > 0">{{unreadBeforeThisPage}} unread</span></button>
                 </div>
                 
                 <articles-list></articles-list>
                 
-                <div ng-show="isNextPage" class="articles-sheet__element  articles-sheet__controls">
-                    <button class="articles-sheet__pagination-button" ng-click="nextPage()">Next page</button>
+                <div ng-show="isNextPage" class="articles-sheet__element">
+                    <button class="pagination-button  pagination-button--next" ng-click="nextPage()">Next page <span class="pagination-button__unread-counter" ng-if="unreadAfterThisPage > 0">{{unreadAfterThisPage}} unread</span></button>
                 </div>
                 
                 <div class="navigation-controls">

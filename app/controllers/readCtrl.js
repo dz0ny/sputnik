@@ -7,8 +7,8 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     var pageIndex = 0;
     var articlesPerPage = config.articlesPerPage;
     var presentedArticles = [];
-    var unreadBeforeThisPage = 0;
-    var unreadAfterThisPage = 0;
+    $scope.unreadBeforeThisPage = 0;
+    $scope.unreadAfterThisPage = 0;
     
     var articlesList = angular.element(".js-articles-list");
     
@@ -57,8 +57,8 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
             $scope.isPrevPage = (from > 0);
             $scope.isNextPage = (to <= result.numAll);
             
-            unreadBeforeThisPage = result.unreadBefore;
-            unreadAfterThisPage = result.unreadAfter;
+            $scope.unreadBeforeThisPage = result.unreadBefore;
+            $scope.unreadAfterThisPage = result.unreadAfter;
             
             renderArticles(result.articles);
         });
@@ -101,8 +101,8 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
             return articlesService.markAllAsReadInFeeds(feedUrls);
         })
         .then(function () {
-            unreadBeforeThisPage = 0;
-            unreadAfterThisPage = 0;
+            $scope.unreadBeforeThisPage = 0;
+            $scope.unreadAfterThisPage = 0;
             $scope.$apply();
         });
     }
@@ -361,9 +361,9 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
                     position = angular.element('#' + article.id)[0].offsetTop - 20;
                 } else {
                     // all articles on current page are read
-                    if (unreadAfterThisPage > 0) {
+                    if ($scope.unreadAfterThisPage > 0) {
                         position = articlesList[0].scrollHeight;
-                    } else if (unreadBeforeThisPage > 0) {
+                    } else if ($scope.unreadBeforeThisPage > 0) {
                         position = 0;
                     } else {
                         // no article to scroll to
