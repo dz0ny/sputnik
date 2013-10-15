@@ -66,7 +66,7 @@ sputnik.directive('articlesList', function ($sanitize, $rootScope) {
             content = $sanitize(content);
         } catch (err) {
             // if not sanitized, kill it as insecure
-            content = "Oops. Sorry, this article can't be displayed. See it in the browser.";
+            content = 'Oops. Sorry, this article can\'t be displayed. <a href="' + article.link + '">See it in the browser.</a>';
         }
         return lazyLoadImages(content);
     }
@@ -78,7 +78,7 @@ sputnik.directive('articlesList', function ($sanitize, $rootScope) {
         var dom = cheerio.load(content);
         
         function flashPatch(i, elem) {
-            var patchStr = '<a class="flash-patch" href="' + articleUrl + '">There is Flash plugin in this article (probably video),<br/>click here to see it in the browser.</a>';
+            var patchStr = '<div class="flash-patch"><a href="' + articleUrl + '">Here should be a <strong>video</strong> (probably),<br/>click to see it in the browser.</a></div>';
             dom(elem).replaceWith(patchStr);
         }
         
