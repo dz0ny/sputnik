@@ -91,6 +91,17 @@ function AppCtrl($scope, $location, config, feedsService, articlesService, favic
             }
         } else {
             currWinMode = 'normal';
+            
+            // if nothing saved yet find best default size
+            if (window.screen.width > 1024) {
+                win.width = 1180;
+                win.x = (window.screen.width - win.width) / 2;
+            }
+            if (window.screen.height > 768) {
+                win.height = window.screen.height - 100;
+                win.y = (window.screen.height - win.height) / 2;
+            }
+            
             dumpWindowState();
         }
         
