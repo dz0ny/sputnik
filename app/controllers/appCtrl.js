@@ -25,11 +25,12 @@ function AppCtrl($scope, $location, config, feedsService, articlesService, favic
         $scope.notificationMessage = message;
         $scope.notificationVisible = true;
         $scope.$apply();
+        var duration = Math.max(4000, message.length * 120);
         clearInterval(notificationInterval);
         notificationInterval = setInterval(function () {
             $scope.notificationVisible = false;
             $scope.$apply();
-        }, 4000);
+        }, duration);
     });
     
     //-----------------------------------------------------
