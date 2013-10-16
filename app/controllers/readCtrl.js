@@ -252,12 +252,20 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         switch (event.keyCode) {
             // left
             case 37:
-                scrollTo('prev');
+                if (event.ctrlKey) {
+                    $scope.prevPage();
+                } else {
+                    scrollTo('prev');
+                }
                 event.preventDefault();
                 break;
             // right
             case 39:
-                scrollTo('next');
+                if (event.ctrlKey) {
+                    $scope.nextPage();
+                } else {
+                    scrollTo('next');
+                }
                 event.preventDefault();
                 break;
             // space
