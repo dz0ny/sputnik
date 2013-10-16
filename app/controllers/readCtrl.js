@@ -7,6 +7,7 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     var pageIndex = 0;
     var articlesPerPage = config.articlesPerPage;
     var presentedArticles = [];
+    var returningFromPrevPage = false;
     $scope.unreadBeforeThisPage = 0;
     $scope.unreadAfterThisPage = 0;
     
@@ -71,17 +72,13 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         
         $scope.$apply();
         
-        // little hack to scroll to top every time articles list was updated,
-        // but articles list is display: none sometimes and then you have
-        // to wait for it to appear to set the scroll
-        var interval = setInterval(function () {
-            if (articlesList.scrollTop() !== 0) {
-                articlesList.scrollTop(0);
-            } else {
-                clearInterval(interval);
-                lazyLoadImages();
-            }
-        }, 1);
+        if (returningFromPrevPage) {
+            returningFromPrevPage = false;
+            articlesList.scrollTop(articlesList[0].scrollHeight);
+        } else {
+            articlesList.scrollTop(0);
+        }
+        lazyLoadImages();
     }
     
     function markAllAsRead() {
@@ -132,6 +129,7 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     $scope.prevPage = function () {
         if ($scope.isPrevPage) {
             pageIndex -= 1;
+            returningFromPrevPage = true;
             showArticles();
         }
     };
