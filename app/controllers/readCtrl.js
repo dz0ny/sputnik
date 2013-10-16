@@ -36,6 +36,12 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     }
     
     function showArticles() {
+        
+        // if some scrolling is going on kill it
+        if (scrollInterval !== undefined) {
+            breakScrollLoop();
+        }
+        
         var from = pageIndex * articlesPerPage;
         var to = from + articlesPerPage;
         
@@ -72,12 +78,15 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         
         $scope.$apply();
         
+        // set page scroll at proper place
         if (returningFromPrevPage) {
             returningFromPrevPage = false;
             articlesList.scrollTop(articlesList[0].scrollHeight);
         } else {
             articlesList.scrollTop(0);
         }
+        
+        // load visible images
         lazyLoadImages();
     }
     
@@ -389,22 +398,35 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
                 } else {
                     // all articles on current page are read
                     if ($scope.unreadAfterThisPage > 0) {
-                        position = articlesList[0].scrollHeight;
+                        position = articlesList[0].scrollHeight - articlesList[0].clientHeight;
                     } else if ($scope.unreadBeforeThisPage > 0) {
                         position = 0;
                     } else {
-                        // no article to scroll to
+                        // totally no article to scroll to
                         return false;
                     }
                 }
                 break;
             case 'prev':
             case 'next':
+                // if scrolled to top go to previous page
+                if (articlesList[0].scrollTop === 0 && what === 'prev') {
+                    $scope.prevPage();
+                    return false;
+                }
+                // if scrolled to bottom go to next page
+                if (articlesList[0].scrollHeight - articlesList[0].scrollTop === articlesList[0].clientHeight && what === 'next') {
+                    $scope.nextPage();
+                    return false;
+                }
+                
+                // find neighbour article to scroll to
                 article = getArticleNeighbour(what, getFirstVisibleArticle());
                 if (article) {
                     position = angular.element('#' + article.id)[0].offsetTop - 20;
                 } else {
-                    position = (what === 'prev') ? 0 : articlesList[0].scrollHeight;
+                    // if no next article scroll to top or bottom of the list
+                    position = (what === 'prev') ? 0 : articlesList[0].scrollHeight - articlesList[0].clientHeight;
                 }
                 break;
         }
@@ -433,16 +455,20 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         // if end of scroll
         if (Math.abs(nextScrollPos - currScrollPos) < 0.1) {
             articlesList.scrollTop(targetScrollPos);
-            clearInterval(scrollInterval);
-            scrollInterval = undefined;
-            autoScrolling = false;
-            // while autoScrolling we have suspended images lazy loading
-            // so now event have to be fired to let them load
-            articlesList.scroll();
+            breakScrollLoop();
         }
         
         articlesList.scrollTop(nextScrollPos);
         currScrollPos = nextScrollPos;
+    }
+    
+    function breakScrollLoop() {
+        clearInterval(scrollInterval);
+        scrollInterval = undefined;
+        autoScrolling = false;
+        // while autoScrolling we have suspended images lazy loading
+        // so now event have to be fired to let them load
+        articlesList.scroll();
     }
     
     function markFirstAsReadAndScrollToNext() {
