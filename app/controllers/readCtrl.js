@@ -172,6 +172,25 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     }
     
     //-----------------------------------------------------
+    // Tags menu
+    //-----------------------------------------------------
+    
+    $scope.showPickTagMenuData = null;
+    
+    $scope.$on('showPickTagMenu', function (evt, article, clickedElement) {
+        $scope.showPickTagMenuData = {
+            article: article,
+            clickedElement: clickedElement
+        };
+        $scope.$apply();
+    });
+    
+    $scope.$on('hidePickTagMenu', function (evt) {
+        $scope.showPickTagMenuData = null;
+        $scope.$apply();
+    });
+    
+    //-----------------------------------------------------
     // Lazy load images
     //-----------------------------------------------------
     
@@ -204,7 +223,8 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     //-----------------------------------------------------
     
     function keyDownBindings(event) {
-        if ($scope.state !== 'articles') {
+        if ($scope.state !== 'articles' ||
+            document.activeElement.tagName.toLowerCase() === 'input') {
             return;
         }
         switch (event.keyCode) {
@@ -227,7 +247,8 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     }
     
     function keyUpBindings(event) {
-        if ($scope.state !== 'articles') {
+        if ($scope.state !== 'articles' ||
+            document.activeElement.tagName.toLowerCase() === 'input') {
             return;
         }
         switch (event.keyCode) {

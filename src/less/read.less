@@ -120,6 +120,7 @@
 // ARTICLES
 //-------------------------------------
 .articles-sheet {
+    position: relative;
     padding-right: 3.5rem;
 }
 .articles-sheet__element {
@@ -135,6 +136,8 @@
 .articles-sheet__tag-filter {
     float: right;
     font-size: 0.8rem;
+    margin-top: -1px;
+    margin-right: -2px;
     select {
         font-size: 0.8rem;
     }
@@ -276,7 +279,7 @@
     background-size: cover;
 }
 .article__actions {
-    margin-top: 0.6rem;
+    margin-top: 0.3rem;
     -webkit-flex: 0 0 auto;
     display: -webkit-flex;
 }
@@ -375,6 +378,8 @@
 
 .article__tags {
     text-align: center;
+    margin-top: 1rem;
+    line-height: 2rem;
 }
 .article__tag-item {
     padding: 0.3rem 0.5rem;
@@ -383,6 +388,7 @@
     color: white;
     background: #ebb211;
     border-radius: 0.3rem;
+    white-space: nowrap;
 }
 
 .navigation-controls {
@@ -425,29 +431,43 @@
 
 // Tagging menu
 //-------------------------------------
-.article__pick-tag {
+.pick-tag {
     position: absolute;
-    bottom: 2rem;
+    left: 6rem;
     background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 0 5px fade(#000000, 30%);
+    border: 1px solid #b4b4b4;
+    border-radius: 0.3rem;
+    box-shadow: 0 0 3px fade(#000000, 20%);
+    font-size: 0.8rem;
+    input[type=text] {
+        font-size: 0.8rem;
+        padding: 0.2rem 0.4rem;
+        width: 8rem;
+    }
+    button {
+        font-size: 0.8rem;
+    }
 }
-.article__pick-tag__add-new {
+.pick-tag__add-new {
     padding: 0.5rem;
 }
-.article__pick-tag__list {
+.pick-tag__list {
     max-height: 8rem !important;
-    padding: 0.5rem;
+    padding: 0 0.5rem;
+    margin-bottom: 0.5rem;
 }
-.article__pick-tag__item {
+.pick-tag__item {
     display: block;
     padding: 0.2rem 0.5rem;
+    margin-bottom: 1px;
+    border-radius: 3px;
     cursor: default;
+    .no-longer-than(16rem);
     &:hover {
         background: #f5d475;
     }
 }
-.article__pick-tag__item--selected {
+.pick-tag__item--selected {
     color: white;
     background: #ebb211;
     &:hover {

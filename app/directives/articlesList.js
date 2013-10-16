@@ -54,7 +54,7 @@ sputnik.directive('articlesList', function ($sanitize, $rootScope) {
     function getTagsHtml(article) {
         var articleTags = '';
         article.tags.forEach(function (tag) {
-            articleTags += '<span class="article__tag-item">' + tag.name + '</span>';
+            articleTags += '<span class="article__tag-item">' + tag.name + '</span> ';
         });
         return articleTags;
     }
@@ -107,7 +107,7 @@ sputnik.directive('articlesList', function ($sanitize, $rootScope) {
     //-----------------------------------------------------
     
     var articleTagsChangedWatcher = $rootScope.$on('articleTagsChanged', function (evt, article) {
-        $('#' + article.id + ' .js-article-tags').html(generateTagsHtml(article));
+        $('#' + article.id + ' .js-article-tags').html(getTagsHtml(article));
     });
     var articleReadStateChangedWatcher = $rootScope.$on('articleReadStateChanged', function (evt, article) {
         if (article.isRead) {
@@ -165,7 +165,7 @@ sputnik.directive('articlesList', function ($sanitize, $rootScope) {
                 
                 $element.find('.js-show-pick-tag-menu').click(function (evt) {
                     var article = getArticleForDomEvent(evt);
-                    $scope.$emit('showPickTag', article);
+                    $scope.$emit('showPickTagMenu', article, evt.target);
                 });
                 
                 $element.find('.js-toggle-is-read').click(function (evt) {
