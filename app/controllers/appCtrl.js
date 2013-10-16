@@ -18,17 +18,24 @@ function AppCtrl($scope, $location, config, feedsService, articlesService, favic
     //-----------------------------------------------------
     
     var notificationInterval;
-    $scope.notificationVisible = false;
+    $scope.notificationBarVisible = false;
     $scope.notificationMessage = null;
     
     $scope.$on('showNotification', function (evt, message) {
         $scope.notificationMessage = message;
-        $scope.notificationVisible = true;
+        $scope.notificationBarVisible = true;
         $scope.$apply();
+        
+        // calculate position for notification bar
+        var xAxis = $('.column-one').width() + $('.column-two').width() / 2;
+        var notifBar = $('.notification-bar');
+        var left = xAxis - notifBar.width() / 2 - 32;
+        notifBar.css('left', left);
+        
         var duration = Math.max(4000, message.length * 120);
         clearInterval(notificationInterval);
         notificationInterval = setInterval(function () {
-            $scope.notificationVisible = false;
+            $scope.notificationBarVisible = false;
             $scope.$apply();
         }, duration);
     });

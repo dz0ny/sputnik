@@ -480,11 +480,9 @@ button {
 
 // NOTIFICATION BAR
 //-------------------------------------
-.notification {
+.notification-bar {
     position: absolute;
-    left: 50%;
     top: 0;
-    margin-left: -12rem;
     padding: 0.5rem 2rem;
     font-size: 0.8rem;
     background: black;
@@ -493,7 +491,7 @@ button {
     border-bottom-right-radius: 1rem;
     &.ng-enter,
     &.ng-leave {
-        -webkit-transition: 0.3s linear all;
+        -webkit-transition: top 0.3s linear;
     }
     &.ng-enter {
         top: -3rem;
