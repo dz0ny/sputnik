@@ -13,13 +13,13 @@
    id="Layer_1"
    x="0px"
    y="0px"
-   width="128px"
-   height="128px"
-   viewBox="0 0 128 128"
+   width="8"
+   height="8"
+   viewBox="0 0 8 8"
    enable-background="new 0 0 128 128"
    xml:space="preserve"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="rounded-corner-2.svg"><metadata
+   sodipodi:docname="rounded-corner-TR.svg"><metadata
    id="metadata9"><rdf:RDF><cc:Work
        rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
          rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
@@ -36,9 +36,9 @@
    inkscape:window-height="962"
    id="namedview5"
    showgrid="false"
-   inkscape:zoom="1"
-   inkscape:cx="-185.21467"
-   inkscape:cy="127.91107"
+   inkscape:zoom="3.4456475"
+   inkscape:cx="4.5"
+   inkscape:cy="55.317046"
    inkscape:window-x="-8"
    inkscape:window-y="-8"
    inkscape:window-maximized="1"
@@ -46,7 +46,7 @@
 
 <path
    style="fill:#ffffff;fill-opacity:1;stroke:none"
-   d="m 128,128.01455 c 0,0 -0.97422,-52.751862 -39.127661,-88.059571 C 48.142126,2.26269 0,0.007 0,0.007 L 128.03587,0 z"
+   d="m 0.01066,0.02745 c 0,0 3.2966166,0.06087 5.5030977,2.4447933 C 7.8692579,5.01717 8.0102226,8.02521 8.0102226,8.02521 l 4.374e-4,-8 z"
    id="path2986"
    inkscape:connector-curvature="0"
    sodipodi:nodetypes="csccc" /></svg>
