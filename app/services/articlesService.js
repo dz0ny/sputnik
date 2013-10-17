@@ -210,7 +210,6 @@ sputnik.factory('articlesService', function ($rootScope, articlesStorage, feedsS
         
         getArticles: getArticles,
         markAllAsReadInFeeds: markAllAsReadInFeeds,
-        countUnread: articlesStorage.countUnread,
         removeAllForFeed: articlesStorage.removeAllForFeed,
         removeOlderThan: articlesStorage.removeOlderThan,
         
