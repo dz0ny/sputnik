@@ -386,7 +386,7 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         switch (what) {
             case '+1':
             case '-1':
-                var distance = 300;
+                var distance = 120;
                 if (what === '-1') { distance = -distance; }
                 position = articlesList.scrollTop() + distance;
                 break;
