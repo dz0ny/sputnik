@@ -2,6 +2,8 @@
 -------------------
 * Amended overall app performance
 * Faster and more intelligent feeds downloading
+* Keyboard shortcuts added
+* User interface is now prettier and more readable
 
 0.9.0 (2013-09-17)
 -------------------
