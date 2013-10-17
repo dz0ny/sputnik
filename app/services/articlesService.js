@@ -60,7 +60,7 @@ sputnik.factory('articlesService', function ($rootScope, articlesStorage, feedsS
         
         articlesStorage.countUnread(feedUrl)
         .then(function (count) {
-            $rootScope.$emit('unreadArticlesCountChanged', feedUrl, count);
+            $rootScope.$broadcast('unreadArticlesCountChanged', feedUrl, count);
             deferred.resolve(count);
         });
         

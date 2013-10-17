@@ -163,6 +163,10 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         }
     }
     
+    $scope.$on('unreadArticlesCountChanged', function () {
+        $scope.$apply();
+    });
+    
     //-----------------------------------------------------
     // Initial actions
     //-----------------------------------------------------
