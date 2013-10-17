@@ -1,8 +1,17 @@
 'use strict';
 
-sputnik.factory('updateService', function (config, net) {
+sputnik.factory('updateService', function (config, $http) {
     
     var Q = require('q');
+    
+    function parseVersionString(verStr) {
+        var parts = verStr.split('.');
+        return {
+            major: parseInt(parts[0], 10),
+            minor: parseInt(parts[1], 10),
+            patch: parseInt(parts[2], 10)
+        }
+    }
     
     /**
      * Compares given version with application version,
@@ -10,15 +19,15 @@ sputnik.factory('updateService', function (config, net) {
      * Only format MAJOR.MINOR.PATCH is supported.
      */
     function isNewerVersion(version) {
-        var appV = config.appVersion.split('.');
-        var v = version.split('.');
-        if (v[0] > appV[0]) {
+        var appV = parseVersionString(config.version);
+        var v = parseVersionString(version);
+        if (v.major > appV.major) {
             return true;
-        } else if (v[0] === appV[0]) {
-            if (v[1] > appV[1]) {
+        } else if (v.major === appV.major) {
+            if (v.minor > appV.minor) {
                 return true;
-            } else if (v[1] === appV[1]) {
-                if (v[2] > appV[2]) {
+            } else if (v.minor === appV.minor) {
+                if (v.patch > appV.patch) {
                     return true;
                 }
             }
@@ -28,14 +37,15 @@ sputnik.factory('updateService', function (config, net) {
     
     function checkUpdates() {
         var deferred = Q.defer();
-        
-        net.getUrl(config.checkUpdatesUrl)
-        .then(function (data) {
-            var updatesData = JSON.parse(data);
-            var latesVersion = updatesData.version;
-            if (isNewerVersion(latesVersion)) {
-                deferred.resolve(latesVersion);
+        console.log('checkUpdates')
+        $http.get(config.checkUpdatesUrl)
+        .success(function (updatesData) {
+            console.log(updatesData)
+            if (isNewerVersion(updatesData.version)) {
+                console.log('isNewerVersion')
+                deferred.resolve(updatesData.version);
             } else {
+                console.log('NOT!')
                 deferred.reject();
             }
         });
