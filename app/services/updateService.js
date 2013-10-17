@@ -37,15 +37,12 @@ sputnik.factory('updateService', function (config, $http) {
     
     function checkUpdates() {
         var deferred = Q.defer();
-        console.log('checkUpdates')
+        
         $http.get(config.checkUpdatesUrl)
         .success(function (updatesData) {
-            console.log(updatesData)
             if (isNewerVersion(updatesData.version)) {
-                console.log('isNewerVersion')
                 deferred.resolve(updatesData.version);
             } else {
-                console.log('NOT!')
                 deferred.reject();
             }
         });

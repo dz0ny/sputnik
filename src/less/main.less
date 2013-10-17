@@ -210,10 +210,18 @@ h1 {
         .button1__icon-obj {
             fill: @buttonBgColor1;
         }
+        img {
+            opacity: 1;
+        }
     }
     &:active {
         background-image: linear-gradient(to bottom, darken(spin(@buttonBgColor1, 5), 3%), darken(spin(@buttonBgColor2, 5), 3%));
         box-shadow: inset 0 0.1rem 0.2rem @buttonShadowColor;
+    }
+    img {
+        vertical-align: -4px;
+        height: 16px;
+        opacity: 0.8;
     }
 }
 .button1__icon {
@@ -223,12 +231,6 @@ h1 {
 }
 .button1__icon-obj {
     fill: white;
-}
-.button1--icon-only {
-    padding: 0.2rem 0.3rem !important;
-    svg {
-        vertical-align: -0.2rem;
-    }
 }
 .button1--gap-right {
     margin-right: 0.5rem;
@@ -291,6 +293,13 @@ h1 {
     .button2__icon {
         margin-right: 0.2rem;
     }
+}
+
+.new-version-button {
+    margin-left: 1.2rem;
+    background-image: linear-gradient(to bottom, #b61f38, #cf1030);
+    box-shadow: inset 0 0.1rem 0.2rem #a00620;
+    color: #ffffff;
 }
 
 // DROPDOWN

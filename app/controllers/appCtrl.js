@@ -241,6 +241,7 @@ function AppCtrl($scope, $location, config, feedsService, articlesService, favic
                 version: newVersion
             });
             displayNewVersionAvailable();
+            $scope.$apply();
         });
     }
     
