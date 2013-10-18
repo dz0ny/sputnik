@@ -289,6 +289,7 @@ function AppCtrl($scope, $location, config, feedsService, articlesService, favic
             analytics.monthlyReaport({
                 feedsCount: feedsService.feeds.length,
                 categoriesCount: feedsService.categoriesNames.length,
+                tagsCount: articlesService.allTags.length,
                 articlesDbSize: articlesService.dbSize,
                 platform: config.targetPlatform + '|' + os.platform() + '|' + os.type() + '|' + os.release(),
                 windowSize: win.width + 'x' + win.height
