@@ -49,6 +49,7 @@ exports.make = function (dbPath) {
             { guid: { $in: newArticlesGuids } },
         ] }, function (err, storedArticles) {
             
+            var newArticles = [];
             // now iterate through new articles and add only new ones
             articles.forEach(function (article) {
                 
@@ -97,11 +98,16 @@ exports.make = function (dbPath) {
                             }
                         });
                     }
-                    totalOperations += 1;
-                    db.insert(art, operationTick);
+                    
+                    newArticles.push(art);
                 }
                 
             });
+            
+            if (newArticles.length > 0) {
+                totalOperations += 1;
+                db.insert(newArticles, operationTick);
+            }
             
             // Here we have in storedArticles only articles
             // which should be marked as abandoned.
