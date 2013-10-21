@@ -9,27 +9,35 @@
     </div>
     
     <div class="column-two">
+    <div class="text  scroll">
         
-        <div class="organize  scroll">
+        <h1>Settings</h1>
         
-            <h1>Settings</h1>
-            
+        <div class="settings__section">
+            <h2>Reading</h2>
             <p>
-                Show articles per page
-                <input type="number" ng-model="config.articlesPerPage" min="1" max="100"/>
+                Show 
+                <input type="number" ng-model="config.articlesPerPage" min="1" max="100"
+                       class="numeric-stepper"/>
+                articles per page.
             </p>
-            
-            <p>
-                Delete articles older than 
-                <input type="number" ng-model="config.keepArticlesForMonths" min="1" max="100"/>
-            </p>
-            <p>
-                Keep tagged articles ferever
-                <input type="checkbox" ng-model="config.keepTaggedArticlesForever"/>
-            </p>
-            
         </div>
         
+        <div class="settings__section">
+            <h2>Hard disk space</h2>
+            <p>
+                Delete articles older than
+                <input type="number" ng-model="config.keepArticlesForMonths" min="1" max="100"
+                       class="numeric-stepper"/>
+                months.
+            </p>
+            <p>
+                <input type="checkbox" ng-model="config.keepTaggedArticlesForever"/>
+                Keep tagged articles ferever
+            </p>
+        </div>
+        
+    </div>
     </div>
     
 </div>

@@ -19,6 +19,7 @@
 @import '../src/less/addFeed.less';
 @import '../src/less/organize.less';
 @import '../src/less/tags.less';
+@import '../src/less/misc.less';
 
 // MIXINS
 //-------------------------------------
@@ -375,7 +376,7 @@ h1 {
         margin-bottom: 1rem;
     }
     p {
-        margin: 0.4rem 0;
+        margin: 0.6rem 0;
     }
 }
 
@@ -450,6 +451,10 @@ button {
         padding: 0.3rem 1rem 0.4rem;
     }
 }
+.numeric-stepper {
+    font-size: 1rem;
+    padding: 2px 2px 2px 5px;
+}
 
 // SPINNER
 //-------------------------------------
@@ -496,25 +501,5 @@ button {
     }
     &.ng-leave-active {
         top: -3rem;
-    }
-}
-
-// MISC
-//-------------------------------------
-.layout-justify {
-    display: -webkit-flex;
-    -webkit-align-items: center;
-}
-.layout-justify__last {
-    -webkit-flex-grow: 1;
-    text-align: right;
-}
-
-.table-row {
-    border-top: 1px solid white;
-    border-bottom: 1px solid white;
-    &:hover {
-        border-top: 1px dashed #cfcfcf;
-        border-bottom: 1px dashed #cfcfcf;
     }
 }
