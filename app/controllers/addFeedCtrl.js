@@ -10,11 +10,11 @@ function AddFeedCtrl($scope, $location, feedsService, net, feedParser) {
     function constructCategoriesOptions() {
         var cats = [
             {
-                name: "(no category)",
+                name: "(none)",
                 value: ""
             },
             {
-                name: "(add new category)",
+                name: "(new category)",
                 value: "#addNewCategory#"
             }
         ];
@@ -60,7 +60,7 @@ function AddFeedCtrl($scope, $location, feedsService, net, feedParser) {
                     // it means user typed more characters and this search is obsolete
                     return;
                 }
-                if (err && err.message === 'getaddrinfo ENOTFOUND') {
+                if (err && err.code === '404') {
                     $scope.urlValidity = '404';
                 } else {
                     $scope.urlValidity = 'no';
