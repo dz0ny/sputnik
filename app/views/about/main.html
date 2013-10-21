@@ -6,21 +6,16 @@
                 <a class="button2" href="#/">Go back</a>
             </div>
         </div>
-        <!--<div class="toolbar-on-left__container">
-            <div class="toolbar-on-left">
-                <p><a class="button1" href="#/about/about">About</a></p>
-                <p ng-show="newVersionAvailable != null"><a class="button1" href="#/about/update">New version</a></p>
-                <p><a class="button1" href="#/about/controls">Controls</a></p>
-            </div>
-        </div>-->
     </div>
     
-    <div ng-switch="subview" class="column-two  text">
-    
-        <div ng-switch-when="about" ng-include="'views/about/about.html'" class="center"></div>
-        <div ng-switch-when="update" ng-include="'views/about/update.html'" class="center"></div>
+    <div ng-switch="subview" class="column-two">
+    <div class="text  scroll">
+        
+        <div ng-switch-when="about" ng-include="'views/about/about.html'"></div>
+        <div ng-switch-when="update" ng-include="'views/about/update.html'"></div>
         <div ng-switch-when="controls" ng-include="'views/about/controls.html'"></div>
         
+    </div>
     </div>
     
 </div>
