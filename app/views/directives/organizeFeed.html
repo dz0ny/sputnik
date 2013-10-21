@@ -1,4 +1,4 @@
-<div class="organize__feed">
+<div class="organize__feed  layout-justify  table-row">
     <div ng-hide="feed.favicon != undefined" class="organize__feed-icon  organize__feed-icon--none"/>
     <img ng-show="feed.favicon != undefined" src="{{feed.favicon}}" class="organize__feed-icon"/>
     <span class="organize__feed-title">{{feed.title}}</span>
@@ -11,9 +11,14 @@
         ng-options="catName for catName in categoriesNames">
         <option value="">(no category)</option>
     </select>
-    <a class="button2" ng-click="showDelete = !showDelete">
-        <span ng-hide="showDelete">delete</span>
-        <span ng-show="showDelete">cancel</span>
-    </a>
-    <span ng-show="showDelete">Are you sure? <a class="button2" ng-click="remove()">Yes, delete.</a></span>
+    <div class="layout-justify__last">
+        <span ng-show="showDelete">
+            Delete feed?
+            <a class="button2 organize__yes-btn" ng-click="remove()">yes</a>
+        </span>
+        <a class="button2" ng-click="showDelete = !showDelete">
+            <span ng-hide="showDelete">delete</span>
+            <span ng-show="showDelete">no</span>
+        </a>
+    </div>
 </div>

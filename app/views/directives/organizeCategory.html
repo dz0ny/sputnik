@@ -1,21 +1,25 @@
 <div>
-    <div>
-        <h2 class="organize__category-name">
-            <span ng-hide="showRename">{{category.title}}</span>
-            <span ng-show="showRename">
-                <input type="text" ng-model="newName"/>
-                <button ng-click="rename()">save</button>
-            </span>
-        </h2>
+    <div class="organize__category-header  layout-justify  table-row">
+        <h2 ng-hide="showRename">{{category.title}}</h2>
+        <span ng-show="showRename">
+            <input type="text" ng-model="newName"/>
+            <button class="inputty" ng-click="rename()">save</button>
+        </span>
         <a class="button2" ng-click="showRename = !showRename">
             <span ng-hide="showRename">rename</span>
             <span ng-show="showRename">cancel</span>
         </a>
-        <a class="button2" ng-click="showDelete = !showDelete">
-            <span ng-hide="showDelete">delete</span>
-            <span ng-show="showDelete">cancel</span>
-        </a>
-        <span ng-show="showDelete">Are you sure? <a class="button2" ng-click="remove()">Yes, delete whole category.</a></span>
+        <div class="layout-justify__last">
+            <span ng-show="showDelete">
+                Delete whole category?
+                <a class="button2 organize__yes-btn" ng-click="remove()">yes</a>
+                <a class="button2" ng-click="showDelete = !showDelete">no</a>
+            </span>
+            <a ng-hide="showDelete" class="button2"
+               ng-click="showDelete = !showDelete">
+                delete
+            </a>
+        </div>
     </div>
     <div ng-repeat="feed in category.feeds">
         <organize-feed feed="feed" categories-names="categoriesNames"/>
