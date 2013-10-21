@@ -9,12 +9,16 @@
     </div>
     
     <div class="column-two">
+    <div class="text">
 
         <h1>Import</h1>
         
         <input id="selectedOpmlPath" type="file" style="display: none;"/>
         
-        <p>Here you can import to Sputnik your feeds from other news reader. Simply click button below and select file with feeds you would like to import.</p>
+        <p>
+            Here you can import to Sputnik your feeds from other news reader.<br/>
+            Simply click button below and select file with feeds you would like to import.
+        </p>
         <p><button ng-click="openImportDialog()">Select file with feeds</button></p>
         
         <p ng-show="state == 'importFileInvalid'">This file is not valid, I can do nothing with it. Are you sure you picked the right one?</p>
@@ -30,6 +34,7 @@
             <p ng-show="state == 'exportDone'">Done! File has been saved on disk.</p>
         </div>
         
+    </div>
     </div>
     
 </div>
