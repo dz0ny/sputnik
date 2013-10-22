@@ -14,7 +14,7 @@ exports.make = function (urlMap) {
         var deferred = Q.defer();
         
         if (urlMap[url]) {
-            deferred.resolve(urlMap[url]);
+            deferred.resolve(new Buffer(urlMap[url]));
         } else if (isTiemout(url)) {
             deferred.reject({
                 code: 'ETIMEDOUT'

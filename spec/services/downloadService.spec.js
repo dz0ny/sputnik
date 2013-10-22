@@ -3,17 +3,18 @@
 describe('downloadService', function () {
     
     var Q = require('q');
-    var fs = require('fs');
+    var fse = require('fs-extra');
     var moment = require('moment');
     
     var feedsStorage = require('../app/models/feedsStorage');
     var articlesStorage = require('../app/models/articlesStorage');
     var feedParser = require('../app/helpers/feedParser');
+    var feedsWaitingRoom = require('../app/helpers/feedsWaitingRoom');
     var netMock = require('./mocks/net.mock');
     
     var net = netMock.make({
-        "http://atom-xml": fs.readFileSync('./data/atom.xml'),
-        "http://rss2-xml": fs.readFileSync('./data/rss2.xml'),
+        "http://atom-xml": fse.readFileSync('./data/atom.xml'),
+        "http://rss2-xml": fse.readFileSync('./data/rss2.xml'),
         "http://html": '<html><head></head></html>',
         
         // just pass on this values
@@ -21,12 +22,15 @@ describe('downloadService', function () {
         "b.com/feed": 'b.com/feed',
     });
     
+    var feedsWaitingRoomStoragePath = 'temp/feeds-waiting';
+    
     beforeEach(module('sputnik', function($provide) {
         $provide.value('feedsStorage', feedsStorage.make());
         $provide.value('articlesStorage', articlesStorage.make());
         $provide.value('net', net);
         $provide.value('opml', {});
         $provide.value('feedParser', feedParser);
+        $provide.value('feedsWaitingRoom', feedsWaitingRoom.init(feedsWaitingRoomStoragePath));
         $provide.value('config', {});
     }));
     
@@ -129,116 +133,131 @@ describe('downloadService', function () {
         
     });
     
-    describe('xmls fetching', function () {
+    describe('downloading', function () {
         
-        it("should fetch feeds' xmls", inject(function (downloadService) {
+        it('should terminate gracefully when no feeds to download', inject(function (net, feedsService, downloadService) {
             var done = false;
+            // feedsService is empty
+            downloadService.download()
+            .then(function () {
+                done = true;
+            });
+            waitsFor(function () { return done; }, null, 500);
+        }));
+        
+        it("should deal with edge cases", inject(function (feedsService, downloadService) {
+            var done = false;
+            
+            feedsService.addFeed({
+                url: 'timeout',
+            });
+            feedsService.addFeed({
+                url: 'not-found',
+            });
+            feedsService.addFeed({
+                url: 'unknown-error',
+            });
+            feedsService.addFeed({
+                url: 'http://404',
+            });
+            feedsService.addFeed({
+                url: 'http://html', // html instead of feed xml goes to parser
+            });
+            feedsService.addFeed({
+                url: 'http://atom-xml',
+            });
+            feedsService.addFeed({
+                url: 'http://rss2-xml',
+            });
+            
             var firedProgressCount = 0;
-            var feedUrls = [
-                'timeout',
-                'not-found',
-                'unknown-error',
-                'http://404',
-                'http://html', // html instead of feed xml to test edge case
-                'http://atom-xml',
-                'http://rss2-xml',
-            ];
-            downloadService.fetchFeeds(feedUrls, 'normal')
+            downloadService.download()
             .then(
-                function () {
+                function (result) {
                     expect(firedProgressCount).toBe(7);
-                    done = true;
+                    result.backgroundJob.then(function () {
+                        done = true;
+                    });
                 },
                 null,
-                // progress fired with any just fetched feed
                 function (progress) {
-                    
+                    // progress fires with any just fetched feed
                     firedProgressCount += 1;
                     
                     expect(progress.completed).toBeGreaterThan(0);
-                    expect(progress.completed).toBeLessThan(feedUrls.length + 1);
-                    expect(progress.total).toBe(feedUrls.length);
-                    
-                    switch (progress.url) {
-                        case 'not-found':
-                            expect(progress.status).toBe('notFound');
-                            expect(progress.meta).toEqual({});
-                            expect(progress.articles).toEqual([]);
-                            break;
-                        case 'timeout':
-                            expect(progress.status).toBe('timeout');
-                            expect(progress.meta).toEqual({});
-                            expect(progress.articles).toEqual([]);
-                            break;
-                        case 'unknown-error':
-                            expect(progress.status).toBe('unknownError');
-                            expect(progress.meta).toEqual({});
-                            expect(progress.articles).toEqual([]);
-                            break;
-                        case 'http://404':
-                            expect(progress.status).toBe('404');
-                            expect(progress.meta).toEqual({});
-                            expect(progress.articles).toEqual([]);
-                            break;
-                        case 'http://html-no-link':
-                            expect(progress.status).toBe('parseError');
-                            expect(progress.meta).toEqual({});
-                            expect(progress.articles).toEqual([]);
-                            break;
-                        case 'http://atom-xml':
-                            expect(progress.status).toBe('ok');
-                            break;
-                        case 'http://rss2-xml':
-                            expect(progress.status).toBe('ok');
-                            break;
-                    }
+                    expect(progress.completed).toBeLessThan(8);
+                    expect(progress.total).toBe(7);
                 }
             );
             waitsFor(function () { return done; }, null, 500);
         }));
         
-        it("should assume no connection if 5 errors in a row", inject(function (downloadService) {
+        it('should try to download again in background feed which in normal mode got timeout', inject(function (net, feedsService, downloadService) {
             var done = false;
-            var feedUrls = [
-                'timeout',
-                'not-found',
-                'connection-refused',
-                'not-found',
-                'timeout',
-                'not-found',
-            ];
-            downloadService.fetchFeeds(feedUrls, 'normal')
-            .then(
-                null,
-                function (err) {
-                    expect(err).toBe('No connection');
-                    done = true;
-                }
-            );
-            waitsFor(function () { return done; }, null, 500);
-        }));
-        
-        it("should assume no connection if less than 5 feeds and all failed", inject(function (downloadService) {
-            var done = false;
-            var feedUrls = [
-                'timeout',
-                'not-found',
-            ];
-            downloadService.fetchFeeds(feedUrls, 'normal')
-            .then(
-                null,
-                function (err) {
-                    expect(err).toBe('No connection');
-                    done = true;
-                }
-            );
-            waitsFor(function () { return done; }, null, 500);
-        }));
-        
-        it("should terminate gracefully if provided with empty list", inject(function (downloadService) {
-            var done = false;
-            downloadService.fetchFeeds([], 'normal')
+            var spy = jasmine.createSpy();
+            net.injectGeturlSpy(spy);
+            feedsService.addFeed({
+                url: 'timeout',
+            });
+            feedsService.addFeed({
+                url: 'http://404',
+            });
+            downloadService.download()
+            .then(function (result) {
+                return result.backgroundJob;
+            })
             .then(function () {
+                expect(spy.callCount).toBe(3); // 2 calls from timeout and 1 from http://404
+                done = true;
+            });
+            waitsFor(function () { return done; }, null, 500);
+        }));
+        
+        it('should give up (assume no connectoin) when 5 connection errors in a row', inject(function (net, feedsService, downloadService) {
+            var done = false;
+            
+            feedsService.addFeed({
+                url: 'timeout1',
+            });
+            feedsService.addFeed({
+                url: 'timeout2',
+            });
+            feedsService.addFeed({
+                url: 'not-found',
+            });
+            feedsService.addFeed({
+                url: 'connection-refused',
+            });
+            feedsService.addFeed({
+                url: 'timeout5',
+            });
+            downloadService.download()
+            .then(null,
+            function (message) {
+                expect(message).toBe('No connection');
+                expect(downloadService.isWorking).toBe(false);
+                done = true;
+            });
+            waitsFor(function () { return done; }, null, 500);
+        }));
+        
+        it('should give up when less than 5 feeds and all returned eror', inject(function (net, feedsService, downloadService) {
+            var done = false;
+            
+            feedsService.addFeed({
+                url: 'timeout1',
+            });
+            feedsService.addFeed({
+                url: 'not-found',
+            });
+            feedsService.addFeed({
+                url: 'connection-refused',
+            });
+            downloadService.download()
+            .then(null,
+            function (message) {
+                expect(message).toBe('No connection');
+                expect(downloadService.isWorking).toBe(false);
                 done = true;
             });
             waitsFor(function () { return done; }, null, 500);
@@ -246,7 +265,7 @@ describe('downloadService', function () {
         
     });
     
-    describe('main API', function () {
+    describe('comprehensive test', function () {
         
         function generateArticles(feedName, num, timeGap) {
             var arts = [];
@@ -280,7 +299,13 @@ describe('downloadService', function () {
             });
         }));
         
-        it('should work', inject(function (config, feedsService, articlesService, downloadService) {
+        beforeEach(function () {
+            if (fse.existsSync(feedsWaitingRoomStoragePath)) {
+                fse.removeSync(feedsWaitingRoomStoragePath);
+            }
+        });
+        
+        it('full download cycle', inject(function (config, feedsService, articlesService, downloadService) {
             var doneCount = 0;
             
             config.lastFeedsDownload = moment().subtract('days', 2).valueOf();
@@ -323,69 +348,42 @@ describe('downloadService', function () {
                 return result.backgroundJob;
             })
             .then(function () {
+                // feeds downloaded in background should be just saved to feedsWaitingRoom
+                var files = fse.readdirSync(feedsWaitingRoomStoragePath);
+                expect(files.length).toBe(1);
                 
+                return articlesService.getArticles(['b.com/feed'], 0, 100);
+            })
+            .then(function (result) {
+                expect(result.numAll).toBe(0);
+                
+                return downloadService.download();
+            })
+            .then(function (result) {
+                
+                // feeds from waitingRoom should be digested with next call of download()
                 expect(feedB.averageActivity).toBe(600);
                 
-                // digested articles should be accesible through articlesService
+                // file from feedsWaitingRoom should be gone
+                var files = fse.readdirSync(feedsWaitingRoomStoragePath);
+                expect(files.length).toBe(0);
+                
+                // now feed B should be digested, so articles should be reachable
                 articlesService.getArticles(['b.com/feed'], 0, 100)
                 .then(function (result) {
                     expect(result.numAll).toBe(9);
                     doneCount += 1;
                 });
                 
+                return result.backgroundJob;
+            })
+            .then(function (result) {
+                doneCount += 1;
             });
             
             expect(downloadService.isWorking).toBe(true);
             
-            waitsFor(function () { return doneCount === 2; }, null, 500);
-        }));
-        
-        it('should try to download again in background feed which in normal mode got timeout', inject(function (net, feedsService, downloadService) {
-            var done = false;
-            var spy = jasmine.createSpy();
-            net.injectGeturlSpy(spy);
-            feedsService.addFeed({
-                url: 'timeout',
-            });
-            feedsService.addFeed({
-                url: 'http://404',
-            });
-            downloadService.download()
-            .then(function (result) {
-                return result.backgroundJob;
-            })
-            .then(null, function () {
-                expect(spy.callCount).toBe(3); // 2 calls from timeout and 1 from http://404
-                done = true;
-            });
-            waitsFor(function () { return done; }, null, 500);
-        }));
-        
-        it('should give up when 5 timeoust in a row', inject(function (net, feedsService, downloadService) {
-            var done = false;
-            feedsService.addFeed({
-                url: 'timeout1',
-            });
-            feedsService.addFeed({
-                url: 'timeout2',
-            });
-            feedsService.addFeed({
-                url: 'timeout3',
-            });
-            feedsService.addFeed({
-                url: 'timeout4',
-            });
-            feedsService.addFeed({
-                url: 'timeout5',
-            });
-            downloadService.download()
-            .then(null,
-            function (message) {
-                expect(message).toBe('No connection');
-                expect(downloadService.isWorking).toBe(false);
-                done = true;
-            });
-            waitsFor(function () { return done; }, null, 500);
+            waitsFor(function () { return doneCount === 3; }, null, 500);
         }));
         
     });

@@ -1,6 +1,6 @@
 'use strict';
 
-sputnik.factory('downloadService', function (net, feedParser, config, feedsService, articlesService) {
+sputnik.factory('downloadService', function (net, feedParser, config, feedsService, articlesService, feedsWaitingRoom) {
     
     var Q = require('q');
     
@@ -86,51 +86,35 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
         return Math.round(avg / (1000 * 60 * 60));
     }
     
-    function fetchFeeds(feedUrls, mode) {
+    function fetchFeeds(feedUrls) {
         var deferred = Q.defer();
-        var index = -1;
         var completed = 0;
+        var total = feedUrls.length;
         var simultaneousTasks = 5;
         var workingTasks = 0;
         var timeoutsInARow = 0;
-        var timeout = 3000;
         
-        if (mode === 'background') {
-            simultaneousTasks = 3;
-            timeout = 8000;
-        }
-        
-        function notify(url, status, meta, articles) {
+        function notify(url, status) {
             
             workingTasks -= 1;
             completed += 1;
             
-            if (status === 'notFound' || status === 'timeout') {
-                timeoutsInARow += 1;
-            } else {
-                timeoutsInARow = 0;
-            }
-            
-            if (timeoutsInARow >= 5 || timeoutsInARow === feedUrls.length) {
+            if (timeoutsInARow >= 5 || timeoutsInARow === total) {
                 deferred.reject('No connection');
                 return;
             }
             
             deferred.notify({
                 completed: completed,
-                total: feedUrls.length,
+                total: total,
                 url: url,
-                status: status,
-                meta: meta || {},
-                articles: articles || []
+                status: status
             });
             
-            if (completed === feedUrls.length) {
-                deferred.resolve();
+            if (completed < total) {
+                next();
             } else {
-                if (workingTasks < simultaneousTasks) {
-                    next();
-                }
+                deferred.resolve();
             }
         }
         
@@ -138,11 +122,13 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
             
             workingTasks += 1;
             
-            net.getUrl(url, { timeout: timeout }).then(function (buff) {
+            net.getUrl(url, { timeout: 3000 }).then(function (buff) {
                 
-                feedParser.parse(buff).then(function (result) {
-                    notify(url, 'ok', result.meta, result.articles);
-                }, function (err) {
+                timeoutsInARow = 0;
+                
+                parseFeed(url, buff).then(function () {
+                    notify(url, 'ok');
+                }, function () {
                     notify(url, 'parseError');
                 });
                 
@@ -151,70 +137,110 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
                     case '404':
                         notify(url, '404');
                         break;
-                    case 'ENOTFOUND': 
-                    case 'ECONNREFUSED':
-                        notify(url, 'notFound');
-                        break;
-                    case 'ETIMEDOUT':
-                    case 'ESOCKETTIMEDOUT':
-                        notify(url, 'timeout');
-                        break;
+                    //case 'ENOTFOUND': 
+                    //case 'ECONNREFUSED':
+                    //case 'ETIMEDOUT':
+                    //case 'ESOCKETTIMEDOUT':
                     default:
-                        notify(url, 'unknownError');
+                        timeoutsInARow += 1;
+                        notify(url, 'connectionError');
+                        break;
                 }
             });
         }
         
         function next() {
-            index += 1;
-            if (index < feedUrls.length) {
-                
-                fetch(feedUrls[index]);
-                
+            if (feedUrls.length > 0) {
+                fetch(feedUrls.pop());
                 if (workingTasks < simultaneousTasks) {
                     next();
                 }
             }
         }
         
-        next();
-        
         if (feedUrls.length === 0) {
             deferred.resolve();
+        } else {
+            next();
         }
         
         return deferred.promise;
-    };
+    }
     
-    function downloadJob(feedUrls, mode) {
+    function fetchFeedsBackground(feedUrls) {
         var deferred = Q.defer();
+        var completed = 0;
+        var total = feedUrls.length;
+        var simultaneousTasks = 3;
+        var workingTasks = 0;
         
-        fetchFeeds(feedUrls, mode)
-        .then(null, deferred.reject, function progress(prog) {
+        function notify() {
+            workingTasks -= 1;
+            completed += 1;
+            if (completed < total) {
+                next();
+            } else {
+                deferred.resolve();
+            }
+        }
+        
+        function fetch(url) {
+            workingTasks += 1;
+            net.getUrl(url, { timeout: 8000 })
+            .then(function (buff) {
+                feedsWaitingRoom.storeOne(url, buff)
+                .then(notify);
+            }, notify);
             
-            function passOn() {
-                deferred.notify(prog);
-                
-                if (prog.completed === prog.total) {
-                    deferred.resolve();
+        }
+        
+        function next() {
+            if (feedUrls.length > 0) {
+                fetch(feedUrls.pop());
+                if (workingTasks < simultaneousTasks) {
+                    next();
                 }
             }
-            
-            if (prog.status === 'ok') {
-                feedsService.digestFeedMeta(prog.url, prog.meta);
-                articlesService.digest(prog.url, prog.articles)
-                .then(function () {
-                    // notify after articles digested and saved
-                    passOn();
-                });
-                var feed = feedsService.getFeedByUrl(prog.url);
-                feed.averageActivity = calculateAverageActivity(prog.articles);
-            } else {
-                passOn();
-            }
-        });
+        }
+        
+        if (feedUrls.length === 0) {
+            deferred.resolve();
+        } else {
+            next();
+        }
         
         return deferred.promise;
+    }
+    
+    function parseFeed(url, feedBuff) {
+        var def = Q.defer();
+        
+        feedParser.parse(feedBuff)
+        .then(function (result) {
+            feedsService.digestFeedMeta(url, result.meta);
+            var feed = feedsService.getFeedByUrl(url);
+            feed.averageActivity = calculateAverageActivity(result.articles);
+            return articlesService.digest(url, result.articles);
+        }, def.reject)
+        .then(def.resolve);
+        
+        return def.promise;
+    }
+    
+    function parseWaitingRoom() {
+        var def = Q.defer();
+        
+        function tick() {
+            feedsWaitingRoom.getOne()
+            .then(function (result) {
+                parseFeed(result.url, result.data).then(tick, tick);
+            }, def.resolve);
+            // resolve on error, because waiting room returns error when has no feeds left
+        }
+        
+        tick();
+        
+        return def.promise;
     }
     
     //-----------------------------------------------------
@@ -232,25 +258,31 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
         
         config.lastFeedsDownload = Date.now();
         
-        downloadJob(baskets.hi, 'normal')
-        .then(function () {
-            // after main job start lo basket in background
-            isWorking = false;
-            deferred.resolve({
-                backgroundJob: downloadJob(baskets.lo, 'background')
-            });
-        },
+        var parseWaitingPromise = parseWaitingRoom();
+        
+        var downloadPromise = fetchFeeds(baskets.hi);
+        
+        downloadPromise.then(null,
         function (message) {
             isWorking = false;
             deferred.reject(message);
         },
-        function (prog) {
-            if (prog.status === 'timeout') {
+        function (progress) {
+            if (progress.status === 'connectionError') {
                 // if timeout occured try to download again with lo basket,
                 // which is more timeout friendly
-                baskets.lo.push(prog.url);
+                baskets.lo.push(progress.url);
             }
-            deferred.notify(prog);
+            deferred.notify(progress);
+        });
+        
+        Q.all([ parseWaitingPromise, downloadPromise ])
+        .then(function () {
+            // after main job start lo basket in background
+            isWorking = false;
+            deferred.resolve({
+                backgroundJob: fetchFeedsBackground(baskets.lo)
+            });
         });
         
         return deferred.promise;
@@ -264,7 +296,6 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
         
         // exposed only for testing
         calculateAverageActivity: calculateAverageActivity,
-        getActivityBaskets: getActivityBaskets,
-        fetchFeeds: fetchFeeds,
+        getActivityBaskets: getActivityBaskets
     };
 });
