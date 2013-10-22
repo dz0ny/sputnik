@@ -24,17 +24,18 @@ describe('feedsWaitingRoom', function () {
         var files = fse.readdirSync(testPath);
         expect(files.length).toBe(0);
         
-        fwr.storeOne(new Buffer('abcŁŹŃ'))
+        fwr.storeOne('http://site.com/elo', new Buffer('abcŁŹŃ'))
         .then(function () {
             var files = fse.readdirSync(testPath);
             expect(files.length).toBe(1);
             return fwr.getOne();
         })
-        .then(function (data) {
+        .then(function (result) {
             var files = fse.readdirSync(testPath);
             expect(files.length).toBe(0);
-            expect(Buffer.isBuffer(data)).toBe(true);
-            expect(data.toString()).toBe('abcŁŹŃ');
+            expect(Buffer.isBuffer(result.data)).toBe(true);
+            expect(result.url).toBe('http://site.com/elo');
+            expect(result.data.toString()).toBe('abcŁŹŃ');
             done = true;
         });
         waitsFor(function () { return done; }, null, 500);

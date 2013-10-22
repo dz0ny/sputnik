@@ -7,12 +7,15 @@ var crypto = require('crypto');
 
 exports.init = function (waitingPlacePath) {
     
-    function storeOne(data) {
+    function storeOne(url, data) {
         var def = Q.defer();
         
         var name = crypto.pseudoRandomBytes(8).toString('hex');
         var dataPath = pathUtil.resolve(waitingPlacePath, name);
-        fs.writeFile(dataPath, data, function (err) {
+        var buf = new Buffer(2 + url.length);
+        buf.writeUInt16BE(url.length, 0);
+        buf.write(url, 2);
+        fs.writeFile(dataPath, Buffer.concat([buf, data]), function (err) {
             def.resolve();
         });
         
@@ -25,9 +28,14 @@ exports.init = function (waitingPlacePath) {
         fs.readdir(waitingPlacePath, function (err, files) {
             if (files.length > 0) {
                 var dataPath = pathUtil.resolve(waitingPlacePath, files[0]);
-                fs.readFile(dataPath, function (err, data) {
+                fs.readFile(dataPath, function (err, buf) {
+                    var urlLen = buf.readUInt16BE(0);
+                    var url = buf.toString('utf8', 2, 2 + urlLen);
                     fs.unlink(dataPath, function (err) {
-                        def.resolve(data);
+                        def.resolve({
+                            url: url,
+                            data: buf.slice(2 + urlLen)
+                        });
                     });
                 });
             } else {
