@@ -315,10 +315,7 @@ function AppCtrl($scope, $location, config, feedsService, articlesService, favic
             var olderThan = nowTime - (config.keepArticlesForMonths * 31 * 24 * 60 * 60 * 1000);
             articlesService.removeOlderThan(olderThan, config.keepTaggedArticlesForever)
             .then(function (numRemoved) {
-                // logging for testing purpouse
-                var fs = require('fs');
-                var now = new Date();
-                fs.appendFile('./_db_compact.log', now + ' | removed articles: ' + numRemoved + '\r\n');
+                // done
             });
             schedule.nextDatabaseCompaction = nowTime + daysToMs(3);
         }
