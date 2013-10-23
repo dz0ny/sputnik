@@ -113,7 +113,9 @@ function AppCtrl($scope, $location, config, feedsService, articlesService, favic
             dumpWindowState();
         }
         
-        win.show();
+        setTimeout(function () {
+            win.show();
+        }, 300);
     }
     
     function dumpWindowState() {
