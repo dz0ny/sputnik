@@ -22,7 +22,7 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         .then(showArticles,
         function (failMessage) {
             if (failMessage === 'No connection') {
-                $scope.$emit('showNotification', 'It looks like there is no internet connection. Only old articles are shown.');
+                $scope.$emit('showNotification', "I couldn't load new articles. It looks like there is no internet connection.");
             }
             showArticles();
         },
