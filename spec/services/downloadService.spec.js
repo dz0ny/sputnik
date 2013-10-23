@@ -263,6 +263,19 @@ describe('downloadService', function () {
             waitsFor(function () { return done; }, null, 500);
         }));
         
+        it('should do fine if parsed feed is already removed from the app', inject(function (feedsService, downloadService) {
+            var done = false;
+            var feed = feedsService.addFeed({
+                url: 'http://atom-xml',
+            });
+            downloadService.download()
+            .then(function () {
+                done = true;
+            });
+            feed.remove();
+            waitsFor(function () { return done; }, null, 500);
+        }));
+        
     });
     
     describe('comprehensive test', function () {

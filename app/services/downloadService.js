@@ -219,7 +219,9 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
         .then(function (result) {
             feedsService.digestFeedMeta(url, result.meta);
             var feed = feedsService.getFeedByUrl(url);
-            feed.averageActivity = calculateAverageActivity(result.articles);
+            if (feed) {
+                feed.averageActivity = calculateAverageActivity(result.articles);
+            }
             return articlesService.digest(url, result.articles);
         }, def.reject)
         .then(def.resolve);
@@ -252,7 +254,8 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
         var baskets = getActivityBaskets();
         
         console.log('Baskets to download ->');
-        console.log(baskets);
+        console.log('HI: ' + baskets.hi.length);
+        console.log('LO: ' + baskets.lo.length);
         
         isWorking = true;
         
@@ -271,6 +274,7 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
             if (progress.status === 'connectionError') {
                 // if timeout occured try to download again with lo basket,
                 // which is more timeout friendly
+                console.log('TIMEOUT: ' + progress.url);
                 baskets.lo.push(progress.url);
             }
             deferred.notify(progress);

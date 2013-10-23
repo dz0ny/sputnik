@@ -154,6 +154,11 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
     
     $rootScope.$on('unreadArticlesCountChanged', function (evt, feedUrl, count) {
         var feed = getFeedByUrl(feedUrl);
+        
+        if (!feed) {
+            return;
+        }
+        
         feed.unreadArticlesCount = count;
         totalUnreadCount = 0;
         tree.forEach(function (treeItem) {
@@ -203,7 +208,7 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
     }
     
     function addFeed(feedModel) {
-        var storedFeed = feedsStorage.addFeed(feedModel);
+        feedsStorage.addFeed(feedModel);
         constructFeedsList();
         
         var feed = getFeedByUrl(feedModel.url);
@@ -220,8 +225,10 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
     
     function digestFeedMeta(feedUrl, meta) {
         var feed = getFeedByUrl(feedUrl);
-        feed.title = meta.title;
-        feed.siteUrl = meta.link;
+        if (feed) {
+            feed.title = meta.title;
+            feed.siteUrl = meta.link;
+        }
     }
     
     return  {
