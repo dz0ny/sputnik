@@ -21,6 +21,10 @@ function initSputnikConfig() {
         dataHomeFolder = '../data';
     }
     
+    if (!fs.existsSync(dataHomeFolder)) {
+        fs.mkdirSync(dataHomeFolder);
+    }
+    
     var userConf = {};
     var userConfPath = dataHomeFolder + '/config.json';
     if (fs.existsSync(userConfPath)) {
