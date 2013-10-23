@@ -1,7 +1,7 @@
 {
   "name": "Sputnik-Dev",
   "main": "index.html",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "webkit": {
     "plugin": false
   },
