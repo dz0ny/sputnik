@@ -16,7 +16,7 @@
     "min_height": 400
   },
   "dependencies": {
-    "cheerio": "0.12.x",
+    "cheerio": "0.12.2",
     "feedparser": "0.16.x",
     "iconv-lite": "0.2.x",
     "nedb": "0.8.x",
