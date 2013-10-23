@@ -16,6 +16,8 @@ sputnik.config(function ($provide, $routeProvider) {
     var dbPath = config.dataHomeFolder + '/articles.nedb';
     $provide.value('articlesStorage', articlesStorage.make(dbPath));
     
+    $provide.value('feedsWaitingRoom', require('./helpers/feedsWaitingRoom').init(config.dataHomeFolder + '/feeds-waiting-room'));
+    
     $provide.value('opml', require('./helpers/opml'));
     $provide.value('net', require('./helpers/net'));
     $provide.value('feedParser', require('./helpers/feedParser'));

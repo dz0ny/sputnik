@@ -355,6 +355,7 @@ describe('downloadService', function () {
                 return articlesService.getArticles(['b.com/feed'], 0, 100);
             })
             .then(function (result) {
+                // so feed b should not be in database yet
                 expect(result.numAll).toBe(0);
                 
                 return downloadService.download();
