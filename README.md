@@ -1,4 +1,4 @@
-#Sputnik News Reader
+#Sputnik
 Open source RSS reader built upon [node-webkit](https://github.com/rogerwang/node-webkit).
 
 ##Where to get it?
