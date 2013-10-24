@@ -11,7 +11,7 @@ exports.getUrl = function (url, options) {
     
     options.url = url;
     options.encoding = null;
-    options.headers= {
+    options.headers = {
         "User-Agent": "Sputnik News Reader",
         "Accept-Encoding": "gzip, deflate",
     };
@@ -47,6 +47,8 @@ exports.getUrl = function (url, options) {
                 deferred.resolve(body);
             }
         }
+    }).on('error', function (err) {
+        // nothing
     });
     
     return deferred.promise;

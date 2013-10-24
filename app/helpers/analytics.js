@@ -12,6 +12,8 @@ function hit(payload) {
         headers: {'content-type' : 'application/x-www-form-urlencoded'},
         url:     url,
         body:    querystring.stringify(payload)
+    }).on('error', function (err) {
+        // nothing
     });
 }
 
