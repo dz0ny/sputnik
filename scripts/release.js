@@ -128,6 +128,7 @@ function build(platform) {
         targetPlatform: platform,
         websiteUrl: 'http://sputnik.szwacz.com',
         websiteUrlUpdate: 'http://sputnik.szwacz.com/update',
+        websiteUrlDonate: 'http://sputnik.szwacz.com/donate',
         analyticsUrl: 'http://sputnik.szwacz.com/analytics/hit.php',
         checkUpdatesUrl: 'http://sputnik.szwacz.com/check-updates/updates.json'
     });

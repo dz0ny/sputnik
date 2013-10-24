@@ -76,6 +76,9 @@ function initSputnikConfig() {
         get websiteUrlUpdate() {
             return appConf.websiteUrlUpdate;
         },
+        get websiteUrlDonate() {
+            return appConf.websiteUrlDonate;
+        },
         get analyticsUrl() {
             return appConf.analyticsUrl;
         },

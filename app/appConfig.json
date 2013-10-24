@@ -2,6 +2,7 @@
     "targetPlatform": "windows",
     "websiteUrl": "http://localhost/sputnik",
     "websiteUrlUpdate": "http://localhost/sputnik/update",
+    "websiteUrlDonate": "http://localhost/sputnik/donate",
     "analyticsUrl": "http://localhost/sputnik/analytics/hit.php",
     "checkUpdatesUrl": "http://localhost/sputnik/check-updates/updates.json"
 }

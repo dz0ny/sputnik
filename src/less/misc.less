@@ -16,6 +16,36 @@
     }
 }
 
+// ABOUT SCREEN
+//-------------------------------------
+.about__donation-button {
+    display: block;
+    position: relative;
+    margin-top: 2rem;
+    padding: 1.2rem 1rem 0.3rem 1rem;
+    font-weight: 700;
+    text-align: center;
+    border: 1px solid #9e9e9e;
+    border-radius: 0.5rem;
+    &:hover {
+        color: darken(@anchorHoverColor, 20%);
+        .about__donation-button-mask {
+            background-color: fade(@anchorHoverColor, 7%);
+        }
+    }
+    img {
+        margin: 0.6rem;
+        vertical-align: middle;
+    }
+}
+.about__donation-button-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
 // CONTROLS SCREEN
 //-------------------------------------
 .controls_table {
