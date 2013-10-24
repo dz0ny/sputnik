@@ -102,27 +102,23 @@ sputnik.directive('articlesList', function ($sanitize, $rootScope) {
         return dom.html();
     }
     
-    //-----------------------------------------------------
-    // Listening to app events
-    //-----------------------------------------------------
-    
-    var articleTagsChangedWatcher = $rootScope.$on('articleTagsChanged', function (evt, article) {
-        $('#' + article.id + ' .js-article-tags').html(getTagsHtml(article));
-    });
-    var articleReadStateChangedWatcher = $rootScope.$on('articleReadStateChanged', function (evt, article) {
-        if (article.isRead) {
-            $('#' + article.id).addClass('article--read');
-        } else {
-            $('#' + article.id).removeClass('article--read');
-        }
-    });
-    
     return {
         restrict: 'E',
         replace: true,
         template: '',
         scope: true,
         link: function ($scope, $element) {
+            
+            var articleTagsChangedWatcher = $rootScope.$on('articleTagsChanged', function (evt, article) {
+                angular.element('#' + article.id + ' .js-article-tags')[0].innerHTML = getTagsHtml(article);
+            });
+            var articleReadStateChangedWatcher = $rootScope.$on('articleReadStateChanged', function (evt, article) {
+                if (article.isRead) {
+                    angular.element('#' + article.id).addClass('article--read');
+                } else {
+                    angular.element('#' + article.id).removeClass('article--read');
+                }
+            });
             
             $scope.$on('$destroy', function () {
                 // prevent memory leaks
