@@ -176,7 +176,7 @@ describe('feedsStorage', function () {
         expect(fst.feeds[1].category).toBe('Cool Category');
     });
     
-    it('should terminate gracefully when setFeedValue gets nonexistend feedUrl', function () {
+    it('should terminate gracefully when setFeedValue gets nonexistent feedUrl', function () {
         var fst = feedsStorage.make();
         fst.setFeedValue('blah', 'favicon', 'abc');
     });
