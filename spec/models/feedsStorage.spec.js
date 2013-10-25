@@ -176,6 +176,12 @@ describe('feedsStorage', function () {
         expect(fst.feeds[1].category).toBe('Cool Category');
     });
     
+    it('should terminate gracefully when setFeedValue gets nonexistend feedUrl', function () {
+        var fst = feedsStorage.make();
+        fst.setFeedValue('blah', 'favicon', 'abc');
+    });
+    
+    
     describe('disk persistance', function () {
         
         var fs = require('fs');

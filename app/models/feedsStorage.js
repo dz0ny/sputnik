@@ -75,6 +75,10 @@ exports.make = function (dataPath) {
     function setFeedValue(feedUrl, key, value) {
         var feed = getFeedByUrl(feedUrl);
         
+        if (!feed) {
+            return null;
+        }
+        
         if (key === 'category') {
             if (!value || value === '') {
                 value = undefined;
