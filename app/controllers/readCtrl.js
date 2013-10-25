@@ -316,7 +316,10 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     function articleVisibleInViewport(article) {
         var el = angular.element('#' + article.id);
         var bounds = el[0].getBoundingClientRect();
-        var notVisible = bounds.bottom < 0 || bounds.top > articlesList.height();
+        // neglect bottom part of article to not confuse if really tiny amount of article visible
+        var boundBottom = bounds.bottom - (el.find('.js-article-actions').height() / 2);
+        // finding out if not visible is easier than finding if visible
+        var notVisible = boundBottom < 0 || bounds.top > articlesList.height();
         return !notVisible;
     }
     
