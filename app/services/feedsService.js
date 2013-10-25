@@ -4,7 +4,7 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
     
     var Q = require('q');
     
-    var feeds;
+    var feeds = [];
     var tree;
     var treeObsolete = true;
     var totalUnreadCount = 0;
@@ -42,6 +42,7 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
             }
         });
         tree.sort(treeSort);
+        recountUnreadArticlesInternal();
         treeObsolete = false;
     }
     
@@ -138,11 +139,37 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
     }
     
     function constructFeedsList() {
-        feeds = [];
+        var newFeedsList = [];
         feedsStorage.feeds.forEach(function (feedModel) {
-            feeds.push(constructFeed(feedModel));
+            var feed = getFeedByUrl(feedModel.url);
+            if (!feed) {
+                feed = constructFeed(feedModel);
+            }
+            newFeedsList.push(feed);
         });
+        feeds = newFeedsList;
         treeObsolete = true;
+    }
+    
+    function recountUnreadArticlesInternal() {
+        totalUnreadCount = 0;
+        tree.forEach(function (treeItem) {
+            if (treeItem.type === 'category') {
+                var catCount = 0;
+                treeItem.feeds.forEach(function (feed) {
+                    catCount += feed.unreadArticlesCount;
+                });
+                treeItem.unreadArticlesCount = catCount;
+                totalUnreadCount += catCount;
+            } else {
+                totalUnreadCount += treeItem.unreadArticlesCount;
+            }
+        });
+    }
+    
+    function recountUnreadArticles() {
+        recountUnreadArticlesInternal();
+        $rootScope.$broadcast('unreadArticlesRecounted');
     }
     
     //-----------------------------------------------------
@@ -160,19 +187,7 @@ sputnik.factory('feedsService', function ($rootScope, feedsStorage, opml) {
         }
         
         feed.unreadArticlesCount = count;
-        totalUnreadCount = 0;
-        tree.forEach(function (treeItem) {
-            if (treeItem.type === 'category') {
-                var catCount = 0;
-                treeItem.feeds.forEach(function (feed) {
-                    catCount += feed.unreadArticlesCount;
-                });
-                treeItem.unreadArticlesCount = catCount;
-                totalUnreadCount += catCount;
-            } else {
-                totalUnreadCount += treeItem.unreadArticlesCount;
-            }
-        });
+        recountUnreadArticles();
     });
     
     function getCategoryByName(name) {

@@ -66,19 +66,19 @@ describe('integration: feedsService and articlesService', function () {
         waitsFor(function () { return done; }, "timeout", 500);
     }));
     
-    it('fires event when unreadArticlesCount are first time calculated', inject(function ($rootScope, feedsService, articlesService) {
+    it('fires unreadArticlesRecounted event when this value calculated at startup', inject(function ($rootScope, feedsService, articlesService) {
         var done = false;
-        $rootScope.$on('unreadArticlesCountChanged', function (evt, FeedUrl, count) {
+        $rootScope.$on('unreadArticlesRecounted', function (evt) {
             done = true;
         });
-        waitsFor(function () { return done; }, "timeout", 500);
+        waitsFor(function () { return done; }, null, 500);
     }));
     
     it('unreadArticlesCount is kept up to date after calling setIsRead', inject(function (feedsService, articlesService) {
         var done = false;
         articlesService.digest('a.com/feed', harvest)
         .then(function () {
-            return articlesService.digest('b.com/feed', harvest2)
+            return articlesService.digest('b.com/feed', harvest2);
         })
         .then(function () {
             expect(feedsService.unreadArticlesCount).toBe(4);

@@ -159,11 +159,17 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
     
     function checkIfAllRead() {
         if ($scope.selectedCategory.unreadArticlesCount === 0) {
-            $scope.$emit('showNotification', 'Everything read here.');
+            var msg = 'Everything read.';
+            if ($scope.selectedCategory.type === 'category') {
+                msg = 'Everything read in this category.';
+            } else if ($scope.selectedCategory.type === 'feed') {
+                msg = 'Everything read in this feed.';
+            }
+            $scope.$emit('showNotification', msg);
         }
     }
     
-    $scope.$on('unreadArticlesCountChanged', function () {
+    $scope.$on('unreadArticlesRecounted', function () {
         $scope.$apply();
     });
     
