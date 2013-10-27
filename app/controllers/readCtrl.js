@@ -392,6 +392,15 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         return null;
     }
     
+    function isScrolledToTop() {
+        return articlesList[0].scrollTop < 5; // 5 pixels tolerance
+    }
+    
+    function isScrolledToBottom() {
+        return articlesList[0].scrollHeight - articlesList[0].scrollTop < articlesList[0].clientHeight + 5; // 5 pixels tolerance
+    }
+    
+    
     function scrollTo(what) {
         var position;
         var article;
@@ -399,7 +408,7 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         switch (what) {
             case '+1':
             case '-1':
-                var distance = 120;
+                var distance = 140;
                 if (what === '-1') { distance = -distance; }
                 position = articlesList.scrollTop() + distance;
                 break;
@@ -423,18 +432,26 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
             case 'prev':
             case 'next':
                 // if scrolled to top go to previous page
-                if (articlesList[0].scrollTop === 0 && what === 'prev') {
+                if (isScrolledToTop() && what === 'prev') {
                     $scope.prevPage();
                     return false;
                 }
                 // if scrolled to bottom go to next page
-                if (articlesList[0].scrollHeight - articlesList[0].scrollTop === articlesList[0].clientHeight && what === 'next') {
+                if (isScrolledToBottom() && what === 'next') {
                     $scope.nextPage();
                     return false;
                 }
                 
-                // find neighbour article to scroll to
-                article = getArticleNeighbour(what, getFirstVisibleArticle());
+                if (isScrolledToTop() && what === 'next' ||
+                    isScrolledToBottom() && what === 'prev') {
+                    // if top or bottom of the page scroll to first visible article
+                    // otherwise the algorithm will omit first, and stroll to second
+                    article = getFirstVisibleArticle();
+                } else {
+                    // else find neighbour article to scroll to
+                    article = getArticleNeighbour(what, getFirstVisibleArticle());
+                }
+                
                 if (article) {
                     position = angular.element('#' + article.id)[0].offsetTop - 20;
                 } else {
