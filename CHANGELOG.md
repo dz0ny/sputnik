@@ -1,4 +1,4 @@
-1.0.0 (in progress)
+1.0.0 (2013-10-28)
 -------------------
 * Amended overall app performance
 * Faster and more intelligent feeds downloading
