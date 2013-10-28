@@ -101,9 +101,14 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         .then(function () {
             // above code changes to read only articles on this side
             // this code marks as read everything on other pages of this list
-            var feedUrls = $scope.selectedCategory.feeds.map(function (feed) {
-                return feed.url;
-            });
+            var feedUrls;
+            if ($scope.selectedCategory.type === 'feed') {
+                feedUrls = [$scope.selectedCategory.url];
+            } else {
+                feedUrls = $scope.selectedCategory.feeds.map(function (feed) {
+                    return feed.url;
+                });
+            }
             return articlesService.markAllAsReadInFeeds(feedUrls);
         })
         .then(function () {
