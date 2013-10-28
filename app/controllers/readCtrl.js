@@ -271,7 +271,7 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
         switch (event.keyCode) {
             // left
             case 37:
-                if (event.ctrlKey || event.metaKey) {
+                if (event.ctrlKey) {
                     $scope.prevPage();
                 } else {
                     scrollTo('prev');
@@ -280,7 +280,7 @@ function ReadCtrl($scope, $window, feedsService, articlesService, downloadServic
                 break;
             // right
             case 39:
-                if (event.ctrlKey || event.metaKey) {
+                if (event.ctrlKey) {
                     $scope.nextPage();
                 } else {
                     scrollTo('next');
