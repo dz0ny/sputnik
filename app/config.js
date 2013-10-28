@@ -16,7 +16,7 @@ function initSputnikConfig() {
     
     var dataHomeFolder = appConf.dataHomeFolder;
     if (appConf.targetPlatform === 'macos') {
-        dataHomeFolder = gui.App.dataPath[0];
+        dataHomeFolder = gui.App.dataPath;
     } else {
         dataHomeFolder = '../data';
     }
