@@ -189,7 +189,8 @@ describe('feedsStorage', function () {
         var filePath = './temp/feeds.json';
         var feedsData = {
             "categories": [
-                "First Category", "Second Category"
+                "Second Category"
+                // "First Category" is not saved here for reason, see github issue #1
             ],
             "feeds": [
                 {
@@ -281,6 +282,23 @@ describe('feedsStorage', function () {
             fst.removeCategory('First Category');
             var savedData = grabFromDisk();
             expect(savedData.categories).not.toContain('First Category');
+        });
+        
+        it('github issue #1 - rename category for the same name', function () {
+            var fst = feedsStorage.make(filePath);
+            
+            // "First Category" doesn't appear in categories in feeds.json
+            // but app should obtain category from field in feed
+            // this is for recovering already affected apps by this bug
+            expect(fst.categories).toContain('First Category');
+            
+            // this line causes the bug
+            fst.changeCategoryName('First Category', 'First Category');
+            
+            // bug should stop appearing - what means 'First Category'
+            // should appear after this action in categories array
+            var savedData = grabFromDisk();
+            expect(savedData.categories).toContain('First Category');
         });
         
     });

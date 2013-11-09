@@ -12,6 +12,14 @@ exports.make = function (dataPath) {
     
     if (dataPath && fs.existsSync(dataPath)) {
         model = JSON.parse(fs.readFileSync(dataPath, { encoding: 'utf8' }));
+        
+        // this loop fixes github issue #1
+        model.feeds.forEach(function (feed) {
+            if (model.categories.indexOf(feed.category) === -1) {
+                addCategory(feed.category);
+            }
+        });
+        
     } else {
         model = {
             categories: [],
@@ -126,7 +134,7 @@ exports.make = function (dataPath) {
         
         var currNameIndex = model.categories.indexOf(currentName);
         if (currNameIndex !== -1) {
-            if (model.categories.indexOf(newName) !== -1) {
+            if (model.categories.indexOf(newName) !== -1 && currentName !== newName) {
                 // newName already is defined, we are merging two categories together
                 // so we must to throw away one of this categories from array
                 model.categories.splice(currNameIndex, 1);
