@@ -69,6 +69,10 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
         var gaps = [];
         
         while (index < endIndex) {
+            if (!articles[index].pubDate) {
+                // if feed doesn't specify pubDate of rticles assume super active 
+                return 0;
+            }
             var curr = articles[index].pubDate.getTime();
             gaps.push(prev - curr);
             prev = curr;

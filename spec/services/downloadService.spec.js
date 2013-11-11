@@ -41,6 +41,13 @@ describe('downloadService', function () {
             expect(avgAct).toBe(0);
         }));
         
+        it('should assume super active if articles have no pubDate', inject(function (downloadService) {
+            var avgAct = downloadService.calculateAverageActivity([
+                {} // empty object simulationg article without pubDate
+            ]);
+            expect(avgAct).toBe(0);
+        }));
+        
         it('should calculate if only one article provided', inject(function (downloadService) {
             var avgAct = downloadService.calculateAverageActivity([
                 { pubDate: moment().subtract('hours', 12)._d },
