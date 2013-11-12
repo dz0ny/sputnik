@@ -1,3 +1,8 @@
+1.0.1 (2013-11-12)
+-------------------
+* Fix: handling articles without pubDate
+* Fix: renaming category for the same name
+
 1.0.0 (2013-10-28)
 -------------------
 * Amended overall app performance
