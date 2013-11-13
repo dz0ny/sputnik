@@ -1,3 +1,7 @@
+1.0.2 (???)
+-------------------
+* Fix: application works better on sluggish internet connection
+
 1.0.1 (2013-11-12)
 -------------------
 * Fix: handling articles without pubDate
