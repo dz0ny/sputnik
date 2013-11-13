@@ -126,7 +126,7 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
             
             workingTasks += 1;
             
-            net.getUrl(url, { timeout: 5000 }).then(function (buff) {
+            net.getUrl(url, { timeout: 10000 }).then(function (buff) {
                 
                 timeoutsInARow = 0;
                 
@@ -190,7 +190,7 @@ sputnik.factory('downloadService', function (net, feedParser, config, feedsServi
         
         function fetch(url) {
             workingTasks += 1;
-            net.getUrl(url, { timeout: 10000 })
+            net.getUrl(url)
             .then(function (buff) {
                 feedsWaitingRoom.storeOne(url, buff)
                 .then(notify);

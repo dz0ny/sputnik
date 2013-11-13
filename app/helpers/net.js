@@ -17,7 +17,7 @@ exports.getUrl = function (url, options) {
     };
     
     if (!options.timeout) {
-        options.timeout = 5000;
+        options.timeout = 20000;
     }
     
     request(options, function (err, response, body) {
