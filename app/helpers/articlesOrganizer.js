@@ -34,7 +34,11 @@ exports.organizeByDays = function (articles) {
             yesterday.getFullYear() === date.getFullYear()) {
             return 'Yesterday';
         }
-        return date.getDate() + ' ' + monthLabel(date.getMonth());
+        if (date.getTime() > now.getTime() - (8 * 30 * 24 * 60 * 60 * 1000)) {
+            // if less that 8 months ago don't show year
+            return date.getDate() + ' ' + monthLabel(date.getMonth());
+        }
+        return date.getDate() + ' ' + monthLabel(date.getMonth()) + ' ' + date.getFullYear();
     }
     
     function isSameDay(date1, date2) {
