@@ -27,6 +27,10 @@
             <p ng-show="urlValidity == '404'" class="add-feed__error">
                 This address returns "not found" (404). Are you sure you typed it correctly?
             </p>
+            <p ng-show="urlValidity == 'connectionProblem'" class="add-feed__error">
+                This address doesn't exist, or there is problem with internet connection.
+                &nbsp; <button ng-click="urlChange()" class="inputty">Try again</button>
+            </p>
             <p ng-show="urlValidity == 'no'" class="add-feed__error">
                 Sorry. I couldn't figure out any RSS feed on this address.<br/>
                 Try to find link to RSS feed on that site by yourself and paste it here.

@@ -31,7 +31,7 @@ exports.scout = function (url, net, feedParser) {
         // see if it is feed xml or something else
         feedParser.parse(buff).then(function () {
             deferred.resolve(url);
-        }, function () {
+        }, function (err) {
             // if not, treat it as html and try to find rss tag inside
             var foundFeedUrl = findFeedUrlInHtml(buff.toString(), url);
             if (foundFeedUrl) {
@@ -40,10 +40,14 @@ exports.scout = function (url, net, feedParser) {
                     // check if feed format to be sure url works
                     feedParser.parse(buff).then(function () {
                         deferred.resolve(foundFeedUrl);
-                    }, deferred.reject);
+                    }, function (err) {
+                        err.code = 'noFeed';
+                        deferred.reject(err);
+                    });
                 }, deferred.reject);
             } else {
-                deferred.reject();
+                err.code = 'noFeed';
+                deferred.reject(err);
             }
         });
     }, deferred.reject);

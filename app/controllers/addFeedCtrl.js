@@ -60,10 +60,17 @@ function AddFeedCtrl($scope, $location, feedsService, net, feedParser) {
                     // it means user typed more characters and this search is obsolete
                     return;
                 }
-                if (err && err.code === '404') {
-                    $scope.urlValidity = '404';
-                } else {
-                    $scope.urlValidity = 'no';
+                switch (err.code) {
+                    case '404':
+                        $scope.urlValidity = '404';
+                        break;
+                    case 'ETIMEDOUT':
+                    case 'ECONNREFUSED':
+                    case 'ENOTFOUND':
+                        $scope.urlValidity = 'connectionProblem';
+                        break;
+                    default:
+                        $scope.urlValidity = 'no';
                 }
                 determinedFeedUrl = undefined;
                 $scope.$apply();

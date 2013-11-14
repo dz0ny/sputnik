@@ -7,6 +7,9 @@ exports.make = function (urlMap) {
     var gerUrlSpy;
     
     function isTiemout(str) {
+        if (str === 'http://timeout') {
+            return true;
+        }
         return str.substr(0, 7) === 'timeout';
     }
     
@@ -26,6 +29,7 @@ exports.make = function (urlMap) {
                         code: '404'
                     });
                     break;
+                case 'http://not-found':
                 case 'not-found':
                     deferred.reject({
                         code: 'ENOTFOUND'
