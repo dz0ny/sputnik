@@ -1,7 +1,8 @@
-1.0.2 (???)
+1.0.2 (2013-11-15)
 -------------------
 * Fix: application works better on sluggish internet connection
 * Fix: while adding new feed, error informations was sometimes misleading
+* Fix: favicons loading amended
 
 1.0.1 (2013-11-12)
 -------------------
