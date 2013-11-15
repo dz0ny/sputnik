@@ -1,6 +1,6 @@
 'use strict';
 
-sputnik.factory('faviconsService', function (config, net) {
+sputnik.factory('faviconsService', function (config, net, $rootScope) {
     
     var cheerio = require('cheerio');
     var urlUtil = require('url');
@@ -15,6 +15,9 @@ sputnik.factory('faviconsService', function (config, net) {
         var href = dom('link[rel="icon"]').attr('href');
         if (!href) {
             href = dom('link[rel="shortcut icon"]').attr('href');
+        }
+        if (!href) {
+            href = dom('link[rel="Shortcut Icon"]').attr('href');
         }
         if (href && !href.match(/^http/)) { // is relative, so make absolute
             href = urlUtil.resolve(siteUrl, href);
@@ -109,6 +112,7 @@ sputnik.factory('faviconsService', function (config, net) {
             var filePath = storeDir + '/' + filename;
             fs.writeFile(filePath, result.faviconBytes, function (err) {
                 feed.favicon = filePath;
+                $rootScope.$broadcast('faviconUpdated');
                 deferred.resolve();
             });
         }, function () {
@@ -121,9 +125,15 @@ sputnik.factory('faviconsService', function (config, net) {
     }
     
     function updateMany(feeds) {
-        feeds.forEach(function (feed) {
-            updateOne(feed);
-        });
+        feeds = feeds.concat();
+        
+        function next() {
+            if (feeds.length > 0) {
+                updateOne(feeds.pop()).then(next);
+            }
+        }
+        
+        next();
     }
     
     return  {

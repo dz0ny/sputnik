@@ -50,10 +50,7 @@ function AppCtrl($scope, $location, config, feedsService, articlesService, favic
     
     $scope.$on('feedSiteUrlSpecified', function (evt, feed) {
         // is siteUrl first time specified try to get its favicon
-        faviconsService.updateOne(feed)
-        .then(function () {
-            $scope.$apply();
-        });
+        faviconsService.updateOne(feed);
     });
     
     $scope.$on('feedRemoved', function (evt, feed) {
@@ -68,6 +65,10 @@ function AppCtrl($scope, $location, config, feedsService, articlesService, favic
     
     $scope.$on('tagsListChanged', function (evt) {
         $scope.allTags = articlesService.allTags;
+    });
+    
+    $scope.$on('faviconUpdated', function (evt) {
+        $scope.$apply();
     });
     
     //-----------------------------------------------------
